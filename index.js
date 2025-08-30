@@ -3,7 +3,18 @@ import cors from 'cors';
 import morgan from 'morgan';
 
 const app = express();
-app.use(cors({ origin: '*' }));
+
+// CORS: allow everything (demo)
+app.use(cors({ origin: '*', methods: ['GET','POST','OPTIONS'], allowedHeaders: ['Content-Type'] }));
+// Extra headers for any proxy oddities + handle preflight fast
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -22,7 +33,6 @@ app.get('/api/psychometrics/questions', (req, res) => {
   });
 });
 
-/* ✅ Add analyze endpoint */
 app.post('/api/psychometrics/analyze', (req, res) => {
   const { answers = [], skills = [], interests = [] } = req.body || {};
   const traits = [
@@ -66,7 +76,7 @@ app.post('/api/matching/careers', (req, res) => {
   res.json({ results: results.slice(0, topK) });
 });
 
-/* 404 */
+// Fallback 404
 app.use((_req, res) => res.status(404).send('Not Found'));
 
 const PORT = process.env.PORT || 10000;
