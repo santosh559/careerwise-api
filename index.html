@@ -6,89 +6,198 @@
   <title>CareerWise Demo</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
-  <div class="max-w-3xl mx-auto p-6">
-    <header class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold text-blue-600">CareerWise</h1>
-      <nav class="space-x-4 text-sm">
-        <a href="#psychometric" class="text-gray-600 hover:text-blue-600">Psychometric</a>
-        <a href="#matching" class="text-gray-600 hover:text-blue-600">Career Match</a>
-      </nav>
+<body class="bg-gray-50 text-gray-800">
+  <div class="max-w-3xl mx-auto p-6 space-y-6">
+    <header class="flex items-center justify-between">
+      <h1 class="text-3xl font-bold text-blue-600">CareerWise — Demo</h1>
+      <div class="text-xs text-gray-500">API: <span id="api">https://careerwise-api.onrender.com</span></div>
     </header>
 
-    <!-- Psychometric Analysis -->
-    <section id="psychometric" class="mb-10">
-      <div class="bg-white p-6 rounded-2xl shadow-md">
-        <h2 class="text-2xl font-semibold mb-4">Psychometric Analysis</h2>
-        <button onclick="loadQuestions()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Load Questions</button>
-        <div id="questions" class="mt-4 space-y-2 text-gray-700"></div>
+    <section class="bg-white p-6 rounded-2xl shadow-sm">
+      <h2 class="text-2xl font-semibold mb-2">Psychometric Analysis</h2>
+      <p class="text-gray-600 mb-4">Answer quickly on a 1–5 scale.</p>
 
-        <div class="mt-4 grid gap-3 md:grid-cols-2">
-          <input id="skills" class="border p-2 rounded-lg" placeholder="Skills (comma separated)" value="sql, excel" />
-          <input id="interests" class="border p-2 rounded-lg" placeholder="Interests" value="data, analytics" />
+      <div id="questions" class="space-y-3"></div>
+
+      <div class="grid md:grid-cols-2 gap-3 mt-4">
+        <input id="skills" class="border p-2 rounded-lg" placeholder="Skills (comma separated)" value="sql, excel" />
+        <input id="interests" class="border p-2 rounded-lg" placeholder="Interests (comma separated)" value="data, analytics" />
+      </div>
+
+      <button id="analyzeBtn" class="mt-4 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Run Analysis</button>
+      <p id="pErr" class="text-red-600 mt-3 hidden"></p>
+
+      <div id="analysis" class="mt-5 hidden">
+        <div class="rounded-xl border p-4">
+          <h3 class="font-semibold">Summary</h3>
+          <p id="summary" class="mt-1 whitespace-pre-wrap"></p>
+          <h3 class="font-semibold mt-4">Traits</h3>
+          <ul id="traits" class="mt-1 grid sm:grid-cols-2 gap-2"></ul>
+          <h3 class="font-semibold mt-4">Cautions</h3>
+          <ul id="cautions" class="list-disc ml-6 text-sm"></ul>
         </div>
-
-        <button onclick="runAnalysis()" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Run Analysis</button>
-        <pre id="analysis" class="mt-4 bg-gray-100 p-3 rounded text-sm overflow-x-auto"></pre>
       </div>
     </section>
 
-    <!-- Career Matching -->
-    <section id="matching">
-      <div class="bg-white p-6 rounded-2xl shadow-md">
-        <h2 class="text-2xl font-semibold mb-4">Career Match</h2>
-        <button onclick="getMatches()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Get Matches</button>
-        <pre id="matches" class="mt-4 bg-gray-100 p-3 rounded text-sm overflow-x-auto"></pre>
-      </div>
+    <section class="bg-white p-6 rounded-2xl shadow-sm">
+      <h2 class="text-2xl font-semibold mb-2">Career Match</h2>
+      <p class="text-gray-600 mb-4">Uses traits/skills/interests above.</p>
+      <button id="matchBtn" class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Get Matches</button>
+      <p id="mErr" class="text-red-600 mt-3 hidden"></p>
+
+      <div id="matches" class="mt-4 grid gap-3"></div>
     </section>
+
+    <footer class="text-xs text-gray-500 text-center">
+      Demo-only. No personal data stored.
+    </footer>
   </div>
 
-  <script>
-    const API = "https://careerwise-api.onrender.com";
+<script>
+const API = "https://careerwise-api.onrender.com";
 
-    async function loadQuestions() {
-      try {
-        const res = await fetch(API + "/api/psychometrics/questions");
-        const data = await res.json();
-        document.getElementById("questions").innerHTML =
-          data.questions.map(q => 
-            \`<div class="p-2 border rounded-md">\${q.text} <span class="text-gray-500 text-sm">(1–5 scale, default 3)</span></div>\`
-          ).join("");
-      } catch (err) {
-        document.getElementById("questions").innerHTML = "<p class='text-red-600'>Failed to load questions</p>";
-      }
-    }
+const demoQuestions = [
+  { id: 'q1', text: 'I enjoy solving complex problems.', dimension: 'Analytical Thinking' },
+  { id: 'q2', text: 'I communicate my ideas clearly.', dimension: 'Communication' },
+  { id: 'q3', text: 'I like experimenting with new ideas.', dimension: 'Creativity' },
+  { id: 'q4', text: 'I stay focused until tasks are complete.', dimension: 'Persistence' },
+  { id: 'q5', text: 'I collaborate well in teams.', dimension: 'Collaboration' }
+];
 
-    async function runAnalysis() {
-      const body = {
-        answers: [{id: "q1", value: 4}, {id: "q2", value: 3}],
-        skills: document.getElementById("skills").value.split(",").map(s => s.trim()),
-        interests: document.getElementById("interests").value.split(",").map(s => s.trim())
-      };
-      try {
-        const res = await fetch(API + "/api/psychometrics/analyze", {
-          method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
-        });
-        document.getElementById("analysis").textContent = JSON.stringify(await res.json(), null, 2);
-      } catch (err) {
-        document.getElementById("analysis").textContent = "Error: " + err.message;
-      }
-    }
+const questionsEl = document.getElementById('questions');
+const pErr = document.getElementById('pErr');
+const mErr = document.getElementById('mErr');
 
-    async function getMatches() {
-      const body = {
-        traits: [{name: "Analytical Thinking", score: 72}],
-        skills: ["sql","excel"], interests: ["data"], topK: 3
-      };
-      try {
-        const res = await fetch(API + "/api/matching/careers", {
-          method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
-        });
-        document.getElementById("matches").textContent = JSON.stringify(await res.json(), null, 2);
-      } catch (err) {
-        document.getElementById("matches").textContent = "Error: " + err.message;
-      }
-    }
-  </script>
+function renderQuestions(list) {
+  questionsEl.innerHTML = '';
+  list.forEach((q, idx) => {
+    const row = document.createElement('div');
+    row.className = 'p-3 rounded-lg border';
+    row.innerHTML = `
+      <div class="font-medium mb-2">${idx+1}. ${q.text}</div>
+      <div class="flex gap-2" data-qid="${q.id}">
+        ${[1,2,3,4,5].map(v => `
+          <button type="button"
+                  class="px-3 py-1 rounded border bg-white hover:bg-gray-100"
+                  data-v="${v}">${v}</button>`).join('')}
+      </div>
+    `;
+    questionsEl.appendChild(row);
+  });
+
+  questionsEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-v]');
+    if (!btn) return;
+    const row = btn.parentElement;
+    row.querySelectorAll('button').forEach(b => b.classList.remove('bg-blue-600','text-white'));
+    btn.classList.add('bg-blue-600','text-white');
+    row.setAttribute('data-selected', btn.getAttribute('data-v'));
+  }, { once: true });
+}
+
+async function loadQuestions() {
+  try {
+    const r = await fetch(API + '/api/psychometrics/questions', { cache: 'no-store' });
+    if (!r.ok) throw new Error('API ' + r.status);
+    const data = await r.json();
+    renderQuestions(data.questions || demoQuestions);
+  } catch {
+    renderQuestions(demoQuestions);
+  }
+}
+
+function readAnswers() {
+  const rows = questionsEl.querySelectorAll('div[data-qid]');
+  const answers = [];
+  rows.forEach(row => {
+    const id = row.getAttribute('data-qid');
+    const v = row.getAttribute('data-selected') || '3';
+    answers.push({ id, value: Number(v) });
+  });
+  return answers;
+}
+
+document.getElementById('analyzeBtn').addEventListener('click', async () => {
+  pErr.classList.add('hidden');
+  try {
+    const payload = {
+      answers: readAnswers(),
+      skills: document.getElementById('skills').value.split(',').map(s=>s.trim()).filter(Boolean),
+      interests: document.getElementById('interests').value.split(',').map(s=>s.trim()).filter(Boolean),
+      studentId: 's1'
+    };
+    const r = await fetch(API + '/api/psychometrics/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error('Analyze failed (' + r.status + ')');
+    const data = await r.json();
+
+    document.getElementById('summary').textContent = data.summary || '';
+    const traits = document.getElementById('traits');
+    traits.innerHTML = '';
+    (data.traits||[]).forEach(t => {
+      const chip = document.createElement('li');
+      chip.className = 'flex items-center justify-between rounded-lg border px-3 py-2';
+      chip.innerHTML = `<span>${t.name}</span><span class="text-sm text-gray-600">${t.score}/100</span>`;
+      traits.appendChild(chip);
+    });
+    const cautions = document.getElementById('cautions');
+    cautions.innerHTML = '';
+    (data.cautions||[]).forEach(c => {
+      const li = document.createElement('li');
+      li.textContent = c;
+      cautions.appendChild(li);
+    });
+    document.getElementById('analysis').classList.remove('hidden');
+  } catch (err) {
+    pErr.textContent = err.message || 'Analyze error';
+    pErr.classList.remove('hidden');
+  }
+});
+
+document.getElementById('matchBtn').addEventListener('click', async () => {
+  mErr.classList.add('hidden');
+  try {
+    const body = {
+      skills: document.getElementById('skills').value.split(',').map(s=>s.trim()).filter(Boolean),
+      interests: document.getElementById('interests').value.split(',').map(s=>s.trim()).filter(Boolean),
+      traits: [], topK: 5, studentId:'s1'
+    };
+    const r = await fetch(API + '/api/matching/careers', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error('Matching failed (' + r.status + ')');
+    const data = await r.json();
+
+    const wrap = document.getElementById('matches');
+    wrap.innerHTML = '';
+    (data.results || []).forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'rounded-xl border p-4';
+      card.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="font-semibold">${item.title}</div>
+          <span class="text-xs px-2 py-1 rounded bg-blue-50 text-blue-700">${item.score}% fit</span>
+        </div>
+        <p class="mt-1 text-sm text-gray-700 whitespace-pre-wrap">${item.why || ''}</p>
+        ${Array.isArray(item.nextSteps) ? `
+          <ul class="list-disc ml-6 mt-2 text-sm text-gray-700">
+            ${item.nextSteps.map(s=>`<li>${s}</li>`).join('')}
+          </ul>` : ''}
+      `;
+      wrap.appendChild(card);
+    });
+  } catch (err) {
+    mErr.textContent = err.message || 'Match error';
+    mErr.classList.remove('hidden');
+  }
+});
+
+loadQuestions();
+</script>
 </body>
 </html>
