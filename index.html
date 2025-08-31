@@ -4,42 +4,59 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CareerWise Demo</title>
-  <style>
-    body { font-family: sans-serif; margin: 2rem; background: #f9fafb; color: #111; }
-    h1 { color: #2563eb; }
-    .card { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1rem; }
-    button { background: #2563eb; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
-    button:hover { background: #1e40af; }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>CareerWise — Demo</h1>
-  <p>Psychometric + Career Matching (using live API)</p>
+<body class="bg-gray-50 text-gray-800 font-sans">
+  <div class="max-w-3xl mx-auto p-6">
+    <header class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold text-blue-600">CareerWise</h1>
+      <nav class="space-x-4 text-sm">
+        <a href="#psychometric" class="text-gray-600 hover:text-blue-600">Psychometric</a>
+        <a href="#matching" class="text-gray-600 hover:text-blue-600">Career Match</a>
+      </nav>
+    </header>
 
-  <div class="card">
-    <h2>Psychometric Analysis</h2>
-    <button onclick="loadQuestions()">Load Questions</button>
-    <div id="questions"></div>
-    <input id="skills" placeholder="Skills (comma separated)" value="sql, excel" />
-    <input id="interests" placeholder="Interests" value="data, analytics" />
-    <button onclick="runAnalysis()">Run Analysis</button>
-    <pre id="analysis"></pre>
-  </div>
+    <!-- Psychometric Analysis -->
+    <section id="psychometric" class="mb-10">
+      <div class="bg-white p-6 rounded-2xl shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Psychometric Analysis</h2>
+        <button onclick="loadQuestions()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Load Questions</button>
+        <div id="questions" class="mt-4 space-y-2 text-gray-700"></div>
 
-  <div class="card">
-    <h2>Career Match</h2>
-    <button onclick="getMatches()">Get Matches</button>
-    <pre id="matches"></pre>
+        <div class="mt-4 grid gap-3 md:grid-cols-2">
+          <input id="skills" class="border p-2 rounded-lg" placeholder="Skills (comma separated)" value="sql, excel" />
+          <input id="interests" class="border p-2 rounded-lg" placeholder="Interests" value="data, analytics" />
+        </div>
+
+        <button onclick="runAnalysis()" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Run Analysis</button>
+        <pre id="analysis" class="mt-4 bg-gray-100 p-3 rounded text-sm overflow-x-auto"></pre>
+      </div>
+    </section>
+
+    <!-- Career Matching -->
+    <section id="matching">
+      <div class="bg-white p-6 rounded-2xl shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Career Match</h2>
+        <button onclick="getMatches()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Get Matches</button>
+        <pre id="matches" class="mt-4 bg-gray-100 p-3 rounded text-sm overflow-x-auto"></pre>
+      </div>
+    </section>
   </div>
 
   <script>
     const API = "https://careerwise-api.onrender.com";
 
     async function loadQuestions() {
-      const res = await fetch(API + "/api/psychometrics/questions");
-      const data = await res.json();
-      document.getElementById("questions").innerHTML =
-        data.questions.map(q => \`<p>\${q.text} (1–5 scale, default 3)</p>\`).join("");
+      try {
+        const res = await fetch(API + "/api/psychometrics/questions");
+        const data = await res.json();
+        document.getElementById("questions").innerHTML =
+          data.questions.map(q => 
+            \`<div class="p-2 border rounded-md">\${q.text} <span class="text-gray-500 text-sm">(1–5 scale, default 3)</span></div>\`
+          ).join("");
+      } catch (err) {
+        document.getElementById("questions").innerHTML = "<p class='text-red-600'>Failed to load questions</p>";
+      }
     }
 
     async function runAnalysis() {
@@ -48,10 +65,14 @@
         skills: document.getElementById("skills").value.split(",").map(s => s.trim()),
         interests: document.getElementById("interests").value.split(",").map(s => s.trim())
       };
-      const res = await fetch(API + "/api/psychometrics/analyze", {
-        method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
-      });
-      document.getElementById("analysis").textContent = JSON.stringify(await res.json(), null, 2);
+      try {
+        const res = await fetch(API + "/api/psychometrics/analyze", {
+          method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
+        });
+        document.getElementById("analysis").textContent = JSON.stringify(await res.json(), null, 2);
+      } catch (err) {
+        document.getElementById("analysis").textContent = "Error: " + err.message;
+      }
     }
 
     async function getMatches() {
@@ -59,10 +80,14 @@
         traits: [{name: "Analytical Thinking", score: 72}],
         skills: ["sql","excel"], interests: ["data"], topK: 3
       };
-      const res = await fetch(API + "/api/matching/careers", {
-        method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
-      });
-      document.getElementById("matches").textContent = JSON.stringify(await res.json(), null, 2);
+      try {
+        const res = await fetch(API + "/api/matching/careers", {
+          method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
+        });
+        document.getElementById("matches").textContent = JSON.stringify(await res.json(), null, 2);
+      } catch (err) {
+        document.getElementById("matches").textContent = "Error: " + err.message;
+      }
     }
   </script>
 </body>
