@@ -34,8 +34,8 @@
           <p class="text-sm text-slate-500 mb-3">We’ll email you a secure magic link.</p>
           <form id="emailForm" class="space-y-3">
             <input id="emailInput" type="email" required
-                  class="w-full rounded-lg border px-3 py-2"
-                  placeholder="you@example.com" />
+                   class="w-full rounded-lg border px-3 py-2"
+                   placeholder="you@example.com" />
             <button type="submit"
                     class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
               Send magic link
@@ -317,24 +317,27 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
+    // Your project values (already filled in)
     const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ⬇️ Handle magic-link return (?code=...) and create a session
+    // 1) Handle magic-link return on GitHub Pages (?code=...)
     async function handleMagicLinkReturn() {
-      const qs = window.location.search;
-      if (qs && new URLSearchParams(qs).has("code")) {
-        const { error } = await supabase.auth.exchangeCodeForSession(qs);
-        // Clean URL (remove ?code=...)
-        if (!error) history.replaceState({}, document.title, location.pathname);
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("code")) {
+        const { error } = await supabase.auth.exchangeCodeForSession(url.search);
+        if (!error) {
+          // Clean the URL so it won't loop
+          history.replaceState({}, document.title, url.pathname);
+        }
       }
     }
 
-    // expose a helper so app script can get JWT if logged in
+    // 2) Expose helper so app script can attach JWT when calling your API
     window.__supabaseGetSession = async () => {
-      const { data: { session} } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       return session?.access_token || null;
     };
 
@@ -351,7 +354,7 @@
     const emailMsg    = document.getElementById("emailMsg");
     const guestBtn    = document.getElementById("guestBtn");
 
-    // ----- Guest handling -----
+    // Guest helpers
     function getGuestId() {
       let id = localStorage.getItem("cw_guest_id");
       if (!id) {
@@ -360,11 +363,9 @@
       }
       return id;
     }
-    function isGuest() {
-      return !!localStorage.getItem("cw_guest_id");
-    }
+    function isGuest() { return !!localStorage.getItem("cw_guest_id"); }
 
-    // ----- UI state -----
+    // UI state
     function setSignedInUI({ email, label, asGuest = false }) {
       authUserBar.classList.remove("hidden");
       userBadge.textContent = (label || email || "U").slice(0, 1).toUpperCase();
@@ -380,7 +381,7 @@
       appRoot.classList.add("hidden");
     }
 
-    // ----- Email OTP -----
+    // Email OTP
     emailForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = emailInput.value.trim();
@@ -389,7 +390,10 @@
       try {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: location.origin + location.pathname }
+          options: {
+            // IMPORTANT for GitHub Pages deployment:
+            emailRedirectTo: "https://santosh559.github.io/careerwise-api/"
+          }
         });
         if (error) throw error;
         emailMsg.textContent = "Magic link sent! Check your inbox.";
@@ -402,20 +406,20 @@
       }
     });
 
-    // ----- Guest mode -----
+    // Guest mode
     guestBtn.addEventListener("click", () => {
       const id = getGuestId();
       setSignedInUI({ label: id.replace("guest_", "G-"), asGuest: true });
     });
 
-    // ----- Sign out -----
+    // Sign out
     signOutBtn.addEventListener("click", async () => {
       await supabase.auth.signOut();
       localStorage.removeItem("cw_guest_id");
       setSignedOutUI();
     });
 
-    // ----- Initial state & auth changes -----
+    // Init & auth change
     async function initAuth() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
@@ -438,7 +442,7 @@
       });
     }
 
-    // Handle magic-link then init UI
+    // Boot: process magic-link then render UI
     await handleMagicLinkReturn();
     await initAuth();
   </script>
