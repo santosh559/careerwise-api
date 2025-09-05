@@ -242,3 +242,56 @@ loadFromApiOrDemo();
 </script>
 </body>
 </html>
+
+<!-- Supabase client: put this right before </body> -->
+<script type="module">
+  // 1) Import Supabase JS (ESM)
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  // 2) Replace with your values from Supabase → Project Settings → API
+  const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+
+  // 3) Create the client
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // 4) (Optional) Ensure a container exists to render questions
+  let container = document.getElementById("questionList");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "questionList";
+    container.style.marginTop = "1rem";
+    document.body.appendChild(container);
+  }
+
+  // 5) Fetch questions from Supabase and render
+  async function loadQuestions() {
+    const { data, error } = await supabase
+      .from("questions")
+      .select("id, text")
+      .eq("active", true)
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("Supabase error:", error);
+      container.innerHTML = `<p style="color:#b91c1c">Failed to load questions: ${error.message}</p>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      container.innerHTML = "<p>No questions found.</p>";
+      return;
+    }
+
+    // Minimal pretty render
+    container.innerHTML = `
+      <h2 style="font:600 1.25rem/1.6 system-ui, -apple-system, Segoe UI, Roboto">Psychometric Questions</h2>
+      <ol style="padding-left:1.25rem; margin:0.5rem 0 0">
+        ${data.map((q, i) => `<li style="margin:0.25rem 0">${i + 1}. ${q.text}</li>`).join("")}
+      </ol>
+    `;
+  }
+
+  // 6) Kick it off
+  loadQuestions();
+</script>
