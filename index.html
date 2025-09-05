@@ -208,7 +208,6 @@
   // Use this instead of fetch() so we can pass JWT or guest id
   async function apiFetch(url, opts = {}) {
     const options = { ...opts, headers: { ...(opts.headers || {}) } };
-    // If Supabase is present, attach token; else fallback to guest header
     if (window.__supabaseGetSession) {
       try {
         const token = await window.__supabaseGetSession();
@@ -314,131 +313,135 @@
   loadFromApiOrDemo();
   </script>
 
- <!-- ===================== SUPABASE AUTH SCRIPT ===================== -->
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  <!-- ===================== SUPABASE AUTH SCRIPT ===================== -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-  // 🔑 Your project keys
-  const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+    const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ✅ Handle magic-link return (?code=...) and turn it into a session
-  (async function handleMagicLinkReturn() {
-    const qs = window.location.search;
-    if (qs && new URLSearchParams(qs).has("code")) {
-      const { error } = await supabase.auth.exchangeCodeForSession(qs);
-      // Optional: remove ?code=… from the URL once the session is set
-      if (!error) history.replaceState({}, document.title, location.pathname);
+    // ⬇️ Handle magic-link return (?code=...) and create a session
+    async function handleMagicLinkReturn() {
+      const qs = window.location.search;
+      if (qs && new URLSearchParams(qs).has("code")) {
+        const { error } = await supabase.auth.exchangeCodeForSession(qs);
+        // Clean URL (remove ?code=...)
+        if (!error) history.replaceState({}, document.title, location.pathname);
+      }
     }
-  })();
 
-  // Expose a helper so the main app script can read the JWT if logged in
-  window.__supabaseGetSession = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || null;
-  };
+    // expose a helper so app script can get JWT if logged in
+    window.__supabaseGetSession = async () => {
+      const { data: { session} } = await supabase.auth.getSession();
+      return session?.access_token || null;
+    };
 
-  // ---------- Elements ----------
-  const appRoot     = document.getElementById("appRoot");
-  const authSection = document.getElementById("authSection");
-  const authCard    = document.getElementById("authCard");
-  const authUserBar = document.getElementById("authUserBar");
-  const userBadge   = document.getElementById("userBadge");
-  const userLabel   = document.getElementById("userLabel");
-  const signOutBtn  = document.getElementById("signOutBtn");
-  const emailForm   = document.getElementById("emailForm");
-  const emailInput  = document.getElementById("emailInput");
-  const emailMsg    = document.getElementById("emailMsg");
-  const guestBtn    = document.getElementById("guestBtn");
+    // Elements
+    const appRoot     = document.getElementById("appRoot");
+    const authSection = document.getElementById("authSection");
+    const authCard    = document.getElementById("authCard");
+    const authUserBar = document.getElementById("authUserBar");
+    const userBadge   = document.getElementById("userBadge");
+    const userLabel   = document.getElementById("userLabel");
+    const signOutBtn  = document.getElementById("signOutBtn");
+    const emailForm   = document.getElementById("emailForm");
+    const emailInput  = document.getElementById("emailInput");
+    const emailMsg    = document.getElementById("emailMsg");
+    const guestBtn    = document.getElementById("guestBtn");
 
-  // ---------- Guest helpers ----------
-  function getGuestId() {
-    let id = localStorage.getItem("cw_guest_id");
-    if (!id) {
-      id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
-      localStorage.setItem("cw_guest_id", id);
+    // ----- Guest handling -----
+    function getGuestId() {
+      let id = localStorage.getItem("cw_guest_id");
+      if (!id) {
+        id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+        localStorage.setItem("cw_guest_id", id);
+      }
+      return id;
     }
-    return id;
-  }
-  function isGuest() {
-    return !!localStorage.getItem("cw_guest_id");
-  }
-
-  // ---------- UI state ----------
-  function setSignedInUI({ email, label, asGuest = false }) {
-    authUserBar.classList.remove("hidden");
-    userBadge.textContent = (label || email || "U").slice(0, 1).toUpperCase();
-    userLabel.textContent = asGuest ? `Guest: ${label}` : (email || label || "Signed in");
-    authCard.classList.add("hidden");
-    authSection.classList.remove("bg-white/70", "border-b");
-    appRoot.classList.remove("hidden");
-  }
-  function setSignedOutUI() {
-    authUserBar.classList.add("hidden");
-    authCard.classList.remove("hidden");
-    authSection.classList.add("bg-white/70", "border-b");
-    appRoot.classList.add("hidden");
-  }
-
-  // ---------- Email OTP (magic link) ----------
-  emailForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = emailInput.value.trim();
-    if (!email) return;
-    emailMsg.classList.add("hidden");
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: location.origin + location.pathname }
-      });
-      if (error) throw error;
-      emailMsg.textContent = "Magic link sent! Check your inbox.";
-      emailMsg.classList.remove("hidden");
-      emailMsg.classList.remove("text-red-600");
-    } catch (err) {
-      emailMsg.textContent = "Failed to send link: " + (err?.message || "Unknown error");
-      emailMsg.classList.remove("hidden");
-      emailMsg.classList.add("text-red-600");
+    function isGuest() {
+      return !!localStorage.getItem("cw_guest_id");
     }
-  });
 
-  // ---------- Guest mode ----------
-  guestBtn.addEventListener("click", () => {
-    const id = getGuestId();
-    setSignedInUI({ label: id.replace("guest_", "G-"), asGuest: true });
-  });
+    // ----- UI state -----
+    function setSignedInUI({ email, label, asGuest = false }) {
+      authUserBar.classList.remove("hidden");
+      userBadge.textContent = (label || email || "U").slice(0, 1).toUpperCase();
+      userLabel.textContent = asGuest ? `Guest: ${label}` : (email || label || "Signed in");
+      authCard.classList.add("hidden");
+      authSection.classList.remove("bg-white/70", "border-b");
+      appRoot.classList.remove("hidden");
+    }
+    function setSignedOutUI() {
+      authUserBar.classList.add("hidden");
+      authCard.classList.remove("hidden");
+      authSection.classList.add("bg-white/70", "border-b");
+      appRoot.classList.add("hidden");
+    }
 
-  // ---------- Sign out ----------
-  signOutBtn.addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("cw_guest_id");
-    setSignedOutUI();
-  });
+    // ----- Email OTP -----
+    emailForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      if (!email) return;
+      emailMsg.classList.add("hidden");
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: location.origin + location.pathname }
+        });
+        if (error) throw error;
+        emailMsg.textContent = "Magic link sent! Check your inbox.";
+        emailMsg.classList.remove("hidden");
+        emailMsg.classList.remove("text-red-600");
+      } catch (err) {
+        emailMsg.textContent = "Failed to send link: " + (err?.message || "Unknown error");
+        emailMsg.classList.remove("hidden");
+        emailMsg.classList.add("text-red-600");
+      }
+    });
 
-  // ---------- Initial state & auth change handling ----------
-  async function initAuth() {
-    const { data: { session} } = await supabase.auth.getSession();
-    if (session?.user) {
-      setSignedInUI({ email: session.user.email });
-    } else if (isGuest()) {
+    // ----- Guest mode -----
+    guestBtn.addEventListener("click", () => {
       const id = getGuestId();
       setSignedInUI({ label: id.replace("guest_", "G-"), asGuest: true });
-    } else {
-      setSignedOutUI();
-    }
+    });
 
-    supabase.auth.onAuthStateChange((_event, sess) => {
-      if (sess?.user) {
-        setSignedInUI({ email: sess.user.email });
+    // ----- Sign out -----
+    signOutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      localStorage.removeItem("cw_guest_id");
+      setSignedOutUI();
+    });
+
+    // ----- Initial state & auth changes -----
+    async function initAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setSignedInUI({ email: session.user.email });
       } else if (isGuest()) {
         const id = getGuestId();
         setSignedInUI({ label: id.replace("guest_", "G-"), asGuest: true });
       } else {
         setSignedOutUI();
       }
-    });
-  }
-  initAuth();
-</script>
+      supabase.auth.onAuthStateChange((_event, sess) => {
+        if (sess?.user) {
+          setSignedInUI({ email: sess.user.email });
+        } else if (isGuest()) {
+          const id = getGuestId();
+          setSignedInUI({ label: id.replace("guest_", "G-"), asGuest: true });
+        } else {
+          setSignedOutUI();
+        }
+      });
+    }
+
+    // Handle magic-link then init UI
+    await handleMagicLinkReturn();
+    await initAuth();
+  </script>
+
+</body>
+</html>
