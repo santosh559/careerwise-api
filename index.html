@@ -1,24 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CareerWise — Psychometric Test</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* soft background blobs */
-    .bg-blob {
-      position: absolute; filter: blur(60px); opacity: .3; pointer-events:none;
-    }
+    .bg-blob{position:absolute;filter:blur(60px);opacity:.3;pointer-events:none}
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-900">
 
   <!-- Decorative blobs -->
   <div class="bg-blob -z-10 top-[-120px] left-[-120px] w-[280px] h-[280px] rounded-full bg-blue-300"></div>
   <div class="bg-blob -z-10 top-[40%] right-[-120px] w-[300px] h-[300px] rounded-full bg-emerald-300"></div>
 
-  <!-- =================== HEADER =================== -->
+  <!-- HEADER -->
   <header class="border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -38,27 +35,72 @@
     </div>
   </header>
 
-  <!-- =================== AUTH (visible until signed in/guest) =================== -->
+  <!-- AUTH (shown until signed-in/guest) -->
   <section id="authSection" class="py-10">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
       <h1 class="text-2xl font-bold text-blue-600">CareerWise</h1>
       <p class="text-sm text-slate-500">Sign in to save results or continue as guest.</p>
 
-      <div id="authCard" class="mt-6 grid md:grid-cols-2 gap-6">
-        <!-- Email OTP -->
-        <div class="rounded-2xl border bg-white p-6 shadow-sm">
-          <h2 class="font-semibold">Sign in with email</h2>
-          <p class="text-sm text-slate-500 mb-3">We’ll email you a secure magic link.</p>
-          <form id="emailForm" class="space-y-3">
-            <input id="emailInput" type="email" required
-              class="w-full rounded-lg border px-3 py-2"
-              placeholder="you@example.com"/>
-            <button type="submit"
-              class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-              Send magic link
-            </button>
+      <div id="authCard" class="mt-6 grid lg:grid-cols-3 gap-6">
+        <!-- Email + Password (tabs) -->
+        <div class="lg:col-span-2 rounded-2xl border bg-white p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-semibold">Email &amp; Password</h2>
+          </div>
+
+          <!-- Tabs -->
+          <div class="inline-flex rounded-lg bg-slate-100 p-1 mb-4">
+            <button id="tabLogin" class="auth-tab px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow">Log in</button>
+            <button id="tabSignup" class="auth-tab px-4 py-1.5 rounded-md text-sm font-medium text-slate-600">Create account</button>
+          </div>
+
+          <!-- Login form -->
+          <form id="loginForm" class="space-y-3">
+            <input id="loginEmail" type="email" required class="w-full rounded-lg border px-3 py-2" placeholder="you@example.com"/>
+            <div class="relative">
+              <input id="loginPassword" type="password" required minlength="6" class="w-full rounded-lg border px-3 py-2 pr-12" placeholder="Your password"/>
+              <button type="button" data-toggle="loginPassword" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-600 hover:underline">Show</button>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <label class="inline-flex items-center gap-2">
+                <input id="rememberMe" type="checkbox" class="rounded border-slate-300"/>
+                Keep me signed in
+              </label>
+              <button type="button" id="forgotBtn" class="text-blue-700 hover:underline">Forgot password?</button>
+            </div>
+            <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Log in</button>
           </form>
-          <p id="emailMsg" class="text-sm mt-2 hidden"></p>
+
+          <!-- Signup form -->
+          <form id="signupForm" class="space-y-3 hidden">
+            <input id="signupEmail" type="email" required class="w-full rounded-lg border px-3 py-2" placeholder="you@example.com"/>
+            <div class="relative">
+              <input id="signupPassword" type="password" required minlength="6" class="w-full rounded-lg border px-3 py-2 pr-12" placeholder="Create a password (min 6)"/>
+              <button type="button" data-toggle="signupPassword" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-600 hover:underline">Show</button>
+            </div>
+            <div class="relative">
+              <input id="signupConfirm" type="password" required minlength="6" class="w-full rounded-lg border px-3 py-2 pr-12" placeholder="Confirm password"/>
+              <button type="button" data-toggle="signupConfirm" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-600 hover:underline">Show</button>
+            </div>
+            <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">Create account</button>
+          </form>
+
+          <p id="authMsg" class="text-sm mt-3 hidden"></p>
+
+          <!-- Reset password inline panel -->
+          <div id="resetPanel" class="hidden mt-4 rounded-lg border p-4">
+            <div class="font-medium mb-2">Reset your password</div>
+            <p class="text-sm text-slate-600 mb-3">Enter a new password for your account.</p>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <input id="resetPass1" type="password" class="rounded-lg border px-3 py-2" placeholder="New password"/>
+              <input id="resetPass2" type="password" class="rounded-lg border px-3 py-2" placeholder="Confirm password"/>
+            </div>
+            <div class="mt-3 flex gap-3">
+              <button id="resetSaveBtn" class="rounded-lg bg-blue-600 px-4 py-2 text-white">Save password</button>
+              <button id="resetCancelBtn" class="rounded-lg border px-4 py-2">Cancel</button>
+            </div>
+            <p id="resetMsg" class="text-sm mt-2 hidden"></p>
+          </div>
         </div>
 
         <!-- Guest -->
@@ -67,43 +109,32 @@
           <p class="text-sm text-slate-500 mb-3">
             Try the test without email. Results won’t be saved permanently.
           </p>
-          <button id="guestBtn"
-            class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">
-            Continue as guest
-          </button>
+          <button id="guestBtn" class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">Continue as guest</button>
           <p class="text-xs text-slate-500 mt-2">You can sign in later to save to your account.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- =================== APP (hidden until signed-in/guest) =================== -->
+  <!-- APP (hidden until signed-in/guest) -->
   <main id="appRoot" class="hidden">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 pb-16 grid lg:grid-cols-[1fr,360px] gap-6">
-      <!-- Left: Questions -->
+      <!-- Questions -->
       <section class="bg-white p-6 rounded-2xl shadow-sm">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold">Psychometric Analysis</h2>
-          <div class="text-xs text-gray-500">
-            Source: <span class="px-2 py-0.5 rounded bg-gray-100">Supabase</span>
-          </div>
+          <div class="text-xs text-gray-500">Source: <span class="px-2 py-0.5 rounded bg-gray-100">Supabase</span></div>
         </div>
         <p class="text-gray-600 mb-4">Answer quickly on a 1–5 scale.</p>
-
         <div id="questions" class="space-y-3"></div>
-
         <div class="grid md:grid-cols-2 gap-3 mt-4">
           <input id="skills" class="border p-2 rounded-lg" placeholder="Skills (comma separated)" value="sql, excel"/>
           <input id="interests" class="border p-2 rounded-lg" placeholder="Interests (comma separated)" value="data, analytics"/>
         </div>
-
         <div class="mt-4 flex items-center gap-3">
-          <button id="analyzeBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-            Run Analysis
-          </button>
+          <button id="analyzeBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Run Analysis</button>
           <span id="pErr" class="text-red-600 hidden"></span>
         </div>
-
         <div id="analysis" class="mt-6 hidden">
           <div class="rounded-xl border p-4">
             <h3 class="font-semibold">Summary</h3>
@@ -114,42 +145,58 @@
         </div>
       </section>
 
-      <!-- Right: Matches -->
+      <!-- Matches -->
       <aside class="lg:sticky lg:top-6 h-fit bg-white p-6 rounded-2xl shadow-sm">
         <h2 class="text-xl font-semibold mb-2">Career Match</h2>
-        <p class="text-gray-600 mb-4">Uses your traits, skills & interests.</p>
-        <button id="matchBtn" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">
-          Get Matches
-        </button>
+        <p class="text-gray-600 mb-4">Uses your traits, skills &amp; interests.</p>
+        <button id="matchBtn" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Get Matches</button>
         <p id="mErr" class="text-red-600 mt-3 hidden"></p>
         <div id="matches" class="mt-4 grid gap-3"></div>
       </aside>
     </div>
   </main>
 
-  <!-- =================== APP SCRIPT =================== -->
+  <!-- APP SCRIPT -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // 🔗 Your Supabase project (pre-filled from earlier)
+    // 🔗 Supabase project (uses your values)
     const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
     const SUPABASE_ANON_KEY =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // ---- Elements
+    // UI elements
     const authSection = document.getElementById("authSection");
     const authCard = document.getElementById("authCard");
     const authUserBar = document.getElementById("authUserBar");
     const userBadge = document.getElementById("userBadge");
     const userLabel = document.getElementById("userLabel");
-    const appRoot = document.getElementById("appRoot");
-    const emailForm = document.getElementById("emailForm");
-    const emailInput = document.getElementById("emailInput");
-    const emailMsg = document.getElementById("emailMsg");
-    const guestBtn = document.getElementById("guestBtn");
     const signOutBtn = document.getElementById("signOutBtn");
+    const appRoot = document.getElementById("appRoot");
+
+    const tabLogin = document.getElementById("tabLogin");
+    const tabSignup = document.getElementById("tabSignup");
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginPassword = document.getElementById("loginPassword");
+    const signupEmail = document.getElementById("signupEmail");
+    const signupPassword = document.getElementById("signupPassword");
+    const signupConfirm = document.getElementById("signupConfirm");
+    const forgotBtn = document.getElementById("forgotBtn");
+    const authMsg = document.getElementById("authMsg");
+
+    const resetPanel = document.getElementById("resetPanel");
+    const resetPass1 = document.getElementById("resetPass1");
+    const resetPass2 = document.getElementById("resetPass2");
+    const resetSaveBtn = document.getElementById("resetSaveBtn");
+    const resetCancelBtn = document.getElementById("resetCancelBtn");
+    const resetMsg = document.getElementById("resetMsg");
+
+    const guestBtn = document.getElementById("guestBtn");
 
     const questionsEl = document.getElementById("questions");
     const analyzeBtn = document.getElementById("analyzeBtn");
@@ -161,93 +208,170 @@
     const matchesEl = document.getElementById("matches");
     const mErr = document.getElementById("mErr");
 
-    // ---------------- UI helpers
-    function setSignedInUI({ email, label, asGuest=false }) {
+    // --- helpers
+    function showAuthMsg(text, ok=false){
+      authMsg.textContent = text;
+      authMsg.classList.remove("hidden","text-red-600","text-emerald-700");
+      authMsg.classList.add(ok ? "text-emerald-700" : "text-red-600");
+    }
+    function showResetMsg(text, ok=false){
+      resetMsg.textContent = text;
+      resetMsg.classList.remove("hidden","text-red-600","text-emerald-700");
+      resetMsg.classList.add(ok ? "text-emerald-700" : "text-red-600");
+    }
+    function setSignedInUI({ email, label, asGuest=false }){
       authCard.classList.add("hidden");
       authUserBar.classList.remove("hidden");
       appRoot.classList.remove("hidden");
       userBadge.textContent = (label || email || "U").slice(0,1).toUpperCase();
       userLabel.textContent = asGuest ? `Guest: ${label}` : (email || label || "Signed in");
     }
-    function setSignedOutUI() {
+    function setSignedOutUI(){
       authUserBar.classList.add("hidden");
       authCard.classList.remove("hidden");
       appRoot.classList.add("hidden");
     }
-
-    // ---------------- Auth: magic-link exchange
-    async function handleMagicLinkIfPresent() {
-      const qs = window.location.search;
-      if (qs && new URLSearchParams(qs).has("code")) {
-        const { error } = await supabase.auth.exchangeCodeForSession(qs);
-        if (!error) history.replaceState({}, document.title, location.pathname);
+    function toggleTab(which){
+      if (which === "login"){
+        loginForm.classList.remove("hidden"); signupForm.classList.add("hidden");
+        tabLogin.classList.add("bg-white","shadow","text-slate-900");
+        tabSignup.classList.remove("bg-white","shadow"); tabSignup.classList.add("text-slate-600");
+      } else {
+        signupForm.classList.remove("hidden"); loginForm.classList.add("hidden");
+        tabSignup.classList.add("bg-white","shadow","text-slate-900");
+        tabLogin.classList.remove("bg-white","shadow"); tabLogin.classList.add("text-slate-600");
       }
+      authMsg.classList.add("hidden");
     }
+    tabLogin.addEventListener("click", ()=>toggleTab("login"));
+    tabSignup.addEventListener("click", ()=>toggleTab("signup"));
+    document.querySelectorAll("[data-toggle]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-toggle");
+        const input = document.getElementById(id);
+        const t = input.getAttribute("type")==="password" ? "text":"password";
+        input.setAttribute("type", t);
+        btn.textContent = t==="password" ? "Show":"Hide";
+      });
+    });
 
-    // ---------------- Auth init
-    async function initAuth() {
-      await handleMagicLinkIfPresent();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
+    // --- session init & recovery
+    async function initAuth(){
+      const { data:{ session } } = await supabase.auth.getSession();
+      if (session?.user){
         setSignedInUI({ email: session.user.email });
-      } else if (localStorage.getItem("cw_guest_id")) {
-        setSignedInUI({ label: localStorage.getItem("cw_guest_id").slice(0,10), asGuest: true });
+      } else if (localStorage.getItem("cw_guest_id")){
+        setSignedInUI({ label: localStorage.getItem("cw_guest_id").slice(0,10), asGuest:true });
       } else {
         setSignedOutUI();
       }
-
-      supabase.auth.onAuthStateChange((_evt, sess) => {
-        if (sess?.user) setSignedInUI({ email: sess.user.email });
-        else if (localStorage.getItem("cw_guest_id")) setSignedInUI({ label: localStorage.getItem("cw_guest_id").slice(0,10), asGuest:true });
-        else setSignedOutUI();
-      });
     }
-    initAuth();
+    // Listen for password recovery redirects and other transitions
+    supabase.auth.onAuthStateChange(async (event, session)=>{
+      if (event === "SIGNED_IN" && session?.user){
+        setSignedInUI({ email: session.user.email });
+      }
+      if (event === "SIGNED_OUT"){
+        setSignedOutUI();
+      }
+      if (event === "PASSWORD_RECOVERY"){
+        resetPanel.classList.remove("hidden");
+        showResetMsg("Enter a new password and click Save.", true);
+      }
+    });
+    await initAuth();
 
-    // ---------------- Auth actions
-    emailForm.addEventListener("submit", async (e) => {
+    // --- signup
+    signupForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
-      emailMsg.classList.add("hidden"); emailMsg.classList.remove("text-red-600","text-emerald-700");
-      try {
-        const { error } = await supabase.auth.signInWithOtp({
-          email: emailInput.value.trim(),
+      authMsg.classList.add("hidden");
+      const email = signupEmail.value.trim();
+      const pass = signupPassword.value;
+      const conf = signupConfirm.value;
+      if (pass !== conf){ showAuthMsg("Passwords do not match."); return; }
+      if (pass.length < 6){ showAuthMsg("Password must be at least 6 characters."); return; }
+      try{
+        const { data, error } = await supabase.auth.signUp({
+          email, password: pass,
           options: { emailRedirectTo: location.origin + location.pathname }
         });
         if (error) throw error;
-        emailMsg.textContent = "Magic link sent! Check your inbox.";
-        emailMsg.classList.remove("hidden"); emailMsg.classList.add("text-emerald-700");
-      } catch (err) {
-        emailMsg.textContent = "Failed to send link: " + (err?.message || "Unknown error");
-        emailMsg.classList.remove("hidden"); emailMsg.classList.add("text-red-600");
-      }
+        if (data.user?.identities?.length === 0){
+          showAuthMsg("Email already registered. Try logging in.", false);
+        } else if (data.user && !data.session){
+          showAuthMsg("Account created! Check your email to confirm, then log in.", true);
+        } else {
+          showAuthMsg("Signed up and logged in.", true);
+        }
+      }catch(err){ showAuthMsg(err.message || "Sign up failed"); }
     });
 
-    guestBtn.addEventListener("click", () => {
+    // --- login
+    loginForm.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      authMsg.classList.add("hidden");
+      try{
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: loginEmail.value.trim(),
+          password: loginPassword.value
+        });
+        if (error) throw error;
+        if (data?.user) showAuthMsg("Logged in.", true);
+      }catch(err){ showAuthMsg(err.message || "Login failed"); }
+    });
+
+    // --- forgot password (send reset email)
+    forgotBtn.addEventListener("click", async ()=>{
+      authMsg.classList.add("hidden");
+      const email = loginEmail.value.trim();
+      if (!email){ showAuthMsg("Enter your email above first."); return; }
+      try{
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: location.origin + location.pathname
+        });
+        if (error) throw error;
+        showAuthMsg("Password reset link sent. Check your inbox.", true);
+      }catch(err){ showAuthMsg(err.message || "Could not send reset link"); }
+    });
+
+    // --- complete reset (after recovery redirect)
+    resetSaveBtn.addEventListener("click", async ()=>{
+      resetMsg.classList.add("hidden");
+      const a = resetPass1.value, b = resetPass2.value;
+      if (a !== b){ showResetMsg("Passwords do not match."); return; }
+      if (a.length < 6){ showResetMsg("Minimum 6 characters."); return; }
+      try{
+        const { error } = await supabase.auth.updateUser({ password: a });
+        if (error) throw error;
+        showResetMsg("Password updated. You are signed in.", true);
+        setTimeout(()=> resetPanel.classList.add("hidden"), 1200);
+      }catch(err){ showResetMsg(err.message || "Update failed"); }
+    });
+    resetCancelBtn.addEventListener("click", ()=> resetPanel.classList.add("hidden"));
+
+    // --- guest
+    guestBtn.addEventListener("click", ()=>{
       let id = localStorage.getItem("cw_guest_id");
-      if (!id) {
-        id = "G-" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
-        localStorage.setItem("cw_guest_id", id);
-      }
-      setSignedInUI({ label: id, asGuest: true });
+      if (!id){ id = "G-" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2)); localStorage.setItem("cw_guest_id", id); }
+      setSignedInUI({ label: id, asGuest:true });
     });
 
-    signOutBtn.addEventListener("click", async () => {
+    // --- sign out
+    signOutBtn.addEventListener("click", async ()=>{
       await supabase.auth.signOut();
       localStorage.removeItem("cw_guest_id");
       setSignedOutUI();
     });
 
-    // ---------------- Questions
-    async function loadQuestions() {
-      // Try Supabase first (public read). Fallback to 5 demo if none.
+    // ====== Questions / Analysis / Matches (Supabase direct) ======
+    async function loadQuestions(){
       const { data, error } = await supabase
         .from("questions")
         .select("id, text, section, active")
         .eq("active", true)
-        .order("id", { ascending: true })
+        .order("id", { ascending:true })
         .limit(60);
-
-      const list = (error || !Array.isArray(data) || data.length === 0)
+      const list = (error || !data?.length)
         ? [
             { id:"q1", text:"I enjoy solving complex problems." },
             { id:"q2", text:"I communicate my ideas clearly." },
@@ -256,135 +380,101 @@
             { id:"q5", text:"I collaborate well in teams." },
           ]
         : data;
-
       renderQuestions(list);
     }
-
-    function renderQuestions(list) {
+    function renderQuestions(list){
       questionsEl.innerHTML = "";
-      list.forEach((q, idx) => {
+      list.forEach((q, idx)=>{
         const row = document.createElement("div");
         row.className = "p-3 rounded-lg border";
         row.innerHTML = `
           <div class="font-medium mb-2">${idx+1}. ${q.text}</div>
           <div class="flex gap-2" data-qid="${q.id}">
-            ${[1,2,3,4,5].map(v => `
-              <button type="button"
-                class="px-3 py-1 rounded border bg-white hover:bg-gray-100"
-                data-v="${v}">${v}</button>`).join("")}
+            ${[1,2,3,4,5].map(v=>`
+              <button type="button" class="px-3 py-1 rounded border bg-white hover:bg-gray-100" data-v="${v}">${v}</button>
+            `).join("")}
           </div>`;
         questionsEl.appendChild(row);
       });
     }
-
-    questionsEl.addEventListener("click", (e) => {
+    questionsEl.addEventListener("click",(e)=>{
       const btn = e.target.closest("button[data-v]");
       if (!btn) return;
       const row = btn.parentElement;
-      row.querySelectorAll("button").forEach(b => b.classList.remove("bg-blue-600","text-white"));
+      row.querySelectorAll("button").forEach(b=>b.classList.remove("bg-blue-600","text-white"));
       btn.classList.add("bg-blue-600","text-white");
       row.setAttribute("data-selected", btn.getAttribute("data-v"));
     });
-
-    function readAnswers() {
-      return [...questionsEl.querySelectorAll("div[data-qid]")].map(row => ({
+    function readAnswers(){
+      return [...questionsEl.querySelectorAll("div[data-qid]")].map(row=>({
         id: row.getAttribute("data-qid"),
         value: Number(row.getAttribute("data-selected") || 3)
       }));
     }
-
     await loadQuestions();
 
-    // ---------------- Analyze
-    analyzeBtn.addEventListener("click", async () => {
+    analyzeBtn.addEventListener("click", async ()=>{
       pErr.classList.add("hidden");
-      try {
+      try{
         const answers = readAnswers();
         const skills = document.getElementById("skills").value.split(",").map(s=>s.trim()).filter(Boolean);
         const interests = document.getElementById("interests").value.split(",").map(s=>s.trim()).filter(Boolean);
 
-        // If not authenticated, show preview (cannot write due to RLS)
         const { data:{ session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          summaryEl.textContent = "Guest preview — sign in to save. (Scores shown as sample.)";
+        if (!session?.user){
+          summaryEl.textContent = "Guest preview — sign in to save. (Sample scores shown.)";
           traitsEl.innerHTML = `
-            <li class="flex items-center justify-between rounded-lg border px-3 py-2">
-              <span>Analytical</span><span class="text-sm text-gray-600">72/100</span>
-            </li>
-            <li class="flex items-center justify-between rounded-lg border px-3 py-2">
-              <span>Communication</span><span class="text-sm text-gray-600">66/100</span>
-            </li>`;
+            <li class="flex items-center justify-between rounded-lg border px-3 py-2"><span>Analytical</span><span class="text-sm text-gray-600">72/100</span></li>
+            <li class="flex items-center justify-between rounded-lg border px-3 py-2"><span>Communication</span><span class="text-sm text-gray-600">66/100</span></li>`;
           analysisPanel.classList.remove("hidden");
           return;
         }
-
-        // Create a test row for this user
         const userId = session.user.id;
-        const { data: test, error: tiErr } = await supabase
-          .from("tests")
-          .insert([{ user_id: userId, status: "started" }])
-          .select("id")
-          .single();
-        if (tiErr) throw tiErr;
+        const { data: test, error: tErr } = await supabase.from("tests").insert([{ user_id: userId, status:"started" }]).select("id").single();
+        if (tErr) throw tErr;
+        const upserts = answers.map(a=>({ test_id: test.id, question_id: a.id, value: a.value }));
+        const { error: aErr } = await supabase.from("test_answers").upsert(upserts);
+        if (aErr) throw aErr;
 
-        // Upsert answers
-        const upserts = answers.map(a => ({ test_id: test.id, question_id: a.id, value: a.value }));
-        const { error: ansErr } = await supabase.from("test_answers").upsert(upserts);
-        if (ansErr) throw ansErr;
+        const { error: fErr } = await supabase.rpc("finalize_test", { p_test_id: test.id, p_skills: skills, p_interests: interests });
+        if (fErr) throw fErr;
 
-        // Finalize + get results via RPCs we created earlier
-        const { error: finErr } = await supabase.rpc("finalize_test", {
-          p_test_id: test.id,
-          p_skills: skills,
-          p_interests: interests
-        });
-        if (finErr) throw finErr;
+        const { data: res, error: rErr } = await supabase.rpc("get_results", { p_test_id: test.id });
+        if (rErr) throw rErr;
 
-        const { data: res, error: resErr } = await supabase.rpc("get_results", { p_test_id: test.id });
-        if (resErr) throw resErr;
-
-        // Render results
         summaryEl.textContent = res?.summary || "Results ready.";
         traitsEl.innerHTML = "";
-        (res?.traits || []).forEach(t => {
-          const li = document.createElement("li");
-          li.className = "flex items-center justify-between rounded-lg border px-3 py-2";
+        (res?.traits || []).forEach(t=>{
+          const li=document.createElement("li");
+          li.className="flex items-center justify-between rounded-lg border px-3 py-2";
           li.innerHTML = `<span>${t.name}</span><span class="text-sm text-gray-600">${t.score}/100</span>`;
           traitsEl.appendChild(li);
         });
         analysisPanel.classList.remove("hidden");
-      } catch (err) {
+      }catch(err){
         pErr.textContent = err.message || "Analyze error";
         pErr.classList.remove("hidden");
       }
     });
 
-    // ---------------- Matches
-    matchBtn.addEventListener("click", async () => {
+    matchBtn.addEventListener("click", async ()=>{
       mErr.classList.add("hidden");
       matchesEl.innerHTML = "";
-      try {
+      try{
         const { data:{ session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          matchesEl.innerHTML = `<div class="rounded-xl border p-4 bg-amber-50 text-amber-800">
-            Sign in to fetch personalized matches.</div>`;
+        if (!session?.user){
+          matchesEl.innerHTML = `<div class="rounded-xl border p-4 bg-amber-50 text-amber-800">Sign in to fetch personalized matches.</div>`;
           return;
         }
+        const { data: latest, error: lErr } = await supabase
+          .from("tests").select("id, started_at").eq("user_id", session.user.id)
+          .order("started_at",{ascending:false}).limit(1).single();
+        if (lErr) throw lErr;
 
-        // Get latest test for user
-        const { data: latest, error: ltErr } = await supabase
-          .from("tests")
-          .select("id, started_at")
-          .eq("user_id", session.user.id)
-          .order("started_at", { ascending:false })
-          .limit(1)
-          .single();
-        if (ltErr) throw ltErr;
+        const { data: res, error: rErr } = await supabase.rpc("get_results", { p_test_id: latest.id });
+        if (rErr) throw rErr;
 
-        const { data: res, error: resErr } = await supabase.rpc("get_results", { p_test_id: latest.id });
-        if (resErr) throw resErr;
-
-        (res?.matches || []).forEach(item => {
+        (res?.matches || []).forEach(item=>{
           const card = document.createElement("div");
           card.className = "rounded-xl border p-4";
           card.innerHTML = `
@@ -392,15 +482,13 @@
               <div class="font-semibold">${item.title}</div>
               <span class="text-xs px-2 py-1 rounded bg-blue-50 text-blue-700">${Math.round(item.score)}% fit</span>
             </div>
-            <p class="mt-1 text-sm text-gray-700 whitespace-pre-wrap">${item.description || ""}</p>
-          `;
+            <p class="mt-1 text-sm text-gray-700 whitespace-pre-wrap">${item.description || ""}</p>`;
           matchesEl.appendChild(card);
         });
-
-        if (!res?.matches || res.matches.length === 0) {
+        if (!res?.matches?.length){
           matchesEl.innerHTML = `<div class="rounded-xl border p-4 text-gray-600">No matches yet.</div>`;
         }
-      } catch (err) {
+      }catch(err){
         mErr.textContent = err.message || "Match error";
         mErr.classList.remove("hidden");
       }
