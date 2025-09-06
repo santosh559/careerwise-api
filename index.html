@@ -3,145 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CareerWise — Psychometric Career Navigator</title>
+  <title>CareerWise — Sign in</title>
 
-  <!-- Inter font -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='14' width='64' height='64' fill='%234f7cff'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='38' font-family='Inter' fill='white'%3ECW%3C/text%3E%3C/svg%3E" />
-
   <style>
     :root{
-      --bg:#ffffff;
-      --surface:#ffffff;
-      --surface-2:#f6f7f9;
-      --border:#e5e7eb;
-      --text:#0f172a;
-      --muted:#6b7280;
-      --primary:#3165ff;
-      --primary-600:#2656f5;
-      --accent:#115efc;
-      --success:#22c55e;
-      --danger:#ef4444;
-      --radius:14px;
-      --radius-sm:10px;
-      --shadow:0 10px 30px rgba(15,23,42,.06);
+      --bg:#ffffff; --surface:#ffffff; --border:#e5e7eb;
+      --text:#0f172a; --muted:#6b7280;
+      --primary:#3165ff; --primary-600:#2656f5; --success:#22c55e;
+      --radius:14px; --shadow:0 10px 30px rgba(15,23,42,.06);
     }
-
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;background:var(--bg);
-      color:var(--text);
-      font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    }
-    a{color:var(--primary);text-decoration:none}
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
     .container{max-width:1080px;margin:0 auto;padding:24px}
-    .hidden{display:none !important}
-    .stack{display:grid;gap:20px}
-
-    /* Header */
     .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);box-shadow:var(--shadow)}
     .chip{font-size:12px;color:#475569;border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--surface)}
-
-    /* Hero */
     .hero{margin:10px 0 6px}
-    .hero h1{font-size:40px;line-height:1.1;margin:0 0 8px;font-weight:800;letter-spacing:.2px}
-    .hero .love{background:linear-gradient(90deg,#1d4ed8,#3b82f6);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero h1{font-size:40px;line-height:1.1;margin:0 0 8px;font-weight:800}
+    .love{background:linear-gradient(90deg,#1d4ed8,#3b82f6);-webkit-background-clip:text;background-clip:text;color:transparent}
     .hero p{margin:0;color:#111827;font-weight:600}
-    .subtle{color:var(--muted);font-weight:500}
-
-    /* Grid */
+    .subtle{color:#6b7280;font-weight:500}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
     .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
     @media (max-width:900px){.grid{grid-template-columns:1fr}}
-
-    /* Card */
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
-    .card h3{margin:0 0 6px}
-
-    /* Inputs & Buttons */
-    .input{
-      width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);
-      background:#fff;color:var(--text);outline:none;
-    }
-    .input::placeholder{color:#9aa1ad}
     .row{display:grid;gap:10px}
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;gap:8px;
-      padding:12px 14px;border-radius:12px;border:1px solid transparent;cursor:pointer;font-weight:700;
-      color:#fff;background:var(--primary);
-    }
-    .btn:hover{background:var(--primary-600)}
-    .btn.secondary{background:#f3f4f6;color:#111827;border-color:var(--border)}
-    .btn.secondary:hover{background:#e9ecf1}
-    .btn.success{background:var(--success)}
-    .btn.success:hover{filter:brightness(0.95)}
-    .btn.ghost{background:#fff;color:#111827;border:1px solid var(--border)}
-    .inline{display:flex;gap:10px;align-items:center}
-    .muted{color:var(--muted)}
-    .status-ok{background:#e8fff2;color:#05603a;border:1px solid #b6f3cf;border-radius:999px;padding:4px 8px;font-size:12px}
-    .status-warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:4px 8px;font-size:12px}
-
-    /* Tabs (Login/Signup toggles) */
+    .input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:#fff}
+    .input::placeholder{color:#9aa1ad}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 14px;border-radius:12px;border:1px solid transparent;cursor:pointer;font-weight:700;color:#fff;background:var(--primary)}
+    .btn:hover{background:var(--primary-600)} .btn.success{background:var(--success)}
+    .muted{color:var(--muted)} .hidden{display:none!important}
     .seg{display:flex;gap:8px;margin-bottom:10px}
-    .seg .toggle{padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;font-weight:600;cursor:pointer}
-    .seg .toggle.is-active{background:#eef2ff;color:#1d4ed8;border-color:#c7d2fe}
-
-    /* Question styles (unchanged from your app look) */
-    .q{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface)}
-    .rate{display:flex;gap:8px;margin-top:8px}
-    .rate button{
-      width:38px;height:38px;border-radius:12px;border:1px solid var(--border);
-      background:#fff;color:#111827;font-weight:700;cursor:pointer
-    }
-    .rate button.is-on{background:#e3edff;border-color:#c7d2fe;color:#1d4ed8}
-    .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-    .chip-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff}
-    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width:700px){.grid-2{grid-template-columns:1fr}}
-
-    .match{border:1px solid var(--border);border-radius:16px;padding:16px;background:#fff}
-    .match .hdr{display:flex;align-items:center;justify-content:space-between}
-    .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#1d4ed8;border:1px solid #c7d2fe}
-
-    footer{color:var(--muted);text-align:center;font-size:12px;margin-top:8px}
+    .toggle{padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;font-weight:600;cursor:pointer}
+    .toggle.is-active{background:#eef2ff;color:#1d4ed8;border-color:#c7d2fe}
   </style>
 </head>
 <body>
   <div class="container">
-
-    <!-- Topbar -->
     <div class="topbar">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <strong>CareerWise</strong>
-      </div>
-      <div class="inline">
-        <span class="chip">API: <strong id="api">https://careerwise-api.onrender.com</strong></span>
-        <span id="apiStatus" class="status-warn">checking…</span>
-      </div>
+      <div class="brand"><div class="logo"></div><strong>CareerWise</strong></div>
+      <div class="chip">API: <strong>https://careerwise-api.onrender.com</strong></div>
     </div>
 
-    <!-- Hero -->
-    <section class="hero" aria-label="Hero">
+    <section class="hero">
       <h1>Find the work you <span class="love">love</span></h1>
       <p><strong>Take a 5–minute assessment and get precise, role-ready matches.</strong> <span class="subtle">(Full test ~15–20 mins)</span></p>
     </section>
 
-    <!-- ============ AUTH ============ -->
-    <section id="authSection" class="card" aria-label="Authentication">
+    <section class="card">
       <div class="grid">
         <div>
-          <h3>Sign in</h3>
+          <h3 style="margin:0 0 6px">Sign in</h3>
           <p class="muted" style="margin:0 0 10px">Keep your progress and get personalized matches.</p>
 
-          <!-- Toggle: Login / Signup -->
-          <div class="seg" role="tablist" aria-label="Login vs Signup">
-            <button id="btnShowLogin" class="toggle is-active" type="button" role="tab" aria-selected="true">Log in</button>
-            <button id="btnShowSignup" class="toggle" type="button" role="tab" aria-selected="false">Sign up</button>
+          <div class="seg">
+            <button id="btnShowLogin" class="toggle is-active" type="button">Log in</button>
+            <button id="btnShowSignup" class="toggle" type="button">Sign up</button>
           </div>
 
           <!-- Login -->
@@ -165,256 +85,16 @@
           <p id="pwdMsg" class="muted hidden" role="status" style="margin-top:8px"></p>
         </div>
 
-        <!-- Guest -->
         <div>
-          <h3>Or continue as guest</h3>
+          <h3 style="margin:0 0 6px">Or continue as guest</h3>
           <p class="muted" style="margin:0 0 10px">Try the app instantly. You can sign in any time to save.</p>
           <button id="guestBtn" class="btn success" style="width:100%">Continue as guest</button>
         </div>
       </div>
-
-      <!-- Signed-in mini bar -->
-      <div id="authUserBar" class="hidden" style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <div class="inline" style="gap:10px">
-          <div id="userBadge" style="width:34px;height:34px;border-radius:10px;background:#eef2ff;color:#1d4ed8;display:grid;place-items:center;font-weight:800">U</div>
-          <div id="userLabel" style="font-weight:700">Signed in</div>
-        </div>
-        <button id="signOutBtn" class="btn ghost" type="button">Sign out</button>
-      </div>
     </section>
-
-    <!-- ============ APP ============ -->
-    <div id="appRoot" class="stack hidden">
-      <!-- Anchor so we can land here -->
-      <div id="app"></div>
-
-      <section class="card" aria-label="Psychometric Analysis">
-        <div class="topbar" style="margin-bottom:8px">
-          <h3 style="margin:0">Psychometric Analysis</h3>
-          <div class="inline">
-            <button id="btnReloadApi" class="btn ghost" type="button">Reload from API</button>
-            <button id="btnLoadDemo" class="btn ghost" type="button">Load Demo Questions</button>
-          </div>
-        </div>
-        <p class="muted">Answer quickly on a 1–5 scale.</p>
-
-        <div id="questions" class="stack" style="gap:10px;margin-top:12px"></div>
-
-        <div class="grid-2" style="margin-top:12px;">
-          <input id="skills" class="input" placeholder="Skills (comma separated)" value="sql, excel" />
-          <input id="interests" class="input" placeholder="Interests (comma separated)" value="data, analytics" />
-        </div>
-
-        <div class="inline" style="margin-top:12px">
-          <button id="analyzeBtn" class="btn" type="button">Run Analysis</button>
-          <span id="pErr" class="muted hidden"></span>
-        </div>
-
-        <div id="analysis" class="hidden" style="margin-top:16px;">
-          <div class="card" style="background:var(--surface-2)">
-            <h4 style="margin:0 0 6px">Summary</h4>
-            <p id="summary" class="muted" style="white-space:pre-wrap;margin:0"></p>
-
-            <h4 style="margin:14px 0 6px">Traits</h4>
-            <div id="traits" class="chips"></div>
-
-            <h4 style="margin:14px 0 6px">Cautions</h4>
-            <ul id="cautions" style="margin:0 0 0 18px;color:#111827"></ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="card" aria-label="Career Match">
-        <h3 style="margin-top:0">Career Match</h3>
-        <p class="muted">Uses traits, skills, and interests above.</p>
-        <div class="inline" style="margin-top:8px">
-          <button id="matchBtn" class="btn success" type="button">Get Matches</button>
-          <span id="mErr" class="muted hidden"></span>
-        </div>
-        <div id="matches" class="stack" style="gap:12px;margin-top:14px;"></div>
-      </section>
-
-      <footer>© 2025 CareerWise.</footer>
-    </div>
   </div>
 
-  <!-- ===================== APP LOGIC ===================== -->
-  <script>
-    const API = "https://careerwise-api.onrender.com"; // change if needed
-
-    const demoQuestions = [
-      { id: 'q1', text: 'I enjoy solving complex problems.', dimension: 'Analytical Thinking' },
-      { id: 'q2', text: 'I communicate my ideas clearly.', dimension: 'Communication' },
-      { id: 'q3', text: 'I like experimenting with new ideas.', dimension: 'Creativity' },
-      { id: 'q4', text: 'I stay focused until tasks are complete.', dimension: 'Persistence' },
-      { id: 'q5', text: 'I collaborate well in teams.', dimension: 'Collaboration' }
-    ];
-
-    const questionsEl = document.getElementById('questions');
-    const pErr = document.getElementById('pErr');
-    const mErr = document.getElementById('mErr');
-    const apiStatus = document.getElementById('apiStatus');
-
-    function renderQuestions(list){
-      questionsEl.innerHTML = '';
-      list.forEach((q, idx) => {
-        const row = document.createElement('div');
-        row.className = 'q';
-        row.innerHTML = `
-          <div style="font-weight:600">${idx+1}. ${q.text}</div>
-          <div class="rate" data-qid="${q.id}">
-            ${[1,2,3,4,5].map(v => `<button type="button" data-v="${v}">${v}</button>`).join('')}
-          </div>`;
-        questionsEl.appendChild(row);
-      });
-    }
-
-    questionsEl.addEventListener('click', (e) => {
-      const btn = e.target.closest('button[data-v]');
-      if (!btn) return;
-      const row = btn.parentElement;
-      row.querySelectorAll('button').forEach(b => b.classList.remove('is-on'));
-      btn.classList.add('is-on');
-      row.setAttribute('data-selected', btn.getAttribute('data-v'));
-    });
-
-    function readAnswers(){
-      const rows = questionsEl.querySelectorAll('div.rate[data-qid]');
-      const answers = [];
-      rows.forEach(row => {
-        const id = row.getAttribute('data-qid');
-        const v = row.getAttribute('data-selected') || '3';
-        answers.push({ id, value: Number(v) });
-      });
-      return answers;
-    }
-
-    async function pingApi(){
-      try{
-        const ac = new AbortController(); const t = setTimeout(()=>ac.abort(), 3000);
-        const r = await fetch(API + '/api/health', { signal:ac.signal, cache:'no-store' });
-        clearTimeout(t);
-        if (r.ok){
-          apiStatus.textContent = 'online';
-          apiStatus.className = 'status-ok';
-          return true;
-        }
-        throw new Error();
-      }catch{
-        apiStatus.textContent = 'offline (demo)';
-        apiStatus.className = 'status-warn';
-        return false;
-      }
-    }
-
-    async function loadFromApiOrDemo(){
-      const online = await pingApi();
-      if (!online) { renderQuestions(demoQuestions); return; }
-      try{
-        const ac = new AbortController(); const t = setTimeout(()=>ac.abort(), 3000);
-        const r = await fetch(API + '/api/psychometrics/questions', { signal: ac.signal, cache: 'no-store' });
-        clearTimeout(t);
-        if (!r.ok) throw new Error('API ' + r.status);
-        const data = await r.json();
-        renderQuestions(Array.isArray(data.questions) ? data.questions : demoQuestions);
-      }catch{ renderQuestions(demoQuestions); }
-    }
-
-    // Add auth or guest header
-    async function apiFetch(url, opts = {}){
-      const options = { ...opts, headers: { ...(opts.headers || {}) } };
-      if (window.__supabaseGetSession) {
-        try{
-          const token = await window.__supabaseGetSession();
-          if (token) options.headers["Authorization"] = "Bearer " + token;
-        }catch{}
-      }
-      if (!options.headers["Authorization"]){
-        const gid = localStorage.getItem("cw_guest_id");
-        if (gid) options.headers["x-guest-id"] = gid;
-      }
-      return fetch(url, options);
-    }
-
-    document.getElementById('btnLoadDemo').addEventListener('click', ()=> renderQuestions(demoQuestions));
-    document.getElementById('btnReloadApi').addEventListener('click', ()=> loadFromApiOrDemo());
-
-    document.getElementById('analyzeBtn').addEventListener('click', async ()=>{
-      pErr.classList.add('hidden');
-      try{
-        const payload = {
-          answers: readAnswers(),
-          skills: document.getElementById('skills').value.split(',').map(s=>s.trim()).filter(Boolean),
-          interests: document.getElementById('interests').value.split(',').map(s=>s.trim()).filter(Boolean),
-          studentId: 's1'
-        };
-        const r = await apiFetch(API + '/api/psychometrics/analyze', {
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-        });
-        if (!r.ok) throw new Error('Analyze failed ('+r.status+')');
-        const data = await r.json();
-
-        document.getElementById('summary').textContent = data.summary || '';
-
-        const traits = document.getElementById('traits'); traits.innerHTML = '';
-        (data.traits||[]).forEach(t=>{
-          const row = document.createElement('div');
-          row.className = 'chip-row';
-          row.innerHTML = `<span>${t.name}</span><span class="muted">${t.score}/100</span>`;
-          traits.appendChild(row);
-        });
-
-        const cautions = document.getElementById('cautions'); cautions.innerHTML = '';
-        (data.cautions||[]).forEach(c=>{
-          const li = document.createElement('li'); li.textContent = c; cautions.appendChild(li);
-        });
-
-        document.getElementById('analysis').classList.remove('hidden');
-      }catch(err){
-        pErr.textContent = err.message || 'Analyze error'; pErr.classList.remove('hidden');
-      }
-    });
-
-    document.getElementById('matchBtn').addEventListener('click', async ()=>{
-      mErr.classList.add('hidden');
-      try{
-        const body = {
-          skills: document.getElementById('skills').value.split(',').map(s=>s.trim()).filter(Boolean),
-          interests: document.getElementById('interests').value.split(',').map(s=>s.trim()).filter(Boolean),
-          traits: [], topK: 5, studentId:'s1'
-        };
-        const r = await apiFetch(API + '/api/matching/careers', {
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
-        });
-        if (!r.ok) throw new Error('Matching failed ('+r.status+')');
-        const data = await r.json();
-
-        const wrap = document.getElementById('matches'); wrap.innerHTML = '';
-        (data.results||[]).forEach(item=>{
-          const card = document.createElement('div');
-          card.className = 'match';
-          card.innerHTML = `
-            <div class="hdr">
-              <div style="font-weight:700">${item.title}</div>
-              <span class="badge">${item.score}% fit</span>
-            </div>
-            <p class="muted" style="margin:6px 0 0;white-space:pre-wrap">${item.why || ''}</p>
-            ${Array.isArray(item.nextSteps) ? `
-              <ul style="margin:8px 0 0 18px;color:#111827;">
-                ${item.nextSteps.map(s=>`<li>${s}</li>`).join('')}
-              </ul>` : ''}`;
-          wrap.appendChild(card);
-        });
-      }catch(err){
-        mErr.textContent = err.message || 'Match error'; mErr.classList.remove('hidden');
-      }
-    });
-
-    // initial load
-    loadFromApiOrDemo();
-  </script>
-
-  <!-- ===================== SUPABASE AUTH (Password only + Guest) ===================== -->
+  <!-- Supabase: auth + redirects -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
@@ -422,66 +102,29 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Expose session helper
-    window.__supabaseGetSession = async () => {
+    // If already signed in, go straight to app
+    (async () => {
       const { data:{session} } = await supabase.auth.getSession();
-      return session?.access_token || null;
-    };
+      if (session || localStorage.getItem("cw_guest_id")) location.href = "app.html";
+    })();
 
-    // UI refs
-    const authSection = document.getElementById("authSection");
-    const appRoot = document.getElementById("appRoot");
-    const authUserBar = document.getElementById("authUserBar");
-    const userBadge = document.getElementById("userBadge");
-    const userLabel = document.getElementById("userLabel");
-    const signOutBtn = document.getElementById("signOutBtn");
-
+    // UI toggles
     const btnShowLogin = document.getElementById('btnShowLogin');
     const btnShowSignup = document.getElementById('btnShowSignup');
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     const pwdMsg = document.getElementById('pwdMsg');
-    const guestBtn = document.getElementById('guestBtn');
 
-    // Toggle login/signup
-    btnShowLogin.addEventListener('click', ()=>{
+    btnShowLogin.onclick = () => {
       btnShowLogin.classList.add('is-active'); btnShowSignup.classList.remove('is-active');
       loginForm.classList.remove('hidden'); signupForm.classList.add('hidden');
-    });
-    btnShowSignup.addEventListener('click', ()=>{
+    };
+    btnShowSignup.onclick = () => {
       btnShowSignup.classList.add('is-active'); btnShowLogin.classList.remove('is-active');
       signupForm.classList.remove('hidden'); loginForm.classList.add('hidden');
-    });
+    };
 
-    function getGuestId(){
-      let id = localStorage.getItem("cw_guest_id");
-      if (!id){
-        id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
-        localStorage.setItem("cw_guest_id", id);
-      }
-      return id;
-    }
-    function isGuest(){ return !!localStorage.getItem("cw_guest_id"); }
-
-    function goToApp(){
-      appRoot.classList.remove('hidden');
-      // browser-friendly navigation without reload
-      location.hash = "#app";
-      document.getElementById('app').scrollIntoView({ behavior:'smooth', block:'start' });
-    }
-
-    function setSignedInUI({ email, label, asGuest=false }){
-      authUserBar.classList.remove('hidden');
-      userBadge.textContent = (label || email || "U").slice(0,1).toUpperCase();
-      userLabel.textContent = asGuest ? `Guest: ${label}` : (email || label || "Signed in");
-      goToApp();
-    }
-    function setSignedOutUI(){
-      authUserBar.classList.add('hidden');
-      appRoot.classList.add('hidden');
-    }
-
-    // Auth actions
+    // Login
     loginForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
       pwdMsg.classList.add('hidden');
@@ -490,27 +133,26 @@
       try{
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        setSignedInUI({ email: data.user.email });
-        pwdMsg.textContent = "Welcome back!";
-        pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#16a34a";
+        location.href = "app.html";
       }catch(err){
         pwdMsg.textContent = err.message || "Login failed";
         pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#b91c1c";
       }
     });
 
+    // Signup
     signupForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
       pwdMsg.classList.add('hidden');
       const email = (document.getElementById('signupEmail').value||'').trim();
       const password = document.getElementById('signupPassword').value;
       try{
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: location.origin + location.pathname }
+          options:{ emailRedirectTo: location.origin + location.pathname.replace(/index\.html?$/,'') + "app.html" }
         });
         if (error) throw error;
-        pwdMsg.textContent = "Check your inbox to confirm your email.";
+        pwdMsg.textContent = "Check your inbox to confirm your email, then you'll be taken to the app.";
         pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#16a34a";
       }catch(err){
         pwdMsg.textContent = err.message || "Signup failed";
@@ -518,42 +160,15 @@
       }
     });
 
-    guestBtn.addEventListener('click', ()=>{
-      const id = getGuestId();
-      setSignedInUI({ label: id.replace("guest_","G-"), asGuest:true });
-    });
-
-    signOutBtn.addEventListener('click', async ()=>{
-      await supabase.auth.signOut();
-      localStorage.removeItem("cw_guest_id");
-      setSignedOutUI();
-      // return user to top
-      window.scrollTo({ top:0, behavior:'smooth' });
-      location.hash = "";
-    });
-
-    async function initAuth(){
-      const { data:{session} } = await supabase.auth.getSession();
-      if (session?.user){
-        setSignedInUI({ email: session.user.email });
-      } else if (isGuest()){
-        const id = getGuestId();
-        setSignedInUI({ label: id.replace("guest_","G-"), asGuest:true });
-      } else {
-        setSignedOutUI();
+    // Guest
+    document.getElementById('guestBtn').onclick = () => {
+      let id = localStorage.getItem("cw_guest_id");
+      if (!id) {
+        id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+        localStorage.setItem("cw_guest_id", id);
       }
-      supabase.auth.onAuthStateChange((_event, sess)=>{
-        if (sess?.user){
-          setSignedInUI({ email: sess.user.email });
-        } else if (isGuest()){
-          const id = getGuestId();
-          setSignedInUI({ label: id.replace("guest_","G-"), asGuest:true });
-        } else {
-          setSignedOutUI();
-        }
-      });
-    }
-    await initAuth();
+      location.href = "app.html";
+    };
   </script>
 </body>
 </html>
