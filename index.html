@@ -1,401 +1,346 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CareerWise — Psychometric Career Navigator</title>
 
   <!-- Inter font -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='14' width='64' height='64' fill='%232563eb'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='38' font-family='Inter' fill='white'%3ECW%3C/text%3E%3C/svg%3E"/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='14' width='64' height='64' fill='%234f7cff'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='38' font-family='Inter' fill='white'%3ECW%3C/text%3E%3C/svg%3E" />
 
   <style>
     :root{
-      --bg: #ffffff;
-      --surface: #ffffff;
-      --surface-2: #f6f7fb;
-      --border: #e6e8ee;
-      --text: #0f172a;
-      --muted: #58607a;
-      --primary: #2563eb;     /* buttons */
-      --primary-600: #1d4ed8;
-      --green: #16a34a;
-      --shadow: 0 8px 22px rgba(15,23,42,.06);
-      --radius: 14px;
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface-2:#f6f7f9;
+      --border:#e5e7eb;
+      --text:#0f172a;
+      --muted:#6b7280;
+      --primary:#3165ff;
+      --primary-600:#2656f5;
+      --accent:#115efc;
+      --success:#22c55e;
+      --danger:#ef4444;
+      --radius:14px;
+      --radius-sm:10px;
+      --shadow:0 10px 30px rgba(15,23,42,.06);
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0;
-      font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      margin:0;background:var(--bg);
       color:var(--text);
-      background:var(--bg);
+      font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     }
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    .hidden{display:none!important}
+    a{color:var(--primary);text-decoration:none}
+    .container{max-width:1080px;margin:0 auto;padding:24px}
+    .hidden{display:none !important}
+    .stack{display:grid;gap:20px}
 
     /* Header */
-    .topbar{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:10px 0;margin-bottom:6px;
-    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
     .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#60a5fa,#2563eb)}
-    .brand h1{margin:0;font-size:20px;font-weight:800;letter-spacing:.2px}
-    .chip{font-size:12px;color:#334155;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:6px 10px}
-    .userbar{display:flex;align-items:center;gap:10px}
-    .avatar{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#93c5fd,#2563eb);display:grid;place-items:center;color:#fff;font-weight:800}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);box-shadow:var(--shadow)}
+    .chip{font-size:12px;color:#475569;border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--surface)}
 
     /* Hero */
-    .hero{padding:24px 0}
-    .hero h2{font-size:40px;line-height:1.15;margin:6px 0 4px;font-weight:800}
-    .love{color:#2563eb}
-    .sub{color:#334155;font-weight:700}
+    .hero{margin:10px 0 6px}
+    .hero h1{font-size:40px;line-height:1.1;margin:0 0 8px;font-weight:800;letter-spacing:.2px}
+    .hero .love{background:linear-gradient(90deg,#1d4ed8,#3b82f6);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero p{margin:0;color:#111827;font-weight:600}
+    .subtle{color:var(--muted);font-weight:500}
 
-    /* Cards */
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-    .title{font-size:20px;font-weight:800;margin:0 0 8px}
-    .muted{color:var(--muted)}
-    .stack{display:grid;gap:14px}
+    /* Grid */
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
 
-    /* Tabs (neutral) */
-    .tabs{display:flex;gap:8px;margin:10px 0}
-    .tab{padding:8px 12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);font-weight:600;cursor:pointer}
-    .tab.is-active{outline:2px solid #dbe3ff}
+    /* Card */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    .card h3{margin:0 0 6px}
 
-    /* Inputs / buttons */
-    .input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;outline:none}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;color:#fff;background:var(--primary)}
+    /* Inputs & Buttons */
+    .input{
+      width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);
+      background:#fff;color:var(--text);outline:none;
+    }
+    .input::placeholder{color:#9aa1ad}
+    .row{display:grid;gap:10px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:12px 14px;border-radius:12px;border:1px solid transparent;cursor:pointer;font-weight:700;
+      color:#fff;background:var(--primary);
+    }
     .btn:hover{background:var(--primary-600)}
-    .btn.secondary{color:#0f172a;background:#eef2ff;border:1px solid #dbeafe}
-    .btn.success{background:linear-gradient(180deg,#22c55e,#16a34a)}
-    .note{font-size:13px}
-    .ok{color:#16a34a}.err{color:#dc2626}
-    .spinner{width:16px;height:16px;border-radius:999px;border:2px solid rgba(99,102,241,.25);border-top-color:#fff;animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    .btn.secondary{background:#f3f4f6;color:#111827;border-color:var(--border)}
+    .btn.secondary:hover{background:#e9ecf1}
+    .btn.success{background:var(--success)}
+    .btn.success:hover{filter:brightness(0.95)}
+    .btn.ghost{background:#fff;color:#111827;border:1px solid var(--border)}
+    .inline{display:flex;gap:10px;align-items:center}
+    .muted{color:var(--muted)}
+    .status-ok{background:#e8fff2;color:#05603a;border:1px solid #b6f3cf;border-radius:999px;padding:4px 8px;font-size:12px}
+    .status-warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:4px 8px;font-size:12px}
 
-    /* Lists / chips */
-    .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-    .chiprow{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:10px;padding:10px;background:#fff}
+    /* Tabs (Login/Signup toggles) */
+    .seg{display:flex;gap:8px;margin-bottom:10px}
+    .seg .toggle{padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;font-weight:600;cursor:pointer}
+    .seg .toggle.is-active{background:#eef2ff;color:#1d4ed8;border-color:#c7d2fe}
 
-    /* Question rows */
-    .q{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff}
+    /* Question styles (unchanged from your app look) */
+    .q{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface)}
     .rate{display:flex;gap:8px;margin-top:8px}
-    .rate button{min-width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:#f8fafc;font-weight:700;cursor:pointer}
-    .rate button.is-on{background:#2563eb;color:#fff;border-color:#2563eb}
-
+    .rate button{
+      width:38px;height:38px;border-radius:12px;border:1px solid var(--border);
+      background:#fff;color:#111827;font-weight:700;cursor:pointer
+    }
+    .rate button.is-on{background:#e3edff;border-color:#c7d2fe;color:#1d4ed8}
+    .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .chip-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:700px){.grid-2{grid-template-columns:1fr}}
 
-    /* Progress */
-    .progress{margin-top:8px;background:#f1f5f9;border:1px solid var(--border);height:10px;border-radius:999px;overflow:hidden}
-    .progress > span{display:block;height:100%;background:#2563eb;width:0%}
+    .match{border:1px solid var(--border);border-radius:16px;padding:16px;background:#fff}
+    .match .hdr{display:flex;align-items:center;justify-content:space-between}
+    .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#1d4ed8;border:1px solid #c7d2fe}
 
-    footer{color:#64748b;text-align:center;font-size:12px;margin-top:20px}
+    footer{color:var(--muted);text-align:center;font-size:12px;margin-top:8px}
   </style>
 </head>
 <body>
   <div class="container">
 
-    <!-- Header -->
-    <header class="topbar">
+    <!-- Topbar -->
+    <div class="topbar">
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
-        <h1>CareerWise</h1>
+        <strong>CareerWise</strong>
       </div>
-      <div class="userbar">
+      <div class="inline">
         <span class="chip">API: <strong id="api">https://careerwise-api.onrender.com</strong></span>
-        <span class="chip" id="apiStatus">checking…</span>
-
-        <!-- Visible only when signed in/guest -->
-        <div id="signedInBar" class="hidden" style="display:flex;align-items:center;gap:10px;">
-          <div id="avatar" class="avatar">U</div>
-          <div id="who" class="muted" style="min-width:120px"></div>
-          <button id="signOutBtn" class="btn secondary" type="button">Sign out</button>
-        </div>
+        <span id="apiStatus" class="status-warn">checking…</span>
       </div>
-    </header>
+    </div>
 
     <!-- Hero -->
-    <section class="hero" id="hero">
-      <h2>Find the work you <span class="love">love</span></h2>
-      <div class="sub">Take a <strong>5-minute assessment</strong> and get <strong>precise, role-ready matches</strong>. (Full test ~15–20 mins)</div>
+    <section class="hero" aria-label="Hero">
+      <h1>Find the work you <span class="love">love</span></h1>
+      <p><strong>Take a 5–minute assessment and get precise, role-ready matches.</strong> <span class="subtle">(Full test ~15–20 mins)</span></p>
     </section>
 
-    <!-- ================= AUTH ================= -->
-    <section id="authSection" class="card">
-      <div class="stack">
+    <!-- ============ AUTH ============ -->
+    <section id="authSection" class="card" aria-label="Authentication">
+      <div class="grid">
         <div>
-          <h3 class="title">Sign in</h3>
-          <p class="muted">Keep your progress and get personalized matches.</p>
+          <h3>Sign in</h3>
+          <p class="muted" style="margin:0 0 10px">Keep your progress and get personalized matches.</p>
 
-          <div class="tabs" role="tablist" aria-label="Sign in method">
-            <button id="tabPwd" class="tab is-active" type="button" role="tab" aria-selected="true">Email + Password</button>
-            <button id="tabMagic" class="tab" type="button" role="tab" aria-selected="false">Magic Link</button>
+          <!-- Toggle: Login / Signup -->
+          <div class="seg" role="tablist" aria-label="Login vs Signup">
+            <button id="btnShowLogin" class="toggle is-active" type="button" role="tab" aria-selected="true">Log in</button>
+            <button id="btnShowSignup" class="toggle" type="button" role="tab" aria-selected="false">Sign up</button>
           </div>
 
-          <!-- Email + Password -->
-          <div id="panelPwd" role="tabpanel" aria-labelledby="tabPwd">
-            <div style="display:flex;gap:8px;margin:8px 0 10px;">
-              <button id="btnShowLogin" class="tab is-active" type="button">Log in</button>
-              <button id="btnShowSignup" class="tab" type="button">Sign up</button>
-            </div>
+          <!-- Login -->
+          <form id="loginForm" class="row" autocomplete="on">
+            <label class="muted" for="loginEmail">Email Address</label>
+            <input id="loginEmail" class="input" type="email" autocomplete="email" placeholder="Enter your email" required>
+            <label class="muted" for="loginPassword">Password</label>
+            <input id="loginPassword" class="input" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+            <button class="btn" type="submit">Sign In</button>
+          </form>
 
-            <!-- Login form (ONLY this logs in) -->
-            <form id="loginForm" class="stack">
-              <label class="muted" for="loginEmail">Email</label>
-              <input id="loginEmail" class="input" type="email" autocomplete="email" placeholder="you@example.com" required>
-              <label class="muted" for="loginPassword">Password</label>
-              <input id="loginPassword" class="input" type="password" autocomplete="current-password" placeholder="Your password" required>
-              <button class="btn" type="submit"><span id="loginSpin" class="spinner hidden"></span> Log in</button>
-            </form>
+          <!-- Signup -->
+          <form id="signupForm" class="row hidden" autocomplete="on" style="margin-top:8px">
+            <label class="muted" for="signupEmail">Email Address</label>
+            <input id="signupEmail" class="input" type="email" autocomplete="email" placeholder="Enter your email" required>
+            <label class="muted" for="signupPassword">Password</label>
+            <input id="signupPassword" class="input" type="password" autocomplete="new-password" minlength="6" placeholder="Create a password (min 6)" required>
+            <button class="btn" type="submit">Create account</button>
+          </form>
 
-            <!-- Signup -->
-            <form id="signupForm" class="stack hidden" style="margin-top:8px;">
-              <label class="muted" for="signupEmail">Email</label>
-              <input id="signupEmail" class="input" type="email" autocomplete="email" placeholder="you@example.com" required>
-              <label class="muted" for="signupPassword">Password</label>
-              <input id="signupPassword" class="input" type="password" autocomplete="new-password" minlength="6" placeholder="Create a password (min 6)" required>
-              <button class="btn" type="submit"><span id="signupSpin" class="spinner hidden"></span> Create account</button>
-            </form>
-
-            <p id="pwdMsg" class="note hidden"></p>
-          </div>
-
-          <!-- Magic Link -->
-          <div id="panelMagic" class="hidden" role="tabpanel" aria-labelledby="tabMagic">
-            <form id="emailForm" class="stack">
-              <label class="muted" for="emailInput">Email</label>
-              <input id="emailInput" class="input" type="email" autocomplete="email" placeholder="you@example.com" required>
-              <button class="btn" type="submit"><span id="magicSpin" class="spinner hidden"></span> Send magic link</button>
-            </form>
-            <p id="emailMsg" class="note hidden"></p>
-          </div>
+          <p id="pwdMsg" class="muted hidden" role="status" style="margin-top:8px"></p>
         </div>
 
         <!-- Guest -->
-        <div class="card" style="padding:14px;background:#fbfcff">
-          <h4 class="title" style="margin:0 0 6px">Or continue as guest</h4>
-          <p class="muted">Try the app instantly. You can sign in any time to save.</p>
-          <button id="guestBtn" class="btn success" style="width:100%;margin-top:8px;">Continue as guest</button>
-          <div class="stack" style="margin-top:10px;">
-            <div class="chiprow"><span>Storage</span><span class="muted">Local (this browser)</span></div>
-            <div class="chiprow"><span>Privacy</span><span class="muted">No personal data stored</span></div>
-          </div>
+        <div>
+          <h3>Or continue as guest</h3>
+          <p class="muted" style="margin:0 0 10px">Try the app instantly. You can sign in any time to save.</p>
+          <button id="guestBtn" class="btn success" style="width:100%">Continue as guest</button>
         </div>
+      </div>
+
+      <!-- Signed-in mini bar -->
+      <div id="authUserBar" class="hidden" style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div class="inline" style="gap:10px">
+          <div id="userBadge" style="width:34px;height:34px;border-radius:10px;background:#eef2ff;color:#1d4ed8;display:grid;place-items:center;font-weight:800">U</div>
+          <div id="userLabel" style="font-weight:700">Signed in</div>
+        </div>
+        <button id="signOutBtn" class="btn ghost" type="button">Sign out</button>
       </div>
     </section>
 
-    <!-- ================= APP (next page) ================= -->
-    <div id="appRoot" class="hidden">
-      <section class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-          <div>
-            <h3 class="title" style="margin:0">Psychometric Analysis</h3>
-            <div class="muted">Answer quickly on a 1–5 scale.</div>
+    <!-- ============ APP ============ -->
+    <div id="appRoot" class="stack hidden">
+      <!-- Anchor so we can land here -->
+      <div id="app"></div>
+
+      <section class="card" aria-label="Psychometric Analysis">
+        <div class="topbar" style="margin-bottom:8px">
+          <h3 style="margin:0">Psychometric Analysis</h3>
+          <div class="inline">
+            <button id="btnReloadApi" class="btn ghost" type="button">Reload from API</button>
+            <button id="btnLoadDemo" class="btn ghost" type="button">Load Demo Questions</button>
           </div>
-          <div style="display:flex;gap:8px;">
-            <button id="btnReloadApi" class="btn secondary" type="button">Reload from API</button>
-            <button id="btnLoadDemo" class="btn secondary" type="button">Load Demo Questions</button>
-          </div>
+        </div>
+        <p class="muted">Answer quickly on a 1–5 scale.</p>
+
+        <div id="questions" class="stack" style="gap:10px;margin-top:12px"></div>
+
+        <div class="grid-2" style="margin-top:12px;">
+          <input id="skills" class="input" placeholder="Skills (comma separated)" value="sql, excel" />
+          <input id="interests" class="input" placeholder="Interests (comma separated)" value="data, analytics" />
         </div>
 
-        <!-- Progress -->
-        <div id="progressWrap" class="hidden" style="margin-top:10px">
-          <div class="muted" style="font-size:12px;">
-            <span id="answeredCount">0</span>/<span id="totalCount">0</span> answered
-          </div>
-          <div class="progress"><span id="progressBar"></span></div>
+        <div class="inline" style="margin-top:12px">
+          <button id="analyzeBtn" class="btn" type="button">Run Analysis</button>
+          <span id="pErr" class="muted hidden"></span>
         </div>
 
-        <div id="questions" class="stack" style="margin-top:14px;"></div>
-
-        <div class="grid-2" style="margin-top:10px;">
-          <input id="skills" class="input" placeholder="Skills (comma separated)" value="sql, excel"/>
-          <input id="interests" class="input" placeholder="Interests (comma separated)" value="data, analytics"/>
-        </div>
-
-        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
-          <button id="analyzeBtn" class="btn" type="button"><span id="analyzeSpin" class="spinner hidden"></span> Run Analysis</button>
-          <span id="pErr" class="note err hidden"></span>
-        </div>
-
-        <div id="analysis" class="hidden" style="margin-top:14px;">
-          <div class="card" style="padding:14px">
-            <h4 class="title" style="margin:0 0 8px;font-size:16px;">Summary</h4>
+        <div id="analysis" class="hidden" style="margin-top:16px;">
+          <div class="card" style="background:var(--surface-2)">
+            <h4 style="margin:0 0 6px">Summary</h4>
             <p id="summary" class="muted" style="white-space:pre-wrap;margin:0"></p>
 
-            <h4 class="title" style="margin:14px 0 8px;font-size:16px;">Traits</h4>
+            <h4 style="margin:14px 0 6px">Traits</h4>
             <div id="traits" class="chips"></div>
 
-            <h4 class="title" style="margin:14px 0 8px;font-size:16px;">Cautions</h4>
-            <ul id="cautions" style="margin:0 0 0 18px;color:#334155"></ul>
+            <h4 style="margin:14px 0 6px">Cautions</h4>
+            <ul id="cautions" style="margin:0 0 0 18px;color:#111827"></ul>
           </div>
         </div>
       </section>
 
-      <section class="card">
-        <h3 class="title">Career Match</h3>
+      <section class="card" aria-label="Career Match">
+        <h3 style="margin-top:0">Career Match</h3>
         <p class="muted">Uses traits, skills, and interests above.</p>
-        <div style="display:flex;gap:8px;align-items:center;margin-top:6px;">
-          <button id="matchBtn" class="btn success" type="button"><span id="matchSpin" class="spinner hidden"></span> Get Matches</button>
-          <span id="mErr" class="note err hidden"></span>
+        <div class="inline" style="margin-top:8px">
+          <button id="matchBtn" class="btn success" type="button">Get Matches</button>
+          <span id="mErr" class="muted hidden"></span>
         </div>
-        <div id="matches" class="stack" style="margin-top:12px;"></div>
+        <div id="matches" class="stack" style="gap:12px;margin-top:14px;"></div>
       </section>
 
-      <footer>© 2025 CareerWise. No personal data stored in guest mode.</footer>
+      <footer>© 2025 CareerWise.</footer>
     </div>
   </div>
 
-  <!-- ================== APP LOGIC ================== -->
+  <!-- ===================== APP LOGIC ===================== -->
   <script>
-    const API = "https://careerwise-api.onrender.com";
+    const API = "https://careerwise-api.onrender.com"; // change if needed
 
-    // ---------- Next page helpers ----------
-    function goToApp(){
-      document.getElementById('authSection').classList.add('hidden');
-      document.getElementById('appRoot').classList.remove('hidden');
-      document.getElementById('hero').classList.add('hidden');
-      if(location.hash !== '#app') history.pushState({},'', '#app');
-      window.scrollTo({ top:0, behavior:'smooth' });
-    }
-    function goToAuth(){
-      document.getElementById('authSection').classList.remove('hidden');
-      document.getElementById('appRoot').classList.add('hidden');
-      document.getElementById('hero').classList.remove('hidden');
-      if(location.hash) history.replaceState({},'', location.pathname);
-      window.scrollTo({ top:0 });
-    }
-    if(location.hash === '#app'){ goToApp(); }
-
-    // ---------- Questions + progress ----------
     const demoQuestions = [
-      { id:'q1', text:'I enjoy solving complex problems.' },
-      { id:'q2', text:'I communicate my ideas clearly.' },
-      { id:'q3', text:'I like experimenting with new ideas.' },
-      { id:'q4', text:'I stay focused until tasks are complete.' },
-      { id:'q5', text:'I collaborate well in teams.' }
+      { id: 'q1', text: 'I enjoy solving complex problems.', dimension: 'Analytical Thinking' },
+      { id: 'q2', text: 'I communicate my ideas clearly.', dimension: 'Communication' },
+      { id: 'q3', text: 'I like experimenting with new ideas.', dimension: 'Creativity' },
+      { id: 'q4', text: 'I stay focused until tasks are complete.', dimension: 'Persistence' },
+      { id: 'q5', text: 'I collaborate well in teams.', dimension: 'Collaboration' }
     ];
+
     const questionsEl = document.getElementById('questions');
     const pErr = document.getElementById('pErr');
     const mErr = document.getElementById('mErr');
     const apiStatus = document.getElementById('apiStatus');
 
-    const LS_KEY = "cw_answers_v1";
-    function saveAnswersLocal(a){ try{ localStorage.setItem(LS_KEY, JSON.stringify(a)); }catch{} }
-    function readAnswersLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"[]"); }catch{ return []; } }
-
-    function setProgress(){
-      const total = document.querySelectorAll('.rate[data-qid]').length;
-      const answered = [...document.querySelectorAll('.rate[data-qid]')].filter(r => r.getAttribute('data-selected')).length;
-      document.getElementById('totalCount').textContent = total;
-      document.getElementById('answeredCount').textContent = answered;
-      const pct = total ? Math.round((answered/total)*100) : 0;
-      document.getElementById('progressBar').style.width = pct + '%';
-      document.getElementById('progressWrap').classList.remove('hidden');
-    }
-
     function renderQuestions(list){
       questionsEl.innerHTML = '';
-      const saved = new Map(readAnswersLocal().map(a=>[a.id, a.value]));
-      list.forEach((q, i)=>{
-        const selected = saved.get(q.id) || 0;
+      list.forEach((q, idx) => {
         const row = document.createElement('div');
         row.className = 'q';
         row.innerHTML = `
-          <div style="font-weight:700">${i+1}. ${q.text}</div>
+          <div style="font-weight:600">${idx+1}. ${q.text}</div>
           <div class="rate" data-qid="${q.id}">
-            ${[1,2,3,4,5].map(v=>`<button type="button" data-v="${v}" class="${selected===v?'is-on':''}">${v}</button>`).join('')}
+            ${[1,2,3,4,5].map(v => `<button type="button" data-v="${v}">${v}</button>`).join('')}
           </div>`;
         questionsEl.appendChild(row);
       });
-      setProgress();
     }
 
-    questionsEl.addEventListener('click', (e)=>{
+    questionsEl.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-v]');
-      if(!btn) return;
-      const group = btn.parentElement;
-      group.querySelectorAll('button').forEach(b=>b.classList.remove('is-on'));
+      if (!btn) return;
+      const row = btn.parentElement;
+      row.querySelectorAll('button').forEach(b => b.classList.remove('is-on'));
       btn.classList.add('is-on');
-      group.setAttribute('data-selected', btn.getAttribute('data-v'));
-      // persist
-      const answers = readAnswers();
-      saveAnswersLocal(answers);
-      setProgress();
+      row.setAttribute('data-selected', btn.getAttribute('data-v'));
     });
 
     function readAnswers(){
-      const rows = questionsEl.querySelectorAll('.rate[data-qid]');
-      const a = [];
-      rows.forEach(r=>{
-        const id = r.getAttribute('data-qid');
-        const v = Number(r.getAttribute('data-selected') || 0);
-        a.push({ id, value: v || 3 }); // default to 3 if unanswered
+      const rows = questionsEl.querySelectorAll('div.rate[data-qid]');
+      const answers = [];
+      rows.forEach(row => {
+        const id = row.getAttribute('data-qid');
+        const v = row.getAttribute('data-selected') || '3';
+        answers.push({ id, value: Number(v) });
       });
-      return a;
+      return answers;
     }
 
     async function pingApi(){
       try{
-        const ac = new AbortController();
-        const t = setTimeout(()=>ac.abort(), 3000);
-        const r = await fetch(API + '/api/health', { signal: ac.signal, cache:'no-store' });
+        const ac = new AbortController(); const t = setTimeout(()=>ac.abort(), 3000);
+        const r = await fetch(API + '/api/health', { signal:ac.signal, cache:'no-store' });
         clearTimeout(t);
-        if(r.ok){
+        if (r.ok){
           apiStatus.textContent = 'online';
-          apiStatus.style.background = '#e9fff1';
-          apiStatus.style.border = '1px solid #b7f5cb';
+          apiStatus.className = 'status-ok';
           return true;
         }
         throw new Error();
       }catch{
         apiStatus.textContent = 'offline (demo)';
-        apiStatus.style.background = '#fff6db';
-        apiStatus.style.border = '1px solid #ffe399';
+        apiStatus.className = 'status-warn';
         return false;
       }
     }
 
     async function loadFromApiOrDemo(){
       const online = await pingApi();
-      if(!online){ renderQuestions(demoQuestions); return; }
+      if (!online) { renderQuestions(demoQuestions); return; }
       try{
-        const ac = new AbortController();
-        const t = setTimeout(()=>ac.abort(), 3000);
-        const r = await fetch(API + '/api/psychometrics/questions', { signal: ac.signal, cache:'no-store' });
+        const ac = new AbortController(); const t = setTimeout(()=>ac.abort(), 3000);
+        const r = await fetch(API + '/api/psychometrics/questions', { signal: ac.signal, cache: 'no-store' });
         clearTimeout(t);
-        if(!r.ok) throw new Error('API ' + r.status);
+        if (!r.ok) throw new Error('API ' + r.status);
         const data = await r.json();
         renderQuestions(Array.isArray(data.questions) ? data.questions : demoQuestions);
-      }catch{
-        renderQuestions(demoQuestions);
-      }
+      }catch{ renderQuestions(demoQuestions); }
     }
 
-    async function apiFetch(url, opts={}){
-      const options = { ...opts, headers: { ...(opts.headers||{}) } };
-      if(window.__supabaseGetSession){
+    // Add auth or guest header
+    async function apiFetch(url, opts = {}){
+      const options = { ...opts, headers: { ...(opts.headers || {}) } };
+      if (window.__supabaseGetSession) {
         try{
           const token = await window.__supabaseGetSession();
-          if(token) options.headers['Authorization'] = 'Bearer ' + token;
+          if (token) options.headers["Authorization"] = "Bearer " + token;
         }catch{}
       }
-      if(!options.headers['Authorization']){
-        const gid = localStorage.getItem('cw_guest_id');
-        if(gid) options.headers['x-guest-id'] = gid;
+      if (!options.headers["Authorization"]){
+        const gid = localStorage.getItem("cw_guest_id");
+        if (gid) options.headers["x-guest-id"] = gid;
       }
       return fetch(url, options);
     }
 
-    document.getElementById('btnLoadDemo').addEventListener('click', ()=>renderQuestions(demoQuestions));
-    document.getElementById('btnReloadApi').addEventListener('click', ()=>loadFromApiOrDemo());
+    document.getElementById('btnLoadDemo').addEventListener('click', ()=> renderQuestions(demoQuestions));
+    document.getElementById('btnReloadApi').addEventListener('click', ()=> loadFromApiOrDemo());
 
     document.getElementById('analyzeBtn').addEventListener('click', async ()=>{
       pErr.classList.add('hidden');
-      document.getElementById('analyzeSpin').classList.remove('hidden');
       try{
         const payload = {
           answers: readAnswers(),
@@ -406,38 +351,32 @@
         const r = await apiFetch(API + '/api/psychometrics/analyze', {
           method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
         });
-        if(!r.ok) throw new Error('Analyze failed ('+r.status+')');
+        if (!r.ok) throw new Error('Analyze failed ('+r.status+')');
         const data = await r.json();
 
         document.getElementById('summary').textContent = data.summary || '';
 
-        const traits = document.getElementById('traits');
-        traits.innerHTML = '';
+        const traits = document.getElementById('traits'); traits.innerHTML = '';
         (data.traits||[]).forEach(t=>{
           const row = document.createElement('div');
-          row.className = 'chiprow';
+          row.className = 'chip-row';
           row.innerHTML = `<span>${t.name}</span><span class="muted">${t.score}/100</span>`;
           traits.appendChild(row);
         });
 
-        const cautions = document.getElementById('cautions');
-        cautions.innerHTML = '';
+        const cautions = document.getElementById('cautions'); cautions.innerHTML = '';
         (data.cautions||[]).forEach(c=>{
           const li = document.createElement('li'); li.textContent = c; cautions.appendChild(li);
         });
 
         document.getElementById('analysis').classList.remove('hidden');
       }catch(err){
-        pErr.textContent = err.message || 'Analyze error';
-        pErr.classList.remove('hidden');
-      }finally{
-        document.getElementById('analyzeSpin').classList.add('hidden');
+        pErr.textContent = err.message || 'Analyze error'; pErr.classList.remove('hidden');
       }
     });
 
     document.getElementById('matchBtn').addEventListener('click', async ()=>{
       mErr.classList.add('hidden');
-      document.getElementById('matchSpin').classList.remove('hidden');
       try{
         const body = {
           skills: document.getElementById('skills').value.split(',').map(s=>s.trim()).filter(Boolean),
@@ -447,37 +386,35 @@
         const r = await apiFetch(API + '/api/matching/careers', {
           method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
         });
-        if(!r.ok) throw new Error('Matching failed ('+r.status+')');
+        if (!r.ok) throw new Error('Matching failed ('+r.status+')');
         const data = await r.json();
 
-        const wrap = document.getElementById('matches');
-        wrap.innerHTML = '';
+        const wrap = document.getElementById('matches'); wrap.innerHTML = '';
         (data.results||[]).forEach(item=>{
           const card = document.createElement('div');
-          card.className = 'card';
+          card.className = 'match';
           card.innerHTML = `
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div style="font-weight:800">${item.title}</div>
-              <span class="chip">${item.score}% fit</span>
+            <div class="hdr">
+              <div style="font-weight:700">${item.title}</div>
+              <span class="badge">${item.score}% fit</span>
             </div>
-            <p class="muted" style="margin:8px 0 0;white-space:pre-wrap;">${item.why||''}</p>
-            ${Array.isArray(item.nextSteps)?`<ul style="margin:8px 0 0 18px;color:#334155">${item.nextSteps.map(s=>`<li>${s}</li>`).join('')}</ul>`:''}
-          `;
+            <p class="muted" style="margin:6px 0 0;white-space:pre-wrap">${item.why || ''}</p>
+            ${Array.isArray(item.nextSteps) ? `
+              <ul style="margin:8px 0 0 18px;color:#111827;">
+                ${item.nextSteps.map(s=>`<li>${s}</li>`).join('')}
+              </ul>` : ''}`;
           wrap.appendChild(card);
         });
       }catch(err){
-        mErr.textContent = err.message || 'Match error';
-        mErr.classList.remove('hidden');
-      }finally{
-        document.getElementById('matchSpin').classList.add('hidden');
+        mErr.textContent = err.message || 'Match error'; mErr.classList.remove('hidden');
       }
     });
 
-    // Initial load (questions)
+    // initial load
     loadFromApiOrDemo();
   </script>
 
-  <!-- ================= SUPABASE AUTH ================= -->
+  <!-- ===================== SUPABASE AUTH (Password only + Guest) ===================== -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
@@ -485,155 +422,138 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Helper for API auth
+    // Expose session helper
     window.__supabaseGetSession = async () => {
       const { data:{session} } = await supabase.auth.getSession();
       return session?.access_token || null;
     };
 
-    // Tabs
-    const tabPwd = document.getElementById('tabPwd');
-    const tabMagic = document.getElementById('tabMagic');
-    const panelPwd = document.getElementById('panelPwd');
-    const panelMagic = document.getElementById('panelMagic');
-    tabPwd.addEventListener('click', ()=>{ tabPwd.classList.add('is-active'); tabMagic.classList.remove('is-active'); panelPwd.classList.remove('hidden'); panelMagic.classList.add('hidden'); });
-    tabMagic.addEventListener('click', ()=>{ tabMagic.classList.add('is-active'); tabPwd.classList.remove('is-active'); panelMagic.classList.remove('hidden'); panelPwd.classList.add('hidden'); });
+    // UI refs
+    const authSection = document.getElementById("authSection");
+    const appRoot = document.getElementById("appRoot");
+    const authUserBar = document.getElementById("authUserBar");
+    const userBadge = document.getElementById("userBadge");
+    const userLabel = document.getElementById("userLabel");
+    const signOutBtn = document.getElementById("signOutBtn");
 
-    // Login vs Signup
     const btnShowLogin = document.getElementById('btnShowLogin');
     const btnShowSignup = document.getElementById('btnShowSignup');
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
-    btnShowLogin.addEventListener('click', ()=>{ btnShowLogin.classList.add('is-active'); btnShowSignup.classList.remove('is-active'); loginForm.classList.remove('hidden'); signupForm.classList.add('hidden'); });
-    btnShowSignup.addEventListener('click', ()=>{ btnShowSignup.classList.add('is-active'); btnShowLogin.classList.remove('is-active'); signupForm.classList.remove('hidden'); loginForm.classList.add('hidden'); });
+    const pwdMsg = document.getElementById('pwdMsg');
+    const guestBtn = document.getElementById('guestBtn');
 
-    // Magic link return
-    async function handleMagicLinkReturn(){
-      const qs = location.search;
-      if(qs && new URLSearchParams(qs).has("code")){
-        const { error } = await supabase.auth.exchangeCodeForSession(qs);
-        if(!error) history.replaceState({}, document.title, location.pathname);
+    // Toggle login/signup
+    btnShowLogin.addEventListener('click', ()=>{
+      btnShowLogin.classList.add('is-active'); btnShowSignup.classList.remove('is-active');
+      loginForm.classList.remove('hidden'); signupForm.classList.add('hidden');
+    });
+    btnShowSignup.addEventListener('click', ()=>{
+      btnShowSignup.classList.add('is-active'); btnShowLogin.classList.remove('is-active');
+      signupForm.classList.remove('hidden'); loginForm.classList.add('hidden');
+    });
+
+    function getGuestId(){
+      let id = localStorage.getItem("cw_guest_id");
+      if (!id){
+        id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+        localStorage.setItem("cw_guest_id", id);
       }
+      return id;
+    }
+    function isGuest(){ return !!localStorage.getItem("cw_guest_id"); }
+
+    function goToApp(){
+      appRoot.classList.remove('hidden');
+      // browser-friendly navigation without reload
+      location.hash = "#app";
+      document.getElementById('app').scrollIntoView({ behavior:'smooth', block:'start' });
     }
 
-    // Header signed-in bar
-    const signedInBar = document.getElementById('signedInBar');
-    const avatar = document.getElementById('avatar');
-    const who = document.getElementById('who');
-
     function setSignedInUI({ email, label, asGuest=false }){
-      signedInBar.classList.remove('hidden');
-      avatar.textContent = (label || email || "U").slice(0,1).toUpperCase();
-      who.textContent = asGuest ? `Guest • ${label}` : (email || label || 'Signed in');
+      authUserBar.classList.remove('hidden');
+      userBadge.textContent = (label || email || "U").slice(0,1).toUpperCase();
+      userLabel.textContent = asGuest ? `Guest: ${label}` : (email || label || "Signed in");
       goToApp();
     }
     function setSignedOutUI(){
-      signedInBar.classList.add('hidden');
-      goToAuth();
+      authUserBar.classList.add('hidden');
+      appRoot.classList.add('hidden');
     }
 
-    // Auth flows
+    // Auth actions
     loginForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
-      const note = document.getElementById('pwdMsg');
-      note.classList.add('hidden'); note.classList.remove('ok','err');
-      document.getElementById('loginSpin').classList.remove('hidden');
+      pwdMsg.classList.add('hidden');
       const email = (document.getElementById('loginEmail').value||'').trim();
       const password = document.getElementById('loginPassword').value;
       try{
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if(error) throw error;
+        if (error) throw error;
         setSignedInUI({ email: data.user.email });
-        note.textContent = "Welcome back!"; note.classList.add('ok'); note.classList.remove('hidden');
+        pwdMsg.textContent = "Welcome back!";
+        pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#16a34a";
       }catch(err){
-        note.textContent = err.message || "Login failed";
-        note.classList.add('err'); note.classList.remove('hidden');
-      }finally{
-        document.getElementById('loginSpin').classList.add('hidden');
+        pwdMsg.textContent = err.message || "Login failed";
+        pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#b91c1c";
       }
     });
 
     signupForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
-      const note = document.getElementById('pwdMsg');
-      note.classList.add('hidden'); note.classList.remove('ok','err');
-      document.getElementById('signupSpin').classList.remove('hidden');
+      pwdMsg.classList.add('hidden');
       const email = (document.getElementById('signupEmail').value||'').trim();
       const password = document.getElementById('signupPassword').value;
       try{
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: location.origin + location.pathname }
         });
-        if(error) throw error;
-        note.textContent = "Check your inbox to confirm your email.";
-        note.classList.add('ok'); note.classList.remove('hidden');
+        if (error) throw error;
+        pwdMsg.textContent = "Check your inbox to confirm your email.";
+        pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#16a34a";
       }catch(err){
-        note.textContent = err.message || "Signup failed";
-        note.classList.add('err'); note.classList.remove('hidden');
-      }finally{
-        document.getElementById('signupSpin').classList.add('hidden');
+        pwdMsg.textContent = err.message || "Signup failed";
+        pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#b91c1c";
       }
     });
 
-    document.getElementById('emailForm').addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const note = document.getElementById('emailMsg');
-      note.classList.add('hidden'); note.classList.remove('ok','err');
-      document.getElementById('magicSpin').classList.remove('hidden');
-      const email = (document.getElementById('emailInput').value||'').trim();
-      try{
-        const { error } = await supabase.auth.signInWithOtp({
-          email, options:{ emailRedirectTo: location.origin + location.pathname }
-        });
-        if(error) throw error;
-        note.textContent = "Magic link sent! Check your inbox.";
-        note.classList.add('ok'); note.classList.remove('hidden');
-      }catch(err){
-        note.textContent = "Failed to send link: " + (err?.message || "Unknown error");
-        note.classList.add('err'); note.classList.remove('hidden');
-      }finally{
-        document.getElementById('magicSpin').classList.add('hidden');
-      }
+    guestBtn.addEventListener('click', ()=>{
+      const id = getGuestId();
+      setSignedInUI({ label: id.replace("guest_","G-"), asGuest:true });
     });
 
-    // Guest
-    document.getElementById('guestBtn').addEventListener('click', ()=>{
-      let id = localStorage.getItem('cw_guest_id');
-      if(!id){
-        id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
-        localStorage.setItem('cw_guest_id', id);
-      }
-      setSignedInUI({ label: id.replace('guest_','G-'), asGuest:true });
-    });
-
-    // Sign out (returns to sign-in page)
-    document.getElementById('signOutBtn').addEventListener('click', async ()=>{
+    signOutBtn.addEventListener('click', async ()=>{
       await supabase.auth.signOut();
-      localStorage.removeItem('cw_guest_id');
+      localStorage.removeItem("cw_guest_id");
       setSignedOutUI();
+      // return user to top
+      window.scrollTo({ top:0, behavior:'smooth' });
+      location.hash = "";
     });
 
     async function initAuth(){
-      await handleMagicLinkReturn();
       const { data:{session} } = await supabase.auth.getSession();
-      if(session?.user){
+      if (session?.user){
         setSignedInUI({ email: session.user.email });
-      }else if(localStorage.getItem('cw_guest_id')){
-        const id = localStorage.getItem('cw_guest_id');
-        setSignedInUI({ label: id.replace('guest_','G-'), asGuest:true });
-      }else{
+      } else if (isGuest()){
+        const id = getGuestId();
+        setSignedInUI({ label: id.replace("guest_","G-"), asGuest:true });
+      } else {
         setSignedOutUI();
       }
-      supabase.auth.onAuthStateChange((_evt, sess)=>{
-        if(sess?.user) setSignedInUI({ email: sess.user.email });
-        else if(localStorage.getItem('cw_guest_id')){
-          const id = localStorage.getItem('cw_guest_id');
-          setSignedInUI({ label: id.replace('guest_','G-'), asGuest:true });
-        } else setSignedOutUI();
+      supabase.auth.onAuthStateChange((_event, sess)=>{
+        if (sess?.user){
+          setSignedInUI({ email: sess.user.email });
+        } else if (isGuest()){
+          const id = getGuestId();
+          setSignedInUI({ label: id.replace("guest_","G-"), asGuest:true });
+        } else {
+          setSignedOutUI();
+        }
       });
     }
-    initAuth();
+    await initAuth();
   </script>
 </body>
 </html>
