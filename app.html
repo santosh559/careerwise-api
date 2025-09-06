@@ -46,7 +46,7 @@
     <div class="topbar">
       <div class="brand"><div class="logo"></div><strong>CareerWise</strong></div>
       <div class="inline">
-        <span class="chip">API: <strong id="api">https://careerwise-api.onrender.com</strong></span>
+        <span class="chip">API: <strong id="api">Supabase Direct</strong></span>
         <span id="who" class="muted"></span>
         <span id="badge" class="badge">U</span>
         <button id="signOutBtn" class="btn">Sign out</button>
@@ -58,8 +58,8 @@
       <div class="topbar" style="margin-bottom:8px">
         <h3 style="margin:0">Psychometric Analysis</h3>
         <div class="inline">
-          <button id="btnReloadApi" class="btn" type="button">Reload from API</button>
-          <button id="btnLoadDemo" class="btn" type="button">Load Demo Questions</button>
+          <button id="btnReloadApi" class="btn" type="button">Reload from DB</button>
+          <button id="btnLoadDemo" class="btn" type="button">Load Demo</button>
         </div>
       </div>
       <p class="muted">Answer quickly on a 1–5 scale.</p>
@@ -101,256 +101,145 @@
     </section>
   </div>
 
+  <!-- AUTH + GATEKEEPER -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
     const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // gatekeeping: must be user or guest
-    async function requireAuth() {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.__sb = supabase;
+
+    async function requireAuth(){
       const { data:{session} } = await supabase.auth.getSession();
       const guest = localStorage.getItem("cw_guest_id");
-      if (session) {
-        setupUser(session.user.email, false);
-        return;
-      }
-      if (guest) {
-        setupUser(`Guest: ${guest.replace("guest_","G-")}`, true);
-        return;
-      }
-      location.href = "index.html";
+      if(session){ setupUser(session.user.email); return; }
+      if(guest){ setupUser(`Guest: ${guest.replace("guest_","G-")}`); return; }
+      location.href="index.html";
     }
-
-    // header identity + sign out
-    function setupUser(label, isGuest){
+    function setupUser(label){
       document.getElementById('who').textContent = label;
       document.getElementById('badge').textContent = (label||'U').slice(0,1).toUpperCase();
       document.getElementById('signOutBtn').onclick = async ()=>{
         await supabase.auth.signOut().catch(()=>{});
         localStorage.removeItem("cw_guest_id");
-        location.href = "index.html";
+        location.href="index.html";
       };
     }
-
     await requireAuth();
+  </script>
 
-    // -------- App logic (same as before) --------
-   <!-- ===================== APP LOGIC (Supabase-direct, no Render API) ===================== -->
-<script>
-(function(){
-  // Require the Supabase client exposed by your module script
-  if (!window.__sb) {
-    console.warn('Supabase client not found. After createClient(...), add: window.__sb = supabase;');
-  }
-  const sb = () => window.__sb;
+  <!-- APP LOGIC -->
+  <script>
+  (function(){
+    const sb = () => window.__sb;
+    const demoQuestions = [
+      { id:'q1', text:'I enjoy solving complex problems.', weights:{Analytical:0.8,Persistence:0.3} },
+      { id:'q2', text:'I communicate my ideas clearly.', weights:{Communication:0.9} },
+      { id:'q3', text:'I like experimenting with new ideas.', weights:{Creativity:0.8,Adaptability:0.2} },
+      { id:'q4', text:'I stay focused until tasks are complete.', weights:{Persistence:0.9} },
+      { id:'q5', text:'I collaborate well in teams.', weights:{Collaboration:0.9} }
+    ];
 
-  // Update API chip to show we're using Supabase directly
-  const apiChip = document.getElementById('api');
-  const apiStatus = document.getElementById('apiStatus'); // present on your index; safe if null here
-  if (apiChip) apiChip.textContent = 'Supabase Direct';
-  if (apiStatus) { apiStatus.textContent = 'online'; }
+    const questionsEl=document.getElementById('questions');
+    const pErr=document.getElementById('pErr');
+    const mErr=document.getElementById('mErr');
 
-  // Demo fallback questions (if DB is empty)
-  const demoQuestions = [
-    { id: 'q1', text: 'I enjoy solving complex problems.', weights: {"Analytical":0.8,"Persistence":0.3} },
-    { id: 'q2', text: 'I communicate my ideas clearly.',   weights: {"Communication":0.9} },
-    { id: 'q3', text: 'I like experimenting with new ideas.', weights: {"Creativity":0.8,"Adaptability":0.2} },
-    { id: 'q4', text: 'I stay focused until tasks are complete.', weights: {"Persistence":0.9} },
-    { id: 'q5', text: 'I collaborate well in teams.', weights: {"Collaboration":0.9} },
-  ];
-
-  // UI handles
-  const questionsEl = document.getElementById('questions');
-  const pErr = document.getElementById('pErr');
-  const mErr = document.getElementById('mErr');
-
-  // Local persistence of answers
-  const LS_KEY = "cw_answers_v1";
-  function saveAnswersLocal(answers){ try{ localStorage.setItem(LS_KEY, JSON.stringify(answers)); }catch{} }
-  function readAnswersLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }catch{ return []; } }
-
-  // Render question list
-  function renderQuestions(list){
-    questionsEl.innerHTML = '';
-    const saved = new Map(readAnswersLocal().map(a=>[a.id, a.value]));
-    list.forEach((q, idx) => {
-      const selected = saved.get(q.id) || 0;
-      const row = document.createElement('div');
-      row.className = 'q';
-      row.innerHTML = `
-        <div style="font-weight:600">${idx+1}. ${q.text}</div>
-        <div class="rate" role="radiogroup" aria-label="Rating for ${q.text}"
-             data-qid="${q.id}" data-weights='${JSON.stringify(q.weights||{})}'>
-          ${[1,2,3,4,5].map(v => `<button type="button" aria-pressed="${selected===v}" data-v="${v}" class="${selected===v?'is-on':''}">${v}</button>`).join('')}
-        </div>
-      `;
-      questionsEl.appendChild(row);
-    });
-  }
-
-  // Click-to-rate
-  questionsEl.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-v]');
-    if (!btn) return;
-    const group = btn.parentElement;
-    group.querySelectorAll('button').forEach(b => { b.classList.remove('is-on'); b.setAttribute('aria-pressed','false'); });
-    btn.classList.add('is-on'); btn.setAttribute('aria-pressed','true');
-    group.setAttribute('data-selected', btn.getAttribute('data-v'));
-    saveAnswersLocal(readAnswers());
-  });
-
-  // Collect answers (default 3 when not answered)
-  function readAnswers(){
-    const rows = questionsEl.querySelectorAll('div.rate[data-qid]');
-    const answers = [];
-    const ids = new Set();
-    rows.forEach(row => {
-      const id = row.getAttribute('data-qid');
-      const v  = Number(row.getAttribute('data-selected') || 0);
-      if (v) { answers.push({ id, value: v }); ids.add(id); }
-    });
-    rows.forEach(row => {
-      const id = row.getAttribute('data-qid');
-      if (!ids.has(id)) answers.push({ id, value: 3 });
-    });
-    return answers;
-  }
-
-  // Load questions directly from Supabase (public.questions where active=true)
-  async function loadQuestionsFromSupabase(){
-    try{
-      const { data, error } = await sb()
-        .from('questions')
-        .select('id,text,weights,active')
-        .eq('active', true)
-        .order('id', { ascending: true });
-      if (error) throw error;
-      const list = (data && data.length) ? data : demoQuestions;
-      renderQuestions(list);
-    }catch(err){
-      console.error('Questions load error', err);
-      renderQuestions(demoQuestions);
-    }
-  }
-
-  // Local analysis using per-question weights (0..100 scores)
-  function analyzeLocally(){
-    const rows = questionsEl.querySelectorAll('div.rate[data-qid]');
-    const agg = {}; // trait -> {sum, wsum}
-    rows.forEach(row=>{
-      const sel = Number(row.getAttribute('data-selected') || 3);      // 1..5
-      const z   = (sel - 3) / 2;                                       // -1..+1
-      const weights = JSON.parse(row.getAttribute('data-weights')||'{}');
-      Object.entries(weights).forEach(([trait, w])=>{
-        if (!agg[trait]) agg[trait] = { sum:0, wsum:0 };
-        agg[trait].sum  += z * Number(w);
-        agg[trait].wsum += Math.abs(Number(w));
+    function renderQuestions(list){
+      questionsEl.innerHTML='';
+      list.forEach((q,i)=>{
+        const row=document.createElement('div');
+        row.className='q';
+        row.innerHTML=`
+          <div style="font-weight:600">${i+1}. ${q.text}</div>
+          <div class="rate" data-qid="${q.id}" data-weights='${JSON.stringify(q.weights||{})}'>
+            ${[1,2,3,4,5].map(v=>`<button type="button" data-v="${v}">${v}</button>`).join('')}
+          </div>`;
+        questionsEl.appendChild(row);
       });
-    });
-    const traits = Object.entries(agg).map(([name, v])=>{
-      const z = v.wsum ? (v.sum / v.wsum) : 0;   // -1..+1
-      return { name, score: Math.round(50 + z*50) };
-    }).sort((a,b)=>b.score-a.score);
-
-    const summary  = traits.length
-      ? `Top strengths: ${traits.slice(0,3).map(t=>t.name).join(', ')}`
-      : 'Answer a few questions to see your strengths.';
-    const cautions = traits.filter(t=>t.score < 45).map(t=>`Consider developing ${t.name.toLowerCase()}.`);
-
-    return { summary, traits, cautions };
-  }
-
-  // Local matching against public.careers(traits jsonb)
-  async function getMatchesLocally(topK = 5){
-    const { data, error } = await sb()
-      .from('careers')
-      .select('id,title,traits,description');
-    if (error) throw error;
-
-    const analysis = analyzeLocally();
-    const u = {}; analysis.traits.forEach(t=>{ u[t.name]=t.score/100; });
-
-    function sim(a,b){
-      const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
-      let dot=0, na=0, nb=0;
-      keys.forEach(k=>{ const x=a[k]||0, y=b[k]||0; dot+=x*y; na+=x*x; nb+=y*y; });
-      const d = Math.sqrt(na)*Math.sqrt(nb) || 1;
-      return dot/d;
     }
 
-    return (data||[])
-      .map(c=>{
-        const ct = {}; Object.entries(c.traits||{}).forEach(([k,v])=>{ ct[k]=Number(v)||0; });
-        const s  = Math.round(Math.max(0, Math.min(1, sim(u, ct))) * 100);
-        return { ...c, score: s };
-      })
-      .sort((a,b)=>b.score-a.score)
-      .slice(0, topK);
-  }
+    questionsEl.addEventListener('click',e=>{
+      const btn=e.target.closest('button[data-v]'); if(!btn)return;
+      const grp=btn.parentElement;
+      grp.querySelectorAll('button').forEach(b=>b.classList.remove('is-on'));
+      btn.classList.add('is-on');
+      grp.setAttribute('data-selected',btn.getAttribute('data-v'));
+    });
 
-  // Hook up buttons
-  document.getElementById('btnLoadDemo')?.addEventListener('click', () => renderQuestions(demoQuestions));
-  document.getElementById('btnReloadApi')?.addEventListener('click', loadQuestionsFromSupabase);
-
-  document.getElementById('analyzeBtn')?.addEventListener('click', ()=>{
-    pErr?.classList.add('hidden');
-    try{
-      const res = analyzeLocally();
-      document.getElementById('summary').textContent = res.summary;
-
-      const traitsEl = document.getElementById('traits');
-      traitsEl.innerHTML = '';
-      res.traits.forEach(t=>{
-        const row = document.createElement('div');
-        row.className = 'chip-row';
-        row.innerHTML = `<span>${t.name}</span><span class="muted">${t.score}/100</span>`;
-        traitsEl.appendChild(row);
+    function readAnswers(){
+      const rows=questionsEl.querySelectorAll('.rate[data-qid]');
+      return Array.from(rows).map(r=>{
+        const id=r.getAttribute('data-qid');
+        const v=r.getAttribute('data-selected')||3;
+        return {id,value:Number(v)};
       });
+    }
 
-      const cautionsEl = document.getElementById('cautions');
-      cautionsEl.innerHTML = '';
-      res.cautions.forEach(c=>{
-        const li = document.createElement('li');
-        li.textContent = c;
-        cautionsEl.appendChild(li);
+    async function loadQuestions(){
+      try{
+        const {data,error}=await sb().from('questions').select('id,text,weights').eq('active',true);
+        if(error||!data.length) throw error;
+        renderQuestions(data);
+      }catch{ renderQuestions(demoQuestions); }
+    }
+
+    function analyze(){
+      const rows=questionsEl.querySelectorAll('.rate[data-qid]');
+      const agg={};
+      rows.forEach(r=>{
+        const v=Number(r.getAttribute('data-selected')||3);
+        const z=(v-3)/2;
+        const w=JSON.parse(r.getAttribute('data-weights')||'{}');
+        Object.entries(w).forEach(([k,val])=>{
+          if(!agg[k]) agg[k]={sum:0,wsum:0};
+          agg[k].sum+=z*val; agg[k].wsum+=Math.abs(val);
+        });
       });
+      const traits=Object.entries(agg).map(([name,o])=>{
+        const z=o.wsum?(o.sum/o.wsum):0;
+        return {name,score:Math.round(50+z*50)};
+      }).sort((a,b)=>b.score-a.score);
+      const summary=traits.length?`Top strengths: ${traits.slice(0,3).map(t=>t.name).join(', ')}`:'Answer questions to see results';
+      const cautions=traits.filter(t=>t.score<45).map(t=>`Consider developing ${t.name}`);
+      return {summary,traits,cautions};
+    }
 
+    async function getMatches(){
+      const {data}=await sb().from('careers').select('title,traits,description');
+      const {traits}=analyze();
+      const u={}; traits.forEach(t=>u[t.name]=t.score/100);
+      function sim(a,b){const k=new Set([...Object.keys(a),...Object.keys(b)]);
+        let dot=0,na=0,nb=0; k.forEach(x=>{dot+=(a[x]||0)*(b[x]||0);na+=(a[x]||0)**2;nb+=(b[x]||0)**2});
+        return dot/(Math.sqrt(na)*Math.sqrt(nb)||1);}
+      return (data||[]).map(c=>{
+        const ct={}; Object.entries(c.traits||{}).forEach(([k,v])=>ct[k]=+v||0);
+        return {...c,score:Math.round(sim(u,ct)*100)};
+      }).sort((a,b)=>b.score-a.score).slice(0,5);
+    }
+
+    document.getElementById('btnLoadDemo').onclick=()=>renderQuestions(demoQuestions);
+    document.getElementById('btnReloadApi').onclick=()=>loadQuestions();
+    document.getElementById('analyzeBtn').onclick=()=>{
+      const res=analyze();
+      document.getElementById('summary').textContent=res.summary;
+      const traitsEl=document.getElementById('traits'); traitsEl.innerHTML='';
+      res.traits.forEach(t=>traitsEl.innerHTML+=`<div class="chip-row"><span>${t.name}</span><span class="muted">${t.score}/100</span></div>`);
+      const cautionsEl=document.getElementById('cautions'); cautionsEl.innerHTML='';
+      res.cautions.forEach(c=>cautionsEl.innerHTML+=`<li>${c}</li>`);
       document.getElementById('analysis').classList.remove('hidden');
-    }catch(err){
-      if (pErr){ pErr.textContent = err.message || 'Analyze error'; pErr.classList.remove('hidden'); }
-    }
-  });
-
-  document.getElementById('matchBtn')?.addEventListener('click', async ()=>{
-    mErr?.classList.add('hidden');
-    try{
-      const wrap = document.getElementById('matches');
-      wrap.innerHTML = 'Loading…';
-
-      const results = await getMatchesLocally(5);
-      wrap.innerHTML = '';
-      results.forEach(item=>{
-        const card = document.createElement('div');
-        card.className = 'match';
-        card.innerHTML = `
-          <div class="hdr">
-            <div style="font-weight:700">${item.title}</div>
-            <span class="badge-pill">${item.score}% fit</span>
-          </div>
-          <p class="muted" style="margin:6px 0 0; white-space:pre-wrap;">${item.description || ''}</p>
-        `;
-        wrap.appendChild(card);
+    };
+    document.getElementById('matchBtn').onclick=async()=>{
+      const wrap=document.getElementById('matches'); wrap.innerHTML='Loading...';
+      const res=await getMatches(); wrap.innerHTML='';
+      res.forEach(r=>{
+        wrap.innerHTML+=`<div class="match"><div class="hdr"><div style="font-weight:700">${r.title}</div><span class="badge-pill">${r.score}% fit</span></div><p class="muted">${r.description||''}</p></div>`;
       });
-    }catch(err){
-      if (mErr){ mErr.textContent = err.message || 'Match error'; mErr.classList.remove('hidden'); }
-    }
-  });
+    };
 
-  // Initial load
-  loadQuestionsFromSupabase();
-})();
-</script>
-
+    loadQuestions();
+  })();
+  </script>
 </body>
 </html>
