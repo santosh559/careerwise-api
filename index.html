@@ -2,18 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CareerWise — Psychometric Test</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* soft background blobs */
+    .bg-blob {
+      position: absolute; filter: blur(60px); opacity: .3; pointer-events:none;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-  <!-- ===================== AUTH SECTION ===================== -->
-  <section id="authSection" class="min-h-[20vh] bg-white border-b">
-    <div class="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-blue-600">CareerWise</h1>
-        <p class="text-sm text-slate-500">Sign in to save results or continue as guest.</p>
+  <!-- Decorative blobs -->
+  <div class="bg-blob -z-10 top-[-120px] left-[-120px] w-[280px] h-[280px] rounded-full bg-blue-300"></div>
+  <div class="bg-blob -z-10 top-[40%] right-[-120px] w-[300px] h-[300px] rounded-full bg-emerald-300"></div>
+
+  <!-- =================== HEADER =================== -->
+  <header class="border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-9 w-9 rounded-lg bg-blue-600 text-white grid place-items-center font-bold">CW</div>
+        <div>
+          <div class="text-lg font-semibold">CareerWise</div>
+          <div class="text-xs text-slate-500">Psychometric Career Navigator</div>
+        </div>
       </div>
       <div id="authUserBar" class="hidden items-center gap-3">
         <div id="userBadge" class="h-9 w-9 rounded-full bg-blue-600 text-white grid place-items-center font-semibold"></div>
@@ -23,214 +36,379 @@
         </div>
       </div>
     </div>
+  </header>
 
-    <!-- Login Options -->
-    <div id="authCard" class="max-w-4xl mx-auto px-6 py-6 grid md:grid-cols-2 gap-6">
-      <!-- Email OTP -->
-      <div class="rounded-xl border bg-white p-5 shadow">
-        <h2 class="font-semibold">Sign in with email</h2>
-        <p class="text-sm text-slate-500 mb-3">We’ll email you a secure magic link.</p>
-        <form id="emailForm" class="space-y-3">
-          <input id="emailInput" type="email" required
-            class="w-full rounded-lg border px-3 py-2"
-            placeholder="you@example.com" />
-          <button type="submit"
-            class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-            Send magic link
+  <!-- =================== AUTH (visible until signed in/guest) =================== -->
+  <section id="authSection" class="py-10">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <h1 class="text-2xl font-bold text-blue-600">CareerWise</h1>
+      <p class="text-sm text-slate-500">Sign in to save results or continue as guest.</p>
+
+      <div id="authCard" class="mt-6 grid md:grid-cols-2 gap-6">
+        <!-- Email OTP -->
+        <div class="rounded-2xl border bg-white p-6 shadow-sm">
+          <h2 class="font-semibold">Sign in with email</h2>
+          <p class="text-sm text-slate-500 mb-3">We’ll email you a secure magic link.</p>
+          <form id="emailForm" class="space-y-3">
+            <input id="emailInput" type="email" required
+              class="w-full rounded-lg border px-3 py-2"
+              placeholder="you@example.com"/>
+            <button type="submit"
+              class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+              Send magic link
+            </button>
+          </form>
+          <p id="emailMsg" class="text-sm mt-2 hidden"></p>
+        </div>
+
+        <!-- Guest -->
+        <div class="rounded-2xl border bg-white p-6 shadow-sm">
+          <h2 class="font-semibold">Or continue as guest</h2>
+          <p class="text-sm text-slate-500 mb-3">
+            Try the test without email. Results won’t be saved permanently.
+          </p>
+          <button id="guestBtn"
+            class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">
+            Continue as guest
           </button>
-        </form>
-        <p id="emailMsg" class="text-sm text-slate-600 mt-2 hidden"></p>
-      </div>
-
-      <!-- Guest Mode -->
-      <div class="rounded-xl border bg-white p-5 shadow">
-        <h2 class="font-semibold">Or continue as guest</h2>
-        <p class="text-sm text-slate-500 mb-3">
-          Try the test without email. Results will not be saved permanently.
-        </p>
-        <button id="guestBtn"
-          class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">
-          Continue as guest
-        </button>
+          <p class="text-xs text-slate-500 mt-2">You can sign in later to save to your account.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== APP ===================== -->
-  <div id="appRoot" class="max-w-4xl mx-auto p-6 space-y-6 hidden">
-    <section class="bg-white p-6 rounded-xl shadow">
-      <h2 class="text-xl font-semibold mb-2">Psychometric Analysis</h2>
-      <p class="text-gray-600 mb-4">Answer quickly on a 1–5 scale.</p>
+  <!-- =================== APP (hidden until signed-in/guest) =================== -->
+  <main id="appRoot" class="hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pb-16 grid lg:grid-cols-[1fr,360px] gap-6">
+      <!-- Left: Questions -->
+      <section class="bg-white p-6 rounded-2xl shadow-sm">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold">Psychometric Analysis</h2>
+          <div class="text-xs text-gray-500">
+            Source: <span class="px-2 py-0.5 rounded bg-gray-100">Supabase</span>
+          </div>
+        </div>
+        <p class="text-gray-600 mb-4">Answer quickly on a 1–5 scale.</p>
 
-      <div id="questions" class="space-y-3"></div>
+        <div id="questions" class="space-y-3"></div>
 
-      <div class="grid md:grid-cols-2 gap-3 mt-4">
-        <input id="skills" class="border p-2 rounded-lg" placeholder="Skills (comma separated)" value="sql, excel" />
-        <input id="interests" class="border p-2 rounded-lg" placeholder="Interests (comma separated)" value="data, analytics" />
-      </div>
+        <div class="grid md:grid-cols-2 gap-3 mt-4">
+          <input id="skills" class="border p-2 rounded-lg" placeholder="Skills (comma separated)" value="sql, excel"/>
+          <input id="interests" class="border p-2 rounded-lg" placeholder="Interests (comma separated)" value="data, analytics"/>
+        </div>
 
-      <button id="analyzeBtn" class="mt-4 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Run Analysis</button>
-      <p id="pErr" class="text-red-600 mt-3 hidden"></p>
+        <div class="mt-4 flex items-center gap-3">
+          <button id="analyzeBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+            Run Analysis
+          </button>
+          <span id="pErr" class="text-red-600 hidden"></span>
+        </div>
 
-      <div id="analysis" class="mt-5 hidden">
-        <h3 class="font-semibold">Summary</h3>
-        <p id="summary" class="mt-1 whitespace-pre-wrap"></p>
-        <h3 class="font-semibold mt-4">Traits</h3>
-        <ul id="traits" class="mt-1 grid sm:grid-cols-2 gap-2"></ul>
-      </div>
-    </section>
+        <div id="analysis" class="mt-6 hidden">
+          <div class="rounded-xl border p-4">
+            <h3 class="font-semibold">Summary</h3>
+            <p id="summary" class="mt-1 whitespace-pre-wrap"></p>
+            <h3 class="font-semibold mt-4">Traits</h3>
+            <ul id="traits" class="mt-1 grid sm:grid-cols-2 gap-2"></ul>
+          </div>
+        </div>
+      </section>
 
-    <section class="bg-white p-6 rounded-xl shadow">
-      <h2 class="text-xl font-semibold mb-2">Career Match</h2>
-      <button id="matchBtn" class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Get Matches</button>
-      <p id="mErr" class="text-red-600 mt-3 hidden"></p>
-      <div id="matches" class="mt-4 grid gap-3"></div>
-    </section>
-  </div>
+      <!-- Right: Matches -->
+      <aside class="lg:sticky lg:top-6 h-fit bg-white p-6 rounded-2xl shadow-sm">
+        <h2 class="text-xl font-semibold mb-2">Career Match</h2>
+        <p class="text-gray-600 mb-4">Uses your traits, skills & interests.</p>
+        <button id="matchBtn" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">
+          Get Matches
+        </button>
+        <p id="mErr" class="text-red-600 mt-3 hidden"></p>
+        <div id="matches" class="mt-4 grid gap-3"></div>
+      </aside>
+    </div>
+  </main>
 
-  <!-- ===================== SCRIPTS ===================== -->
+  <!-- =================== APP SCRIPT =================== -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
+    // 🔗 Your Supabase project (pre-filled from earlier)
     const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE"; // 🔑 replace with your anon key
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ---------------- AUTH HANDLING ----------------
+    // ---- Elements
+    const authSection = document.getElementById("authSection");
     const authCard = document.getElementById("authCard");
     const authUserBar = document.getElementById("authUserBar");
-    const appRoot = document.getElementById("appRoot");
     const userBadge = document.getElementById("userBadge");
     const userLabel = document.getElementById("userLabel");
+    const appRoot = document.getElementById("appRoot");
+    const emailForm = document.getElementById("emailForm");
+    const emailInput = document.getElementById("emailInput");
+    const emailMsg = document.getElementById("emailMsg");
+    const guestBtn = document.getElementById("guestBtn");
+    const signOutBtn = document.getElementById("signOutBtn");
 
-    function setSignedInUI(emailOrGuest) {
+    const questionsEl = document.getElementById("questions");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const pErr = document.getElementById("pErr");
+    const analysisPanel = document.getElementById("analysis");
+    const summaryEl = document.getElementById("summary");
+    const traitsEl = document.getElementById("traits");
+    const matchBtn = document.getElementById("matchBtn");
+    const matchesEl = document.getElementById("matches");
+    const mErr = document.getElementById("mErr");
+
+    // ---------------- UI helpers
+    function setSignedInUI({ email, label, asGuest=false }) {
       authCard.classList.add("hidden");
       authUserBar.classList.remove("hidden");
       appRoot.classList.remove("hidden");
-      userBadge.textContent = emailOrGuest[0].toUpperCase();
-      userLabel.textContent = emailOrGuest;
+      userBadge.textContent = (label || email || "U").slice(0,1).toUpperCase();
+      userLabel.textContent = asGuest ? `Guest: ${label}` : (email || label || "Signed in");
     }
     function setSignedOutUI() {
-      authCard.classList.remove("hidden");
       authUserBar.classList.add("hidden");
+      authCard.classList.remove("hidden");
       appRoot.classList.add("hidden");
     }
 
-    document.getElementById("guestBtn").onclick = () => {
-      localStorage.setItem("cw_guest_id","guest_"+Math.random().toString(36).slice(2));
-      setSignedInUI("Guest");
-    };
-
-    document.getElementById("signOutBtn").onclick = async () => {
-      await supabase.auth.signOut();
-      localStorage.removeItem("cw_guest_id");
-      setSignedOutUI();
-    };
-
-    document.getElementById("emailForm").onsubmit = async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("emailInput").value;
-      const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
-      const emailMsg = document.getElementById("emailMsg");
-      if (error) {
-        emailMsg.textContent = "Error: " + error.message;
-        emailMsg.classList.remove("hidden");
-      } else {
-        emailMsg.textContent = "Magic link sent! Check your inbox.";
-        emailMsg.classList.remove("hidden");
+    // ---------------- Auth: magic-link exchange
+    async function handleMagicLinkIfPresent() {
+      const qs = window.location.search;
+      if (qs && new URLSearchParams(qs).has("code")) {
+        const { error } = await supabase.auth.exchangeCodeForSession(qs);
+        if (!error) history.replaceState({}, document.title, location.pathname);
       }
-    };
+    }
 
+    // ---------------- Auth init
     async function initAuth() {
+      await handleMagicLinkIfPresent();
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) setSignedInUI(session.user.email);
-      else if (localStorage.getItem("cw_guest_id")) setSignedInUI("Guest");
-      else setSignedOutUI();
+      if (session?.user) {
+        setSignedInUI({ email: session.user.email });
+      } else if (localStorage.getItem("cw_guest_id")) {
+        setSignedInUI({ label: localStorage.getItem("cw_guest_id").slice(0,10), asGuest: true });
+      } else {
+        setSignedOutUI();
+      }
+
+      supabase.auth.onAuthStateChange((_evt, sess) => {
+        if (sess?.user) setSignedInUI({ email: sess.user.email });
+        else if (localStorage.getItem("cw_guest_id")) setSignedInUI({ label: localStorage.getItem("cw_guest_id").slice(0,10), asGuest:true });
+        else setSignedOutUI();
+      });
     }
     initAuth();
 
-    // ---------------- QUESTIONS RENDER ----------------
-    const demoQuestions = [
-      { id:"q1", text:"I enjoy solving complex problems." },
-      { id:"q2", text:"I communicate my ideas clearly." },
-      { id:"q3", text:"I like experimenting with new ideas." },
-      { id:"q4", text:"I stay focused until tasks are complete." },
-      { id:"q5", text:"I collaborate well in teams." }
-    ];
-    const questionsEl = document.getElementById("questions");
-    function renderQuestions(list) {
-      questionsEl.innerHTML="";
-      list.forEach((q,idx)=>{
-        const div=document.createElement("div");
-        div.className="p-3 rounded border";
-        div.innerHTML=`<div class="font-medium mb-2">${idx+1}. ${q.text}</div>
-          <div class="flex gap-2" data-qid="${q.id}">
-            ${[1,2,3,4,5].map(v=>`<button type="button" class="px-3 py-1 rounded border bg-white hover:bg-gray-100" data-v="${v}">${v}</button>`).join("")}
-          </div>`;
-        questionsEl.appendChild(div);
-      });
-    }
-    renderQuestions(demoQuestions);
-
-    questionsEl.addEventListener("click", e=>{
-      const btn=e.target.closest("button[data-v]");
-      if(!btn) return;
-      const row=btn.parentElement;
-      row.querySelectorAll("button").forEach(b=>b.classList.remove("bg-blue-600","text-white"));
-      btn.classList.add("bg-blue-600","text-white");
-      row.setAttribute("data-selected",btn.getAttribute("data-v"));
+    // ---------------- Auth actions
+    emailForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      emailMsg.classList.add("hidden"); emailMsg.classList.remove("text-red-600","text-emerald-700");
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
+          email: emailInput.value.trim(),
+          options: { emailRedirectTo: location.origin + location.pathname }
+        });
+        if (error) throw error;
+        emailMsg.textContent = "Magic link sent! Check your inbox.";
+        emailMsg.classList.remove("hidden"); emailMsg.classList.add("text-emerald-700");
+      } catch (err) {
+        emailMsg.textContent = "Failed to send link: " + (err?.message || "Unknown error");
+        emailMsg.classList.remove("hidden"); emailMsg.classList.add("text-red-600");
+      }
     });
 
-    function readAnswers(){
-      return [...questionsEl.querySelectorAll("div[data-qid]")].map(row=>{
-        return {id:row.getAttribute("data-qid"),value:Number(row.getAttribute("data-selected")||3)};
+    guestBtn.addEventListener("click", () => {
+      let id = localStorage.getItem("cw_guest_id");
+      if (!id) {
+        id = "G-" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+        localStorage.setItem("cw_guest_id", id);
+      }
+      setSignedInUI({ label: id, asGuest: true });
+    });
+
+    signOutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      localStorage.removeItem("cw_guest_id");
+      setSignedOutUI();
+    });
+
+    // ---------------- Questions
+    async function loadQuestions() {
+      // Try Supabase first (public read). Fallback to 5 demo if none.
+      const { data, error } = await supabase
+        .from("questions")
+        .select("id, text, section, active")
+        .eq("active", true)
+        .order("id", { ascending: true })
+        .limit(60);
+
+      const list = (error || !Array.isArray(data) || data.length === 0)
+        ? [
+            { id:"q1", text:"I enjoy solving complex problems." },
+            { id:"q2", text:"I communicate my ideas clearly." },
+            { id:"q3", text:"I like experimenting with new ideas." },
+            { id:"q4", text:"I stay focused until tasks are complete." },
+            { id:"q5", text:"I collaborate well in teams." },
+          ]
+        : data;
+
+      renderQuestions(list);
+    }
+
+    function renderQuestions(list) {
+      questionsEl.innerHTML = "";
+      list.forEach((q, idx) => {
+        const row = document.createElement("div");
+        row.className = "p-3 rounded-lg border";
+        row.innerHTML = `
+          <div class="font-medium mb-2">${idx+1}. ${q.text}</div>
+          <div class="flex gap-2" data-qid="${q.id}">
+            ${[1,2,3,4,5].map(v => `
+              <button type="button"
+                class="px-3 py-1 rounded border bg-white hover:bg-gray-100"
+                data-v="${v}">${v}</button>`).join("")}
+          </div>`;
+        questionsEl.appendChild(row);
       });
     }
 
-    // ---------------- ANALYZE BUTTON ----------------
-    document.getElementById("analyzeBtn").onclick = async ()=>{
-      const pErr=document.getElementById("pErr"); pErr.classList.add("hidden");
-      try {
-        const answers=readAnswers();
-        const skills=document.getElementById("skills").value.split(",").map(s=>s.trim()).filter(Boolean);
-        const interests=document.getElementById("interests").value.split(",").map(s=>s.trim()).filter(Boolean);
+    questionsEl.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-v]");
+      if (!btn) return;
+      const row = btn.parentElement;
+      row.querySelectorAll("button").forEach(b => b.classList.remove("bg-blue-600","text-white"));
+      btn.classList.add("bg-blue-600","text-white");
+      row.setAttribute("data-selected", btn.getAttribute("data-v"));
+    });
 
-        // guest mode preview only
-        if (! (await supabase.auth.getSession()).data.session?.user ) {
-          document.getElementById("summary").textContent="Guest preview only — sign in to save results.";
-          document.getElementById("traits").innerHTML=`<li class="rounded border p-2">Analytical ~ Demo</li>`;
-          document.getElementById("analysis").classList.remove("hidden");
+    function readAnswers() {
+      return [...questionsEl.querySelectorAll("div[data-qid]")].map(row => ({
+        id: row.getAttribute("data-qid"),
+        value: Number(row.getAttribute("data-selected") || 3)
+      }));
+    }
+
+    await loadQuestions();
+
+    // ---------------- Analyze
+    analyzeBtn.addEventListener("click", async () => {
+      pErr.classList.add("hidden");
+      try {
+        const answers = readAnswers();
+        const skills = document.getElementById("skills").value.split(",").map(s=>s.trim()).filter(Boolean);
+        const interests = document.getElementById("interests").value.split(",").map(s=>s.trim()).filter(Boolean);
+
+        // If not authenticated, show preview (cannot write due to RLS)
+        const { data:{ session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          summaryEl.textContent = "Guest preview — sign in to save. (Scores shown as sample.)";
+          traitsEl.innerHTML = `
+            <li class="flex items-center justify-between rounded-lg border px-3 py-2">
+              <span>Analytical</span><span class="text-sm text-gray-600">72/100</span>
+            </li>
+            <li class="flex items-center justify-between rounded-lg border px-3 py-2">
+              <span>Communication</span><span class="text-sm text-gray-600">66/100</span>
+            </li>`;
+          analysisPanel.classList.remove("hidden");
           return;
         }
 
-        // save answers → call RPC finalize_test → get_results
-        const { data:test } = await supabase.from("tests").insert([{ user_id:(await supabase.auth.getUser()).data.user.id }]).select("id").single();
-        await supabase.from("test_answers").upsert(answers.map(a=>({test_id:test.id,question_id:a.id,value:a.value})));
-        await supabase.rpc("finalize_test",{p_test_id:test.id,p_skills:skills,p_interests:interests});
-        const { data:res }=await supabase.rpc("get_results",{p_test_id:test.id});
+        // Create a test row for this user
+        const userId = session.user.id;
+        const { data: test, error: tiErr } = await supabase
+          .from("tests")
+          .insert([{ user_id: userId, status: "started" }])
+          .select("id")
+          .single();
+        if (tiErr) throw tiErr;
 
-        document.getElementById("summary").textContent=res.summary||"";
-        const ul=document.getElementById("traits"); ul.innerHTML="";
-        (res.traits||[]).forEach(t=>{
-          ul.innerHTML+=`<li class="flex justify-between rounded border p-2"><span>${t.name}</span><span>${t.score}</span></li>`;
-        });
-        document.getElementById("analysis").classList.remove("hidden");
-      } catch(err){ pErr.textContent=err.message; pErr.classList.remove("hidden"); }
-    };
+        // Upsert answers
+        const upserts = answers.map(a => ({ test_id: test.id, question_id: a.id, value: a.value }));
+        const { error: ansErr } = await supabase.from("test_answers").upsert(upserts);
+        if (ansErr) throw ansErr;
 
-    // ---------------- MATCHES BUTTON ----------------
-    document.getElementById("matchBtn").onclick = async ()=>{
-      const mErr=document.getElementById("mErr"); mErr.classList.add("hidden");
-      try{
-        const { data:test }=await supabase.from("tests").select("id").order("started_at",{ascending:false}).limit(1).single();
-        const { data:res }=await supabase.rpc("get_results",{p_test_id:test.id});
-        const wrap=document.getElementById("matches"); wrap.innerHTML="";
-        (res.matches||[]).forEach(m=>{
-          wrap.innerHTML+=`<div class="rounded border p-3"><div class="font-semibold">${m.title}</div><p>${m.description||""}</p><span>${Math.round(m.score)}%</span></div>`;
+        // Finalize + get results via RPCs we created earlier
+        const { error: finErr } = await supabase.rpc("finalize_test", {
+          p_test_id: test.id,
+          p_skills: skills,
+          p_interests: interests
         });
-      }catch(err){ mErr.textContent=err.message; mErr.classList.remove("hidden"); }
-    };
+        if (finErr) throw finErr;
+
+        const { data: res, error: resErr } = await supabase.rpc("get_results", { p_test_id: test.id });
+        if (resErr) throw resErr;
+
+        // Render results
+        summaryEl.textContent = res?.summary || "Results ready.";
+        traitsEl.innerHTML = "";
+        (res?.traits || []).forEach(t => {
+          const li = document.createElement("li");
+          li.className = "flex items-center justify-between rounded-lg border px-3 py-2";
+          li.innerHTML = `<span>${t.name}</span><span class="text-sm text-gray-600">${t.score}/100</span>`;
+          traitsEl.appendChild(li);
+        });
+        analysisPanel.classList.remove("hidden");
+      } catch (err) {
+        pErr.textContent = err.message || "Analyze error";
+        pErr.classList.remove("hidden");
+      }
+    });
+
+    // ---------------- Matches
+    matchBtn.addEventListener("click", async () => {
+      mErr.classList.add("hidden");
+      matchesEl.innerHTML = "";
+      try {
+        const { data:{ session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          matchesEl.innerHTML = `<div class="rounded-xl border p-4 bg-amber-50 text-amber-800">
+            Sign in to fetch personalized matches.</div>`;
+          return;
+        }
+
+        // Get latest test for user
+        const { data: latest, error: ltErr } = await supabase
+          .from("tests")
+          .select("id, started_at")
+          .eq("user_id", session.user.id)
+          .order("started_at", { ascending:false })
+          .limit(1)
+          .single();
+        if (ltErr) throw ltErr;
+
+        const { data: res, error: resErr } = await supabase.rpc("get_results", { p_test_id: latest.id });
+        if (resErr) throw resErr;
+
+        (res?.matches || []).forEach(item => {
+          const card = document.createElement("div");
+          card.className = "rounded-xl border p-4";
+          card.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="font-semibold">${item.title}</div>
+              <span class="text-xs px-2 py-1 rounded bg-blue-50 text-blue-700">${Math.round(item.score)}% fit</span>
+            </div>
+            <p class="mt-1 text-sm text-gray-700 whitespace-pre-wrap">${item.description || ""}</p>
+          `;
+          matchesEl.appendChild(card);
+        });
+
+        if (!res?.matches || res.matches.length === 0) {
+          matchesEl.innerHTML = `<div class="rounded-xl border p-4 text-gray-600">No matches yet.</div>`;
+        }
+      } catch (err) {
+        mErr.textContent = err.message || "Match error";
+        mErr.classList.remove("hidden");
+      }
+    });
   </script>
+
+  <footer class="text-xs text-gray-500 text-center py-8">
+    © 2025 CareerWise. Demo-only—no personal data stored in guest mode.
+  </footer>
 </body>
 </html>
