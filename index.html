@@ -1,502 +1,713 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CareerWise — Psychometric Test</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, user-scalable=no"
+  />
+  <title>CareerWise — Discover Your Best-Fit Career</title>
+
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='14' width='64' height='64' fill='%234f7cff'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='38' font-family='Inter' fill='white'%3ECW%3C/text%3E%3C/svg%3E" />
+
   <style>
-    .bg-blob{position:absolute;filter:blur(60px);opacity:.3;pointer-events:none}
+    :root{
+      --bg: #0b1020;
+      --card: rgba(255,255,255,0.06);
+      --card-strong: rgba(255,255,255,0.12);
+      --stroke: rgba(255,255,255,0.12);
+      --text: #e6eaf2;
+      --muted: #a8b0c3;
+      --primary: #4f7cff;
+      --primary-600: #3f6bff;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-lg: 22px;
+      --blur: 12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 15% 5%, #192447 0%, transparent 55%),
+                  radial-gradient(900px 600px at 90% 10%, #40286f 0%, transparent 55%),
+                  radial-gradient(900px 600px at 50% 100%, #1d3b62 0%, transparent 60%),
+                  var(--bg);
+    }
+    a{color:var(--primary); text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:32px}
+    .stack{display:grid;gap:28px}
+    .hidden{display:none !important}
+
+    /* Header */
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;margin-bottom:12px
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:36px;height:36px;border-radius:10px;
+      background: linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);
+      box-shadow: var(--shadow);
+    }
+    .brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.3px}
+    .chip{
+      font-size:12px;color:var(--muted);
+      border:1px solid var(--stroke);padding:6px 10px;border-radius:999px;
+      background:var(--card);backdrop-filter: blur(var(--blur));
+    }
+
+    /* Cards */
+    .card{
+      background:var(--card); border:1px solid var(--stroke);
+      border-radius:var(--radius); box-shadow: var(--shadow);
+      backdrop-filter: blur(var(--blur)); padding:22px;
+    }
+    .card strong{color:#fff}
+    .section-title{font-size:22px;font-weight:700;margin:0 0 8px}
+    .muted{color:var(--muted);font-size:14px}
+
+    /* Auth layout */
+    .auth-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px}
+    @media (max-width: 860px){ .auth-grid{grid-template-columns:1fr} }
+
+    .tabs{display:flex;gap:8px;margin-bottom:14px}
+    .tab{
+      padding:9px 12px;border-radius:10px;border:1px solid var(--stroke);
+      background:var(--card-strong);color:var(--text);font-weight:600;font-size:13px;
+      cursor:pointer
+    }
+    .tab.is-active{background:linear-gradient(180deg,#607dff,#4e6bff);border-color:transparent}
+    .seg{display:flex;gap:8px;margin-bottom:12px}
+    .seg .ghost{
+      padding:8px 10px;border-radius:10px;border:1px solid var(--stroke);
+      background:var(--card);color:var(--text);font-weight:600;font-size:12px;cursor:pointer
+    }
+    .seg .ghost.is-active{background:var(--primary);border-color:transparent}
+
+    /* Inputs */
+    .input,.select{
+      width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--stroke);
+      background:rgba(255,255,255,0.04);color:var(--text);outline:none;
+    }
+    .input::placeholder{color:#94a3b8}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:12px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:700;
+      color:#fff;background:linear-gradient(180deg,#6b8aff,#4f7cff);box-shadow:var(--shadow)
+    }
+    .btn:hover{filter:brightness(1.04)}
+    .btn.secondary{background:rgba(255,255,255,0.06);border:1px solid var(--stroke);color:var(--text)}
+    .btn.success{background:linear-gradient(180deg,#36d676,#22c55e)}
+    .btn.warning{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
+    .inline-note{font-size:13px;margin-top:8px}
+    .note-ok{color:#86efac}.note-err{color:#fda4af}
+
+    /* Chips list */
+    .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .chip-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--stroke);
+      border-radius:12px;padding:10px 12px;background:rgba(255,255,255,0.04)}
+    .chip-row span{opacity:.9}
+
+    /* Question list */
+    .q{border:1px solid var(--stroke);border-radius:12px;padding:14px;background:rgba(255,255,255,0.04)}
+    .rate{display:flex;gap:8px;margin-top:8px}
+    .rate button{
+      width:38px;height:38px;border-radius:12px;border:1px solid var(--stroke);
+      background:rgba(255,255,255,0.06);color:var(--text);font-weight:700;cursor:pointer
+    }
+    .rate button.is-on{background:var(--primary)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+    /* Match cards */
+    .match{border:1px solid var(--stroke);border-radius:16px;padding:16px;background:rgba(255,255,255,0.05)}
+    .match .hdr{display:flex;align-items:center;justify-content:space-between}
+    .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(79,124,255,.18);color:#cfe0ff;border:1px solid rgba(79,124,255,.4)}
+
+    /* Footer */
+    footer{color:var(--muted);text-align:center;font-size:12px;margin-top:8px}
+
+    /* Divider heading */
+    .divider{display:flex;align-items:center;gap:12px;margin:10px 0 18px}
+    .divider span{height:1px;flex:1;background:var(--stroke)}
+
+    /* Toast */
+    .toast{
+      position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+      background:rgba(20,24,38,.9);border:1px solid var(--stroke);color:var(--text);
+      padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);z-index:50;display:none
+    }
+    .spinner{width:16px;height:16px;border-radius:999px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body>
+  <div class="container stack">
 
-  <!-- Decorative blobs -->
-  <div class="bg-blob -z-10 top-[-120px] left-[-120px] w-[280px] h-[280px] rounded-full bg-blue-300"></div>
-  <div class="bg-blob -z-10 top-[40%] right-[-120px] w-[300px] h-[300px] rounded-full bg-emerald-300"></div>
+    <!-- Top -->
+    <div class="topbar" aria-label="Header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>CareerWise</h1>
+      </div>
+      <div>
+        <span class="chip" id="apiChip">API: <strong id="api">https://careerwise-api.onrender.com</strong>
+        </span>
+        <span class="chip" id="apiStatus">checking…</span>
+      </div>
+    </div>
 
-  <!-- HEADER -->
-  <header class="border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="h-9 w-9 rounded-lg bg-blue-600 text-white grid place-items-center font-bold">CW</div>
+    <!-- ============ AUTH ============ -->
+    <section id="authSection" class="card" aria-label="Authentication">
+      <div class="auth-grid">
+        <!-- Left: Email auth -->
         <div>
-          <div class="text-lg font-semibold">CareerWise</div>
-          <div class="text-xs text-slate-500">Psychometric Career Navigator</div>
-        </div>
-      </div>
-      <div id="authUserBar" class="hidden items-center gap-3">
-        <div id="userBadge" class="h-9 w-9 rounded-full bg-blue-600 text-white grid place-items-center font-semibold"></div>
-        <div class="text-sm">
-          <div id="userLabel" class="font-medium"></div>
-          <button id="signOutBtn" class="text-red-600 hover:underline">Sign out</button>
-        </div>
-      </div>
-    </div>
-  </header>
+          <h2 class="section-title">Sign in</h2>
+          <p class="muted">Keep your progress and get personalized matches.</p>
 
-  <!-- AUTH (shown until signed-in/guest) -->
-  <section id="authSection" class="py-10">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <h1 class="text-2xl font-bold text-blue-600">CareerWise</h1>
-      <p class="text-sm text-slate-500">Sign in to save results or continue as guest.</p>
-
-      <div id="authCard" class="mt-6 grid lg:grid-cols-3 gap-6">
-        <!-- Email + Password (tabs) -->
-        <div class="lg:col-span-2 rounded-2xl border bg-white p-6 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="font-semibold">Email &amp; Password</h2>
+          <div class="tabs" role="tablist" aria-label="Sign in method">
+            <button id="tabPwd" class="tab is-active" type="button" role="tab" aria-selected="true">Email + Password</button>
+            <button id="tabMagic" class="tab" type="button" role="tab" aria-selected="false">Magic Link</button>
           </div>
 
-          <!-- Tabs -->
-          <div class="inline-flex rounded-lg bg-slate-100 p-1 mb-4">
-            <button id="tabLogin" class="auth-tab px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow">Log in</button>
-            <button id="tabSignup" class="auth-tab px-4 py-1.5 rounded-md text-sm font-medium text-slate-600">Create account</button>
+          <!-- Password Panel -->
+          <div id="panelPwd" role="tabpanel" aria-labelledby="tabPwd">
+            <div class="seg" role="tablist" aria-label="Login vs Signup">
+              <button id="btnShowLogin" class="ghost is-active" type="button" role="tab" aria-selected="true">Log in</button>
+              <button id="btnShowSignup" class="ghost" type="button" role="tab" aria-selected="false">Sign up</button>
+            </div>
+
+            <form id="loginForm" class="stack" style="gap:10px;">
+              <label class="muted" for="loginEmail">Email</label>
+              <input id="loginEmail" class="input" type="email" autocomplete="email" placeholder="you@example.com" required>
+              <label class="muted" for="loginPassword">Password</label>
+              <input id="loginPassword" class="input" type="password" autocomplete="current-password" placeholder="Your password" required>
+              <button class="btn" type="submit"><span id="loginSpin" class="spinner hidden"></span> Log in</button>
+            </form>
+
+            <form id="signupForm" class="stack" style="gap:10px;display:none;margin-top:10px;">
+              <label class="muted" for="signupEmail">Email</label>
+              <input id="signupEmail" class="input" type="email" autocomplete="email" placeholder="you@example.com" required>
+              <label class="muted" for="signupPassword">Password</label>
+              <input id="signupPassword" class="input" type="password" autocomplete="new-password" minlength="6" placeholder="Create a password (min 6)" required>
+              <button class="btn success" type="submit"><span id="signupSpin" class="spinner hidden"></span> Create account</button>
+            </form>
+
+            <p id="pwdMsg" class="inline-note muted hidden" role="status"></p>
           </div>
 
-          <!-- Login form -->
-          <form id="loginForm" class="space-y-3">
-            <input id="loginEmail" type="email" required class="w-full rounded-lg border px-3 py-2" placeholder="you@example.com"/>
-            <div class="relative">
-              <input id="loginPassword" type="password" required minlength="6" class="w-full rounded-lg border px-3 py-2 pr-12" placeholder="Your password"/>
-              <button type="button" data-toggle="loginPassword" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-600 hover:underline">Show</button>
-            </div>
-            <div class="flex items-center justify-between text-sm">
-              <label class="inline-flex items-center gap-2">
-                <input id="rememberMe" type="checkbox" class="rounded border-slate-300"/>
-                Keep me signed in
-              </label>
-              <button type="button" id="forgotBtn" class="text-blue-700 hover:underline">Forgot password?</button>
-            </div>
-            <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Log in</button>
-          </form>
-
-          <!-- Signup form -->
-          <form id="signupForm" class="space-y-3 hidden">
-            <input id="signupEmail" type="email" required class="w-full rounded-lg border px-3 py-2" placeholder="you@example.com"/>
-            <div class="relative">
-              <input id="signupPassword" type="password" required minlength="6" class="w-full rounded-lg border px-3 py-2 pr-12" placeholder="Create a password (min 6)"/>
-              <button type="button" data-toggle="signupPassword" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-600 hover:underline">Show</button>
-            </div>
-            <div class="relative">
-              <input id="signupConfirm" type="password" required minlength="6" class="w-full rounded-lg border px-3 py-2 pr-12" placeholder="Confirm password"/>
-              <button type="button" data-toggle="signupConfirm" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-600 hover:underline">Show</button>
-            </div>
-            <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">Create account</button>
-          </form>
-
-          <p id="authMsg" class="text-sm mt-3 hidden"></p>
-
-          <!-- Reset password inline panel -->
-          <div id="resetPanel" class="hidden mt-4 rounded-lg border p-4">
-            <div class="font-medium mb-2">Reset your password</div>
-            <p class="text-sm text-slate-600 mb-3">Enter a new password for your account.</p>
-            <div class="grid gap-3 sm:grid-cols-2">
-              <input id="resetPass1" type="password" class="rounded-lg border px-3 py-2" placeholder="New password"/>
-              <input id="resetPass2" type="password" class="rounded-lg border px-3 py-2" placeholder="Confirm password"/>
-            </div>
-            <div class="mt-3 flex gap-3">
-              <button id="resetSaveBtn" class="rounded-lg bg-blue-600 px-4 py-2 text-white">Save password</button>
-              <button id="resetCancelBtn" class="rounded-lg border px-4 py-2">Cancel</button>
-            </div>
-            <p id="resetMsg" class="text-sm mt-2 hidden"></p>
+          <!-- Magic Panel -->
+          <div id="panelMagic" role="tabpanel" aria-labelledby="tabMagic" style="display:none;">
+            <div class="divider"><span></span><p class="muted" style="margin:0;">Email me a secure link</p><span></span></div>
+            <form id="emailForm" class="stack" style="gap:10px;">
+              <label class="muted" for="emailInput">Email</label>
+              <input id="emailInput" class="input" type="email" autocomplete="email" placeholder="you@example.com" required>
+              <button class="btn" type="submit"><span id="magicSpin" class="spinner hidden"></span> Send magic link</button>
+            </form>
+            <p id="emailMsg" class="inline-note muted hidden" role="status"></p>
           </div>
         </div>
 
-        <!-- Guest -->
-        <div class="rounded-2xl border bg-white p-6 shadow-sm">
-          <h2 class="font-semibold">Or continue as guest</h2>
-          <p class="text-sm text-slate-500 mb-3">
-            Try the test without email. Results won’t be saved permanently.
-          </p>
-          <button id="guestBtn" class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">Continue as guest</button>
-          <p class="text-xs text-slate-500 mt-2">You can sign in later to save to your account.</p>
+        <!-- Right: Guest -->
+        <div>
+          <h2 class="section-title">Or continue as guest</h2>
+          <p class="muted">Try the app instantly. You can sign in any time to save.</p>
+          <button id="guestBtn" class="btn success" style="width:100%;margin-top:10px;">Continue as guest</button>
+          <div class="stack" style="gap:10px;margin-top:14px;">
+            <div class="chip-row"><span>Storage</span><span class="muted">Local (this browser)</span></div>
+            <div class="chip-row"><span>Privacy</span><span class="muted">No personal data stored</span></div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- APP (hidden until signed-in/guest) -->
-  <main id="appRoot" class="hidden">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 pb-16 grid lg:grid-cols-[1fr,360px] gap-6">
-      <!-- Questions -->
-      <section class="bg-white p-6 rounded-2xl shadow-sm">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold">Psychometric Analysis</h2>
-          <div class="text-xs text-gray-500">Source: <span class="px-2 py-0.5 rounded bg-gray-100">Supabase</span></div>
+      <!-- Signed-in bar -->
+      <div id="authUserBar" class="hidden" style="margin-top:18px;">
+        <div class="chip-row" style="align-items:center;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div id="userBadge" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(180deg,#6b8aff,#4f7cff);display:grid;place-items:center;font-weight:800;">U</div>
+            <div id="userLabel" style="font-weight:700;">Signed in</div>
+          </div>
+          <button id="signOutBtn" class="btn secondary" type="button">Sign out</button>
         </div>
-        <p class="text-gray-600 mb-4">Answer quickly on a 1–5 scale.</p>
-        <div id="questions" class="space-y-3"></div>
-        <div class="grid md:grid-cols-2 gap-3 mt-4">
-          <input id="skills" class="border p-2 rounded-lg" placeholder="Skills (comma separated)" value="sql, excel"/>
-          <input id="interests" class="border p-2 rounded-lg" placeholder="Interests (comma separated)" value="data, analytics"/>
+      </div>
+    </section>
+
+    <!-- ============ APP ============ -->
+    <div id="appRoot" class="stack hidden">
+      <!-- Analysis -->
+      <section class="card" aria-label="Psychometric Analysis">
+        <div class="topbar" style="margin:0 0 10px">
+          <h2 class="section-title" style="margin:0">Psychometric Analysis</h2>
+          <div class="stack" style="grid-auto-flow:column;gap:8px;display:grid;">
+            <button id="btnReloadApi" class="btn secondary" type="button">Reload from API</button>
+            <button id="btnLoadDemo" class="btn secondary" type="button">Load Demo Questions</button>
+          </div>
         </div>
-        <div class="mt-4 flex items-center gap-3">
-          <button id="analyzeBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Run Analysis</button>
-          <span id="pErr" class="text-red-600 hidden"></span>
+        <p class="muted">Answer quickly on a 1–5 scale.</p>
+
+        <div id="questions" class="stack" style="gap:10px;margin-top:12px;"></div>
+
+        <div class="grid-2" style="margin-top:12px;">
+          <input id="skills" class="input" placeholder="Skills (comma separated)" value="sql, excel" />
+          <input id="interests" class="input" placeholder="Interests (comma separated)" value="data, analytics" />
         </div>
-        <div id="analysis" class="mt-6 hidden">
-          <div class="rounded-xl border p-4">
-            <h3 class="font-semibold">Summary</h3>
-            <p id="summary" class="mt-1 whitespace-pre-wrap"></p>
-            <h3 class="font-semibold mt-4">Traits</h3>
-            <ul id="traits" class="mt-1 grid sm:grid-cols-2 gap-2"></ul>
+
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;">
+          <button id="analyzeBtn" class="btn" type="button"><span id="analyzeSpin" class="spinner hidden"></span> Run Analysis</button>
+          <span id="pErr" class="inline-note note-err hidden"></span>
+        </div>
+
+        <div id="analysis" class="hidden" style="margin-top:16px;">
+          <div class="card" style="background:rgba(255,255,255,0.04)">
+            <h3 style="margin:0 0 6px;font-size:16px;">Summary</h3>
+            <p id="summary" class="muted" style="white-space:pre-wrap;margin:0"></p>
+
+            <h3 style="margin:14px 0 6px;font-size:16px;">Traits</h3>
+            <div id="traits" class="chips"></div>
+
+            <h3 style="margin:14px 0 6px;font-size:16px;">Cautions</h3>
+            <ul id="cautions" style="margin:0 0 0 18px;color:#dfe6ff"></ul>
           </div>
         </div>
       </section>
 
-      <!-- Matches -->
-      <aside class="lg:sticky lg:top-6 h-fit bg-white p-6 rounded-2xl shadow-sm">
-        <h2 class="text-xl font-semibold mb-2">Career Match</h2>
-        <p class="text-gray-600 mb-4">Uses your traits, skills &amp; interests.</p>
-        <button id="matchBtn" class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Get Matches</button>
-        <p id="mErr" class="text-red-600 mt-3 hidden"></p>
-        <div id="matches" class="mt-4 grid gap-3"></div>
-      </aside>
-    </div>
-  </main>
+      <!-- Matching -->
+      <section class="card" aria-label="Career Match">
+        <h2 class="section-title">Career Match</h2>
+        <p class="muted">Uses traits, skills, and interests above.</p>
+        <div style="display:flex;gap:10px;margin-top:8px;align-items:center;">
+          <button id="matchBtn" class="btn success" type="button"><span id="matchSpin" class="spinner hidden"></span> Get Matches</button>
+          <span id="mErr" class="inline-note note-err hidden"></span>
+        </div>
+        <div id="matches" class="stack" style="gap:12px;margin-top:14px;"></div>
+      </section>
 
-  <!-- APP SCRIPT -->
+      <footer>© 2025 CareerWise. Demo-only—no personal data stored in guest mode.</footer>
+    </div>
+
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" role="status"></div>
+
+  <!-- ===================== APP LOGIC ===================== -->
+  <script>
+    const API = "https://careerwise-api.onrender.com"; // change if needed
+
+    const demoQuestions = [
+      { id: 'q1', text: 'I enjoy solving complex problems.', dimension: 'Analytical Thinking' },
+      { id: 'q2', text: 'I communicate my ideas clearly.', dimension: 'Communication' },
+      { id: 'q3', text: 'I like experimenting with new ideas.', dimension: 'Creativity' },
+      { id: 'q4', text: 'I stay focused until tasks are complete.', dimension: 'Persistence' },
+      { id: 'q5', text: 'I collaborate well in teams.', dimension: 'Collaboration' }
+    ];
+
+    const questionsEl = document.getElementById('questions');
+    const apiStatus = document.getElementById('apiStatus');
+    const pErr = document.getElementById('pErr');
+    const mErr = document.getElementById('mErr');
+    const toast = document.getElementById('toast');
+
+    function showToast(msg, ms=2000){
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(()=> toast.style.display='none', ms);
+    }
+
+    // --- Persist answers locally so refresh doesn't wipe ---
+    const LS_KEY = "cw_answers_v1";
+    function saveAnswersLocal(answers){ try{ localStorage.setItem(LS_KEY, JSON.stringify(answers)); }catch{} }
+    function readAnswersLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }catch{ return []; } }
+
+    function renderQuestions(list){
+      questionsEl.innerHTML = '';
+      const saved = new Map(readAnswersLocal().map(a=>[a.id, a.value]));
+      list.forEach((q, idx) => {
+        const selected = saved.get(q.id) || 0;
+        const row = document.createElement('div');
+        row.className = 'q';
+        row.innerHTML = `
+          <div style="font-weight:600">${idx+1}. ${q.text}</div>
+          <div class="rate" role="radiogroup" aria-label="Rating for ${q.text}" data-qid="${q.id}">
+            ${[1,2,3,4,5].map(v => `<button type="button" aria-pressed="${selected===v}" data-v="${v}" class="${selected===v?'is-on':''}">${v}</button>`).join('')}
+          </div>
+        `;
+        questionsEl.appendChild(row);
+      });
+    }
+
+    questionsEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-v]');
+      if (!btn) return;
+      const group = btn.parentElement;
+      group.querySelectorAll('button').forEach(b => { b.classList.remove('is-on'); b.setAttribute('aria-pressed','false'); });
+      btn.classList.add('is-on'); btn.setAttribute('aria-pressed','true');
+      group.setAttribute('data-selected', btn.getAttribute('data-v'));
+
+      // save to local
+      const answers = readAnswers();
+      saveAnswersLocal(answers);
+    });
+
+    function readAnswers(){
+      const rows = questionsEl.querySelectorAll('div.rate[data-qid]');
+      const answers = [];
+      rows.forEach(row => {
+        const id = row.getAttribute('data-qid');
+        const v = Number(row.getAttribute('data-selected') || 0);
+        if (v) answers.push({ id, value: v });
+      });
+      // default any unanswered to 3 (as before)
+      const ids = new Set(answers.map(a=>a.id));
+      document.querySelectorAll('div.rate[data-qid]').forEach(row=>{
+        const id = row.getAttribute('data-qid');
+        if (!ids.has(id)) answers.push({ id, value: 3 });
+      });
+      return answers;
+    }
+
+    async function pingApi(){
+      try{
+        const ac = new AbortController();
+        const t = setTimeout(() => ac.abort(), 3000);
+        const r = await fetch(API + '/api/health', { signal: ac.signal, cache: 'no-store' });
+        clearTimeout(t);
+        if (r.ok){
+          apiStatus.textContent = 'online';
+          apiStatus.style.background = 'linear-gradient(180deg,#36d676,#22c55e)';
+          return true;
+        }
+        throw new Error();
+      }catch{
+        apiStatus.textContent = 'offline (demo)';
+        apiStatus.style.background = 'linear-gradient(180deg,#fbbf24,#f59e0b)';
+        return false;
+      }
+    }
+
+    async function loadFromApiOrDemo(){
+      const online = await pingApi();
+      if (!online) { renderQuestions(demoQuestions); return; }
+      try{
+        const ac = new AbortController();
+        const t = setTimeout(() => ac.abort(), 3000);
+        const r = await fetch(API + '/api/psychometrics/questions', { signal: ac.signal, cache: 'no-store' });
+        clearTimeout(t);
+        if (!r.ok) throw new Error('API ' + r.status);
+        const data = await r.json();
+        renderQuestions(Array.isArray(data.questions) ? data.questions : demoQuestions);
+      }catch{
+        renderQuestions(demoQuestions);
+      }
+    }
+
+    async function apiFetch(url, opts = {}){
+      const options = { ...opts, headers: { ...(opts.headers || {}) } };
+      if (window.__supabaseGetSession){
+        try{
+          const token = await window.__supabaseGetSession();
+          if (token) options.headers["Authorization"] = "Bearer " + token;
+        }catch{}
+      }
+      if (!options.headers["Authorization"]){
+        const gid = localStorage.getItem("cw_guest_id");
+        if (gid) options.headers["x-guest-id"] = gid;
+      }
+      return fetch(url, options);
+    }
+
+    document.getElementById('btnLoadDemo').addEventListener('click', () => renderQuestions(demoQuestions));
+    document.getElementById('btnReloadApi').addEventListener('click', () => loadFromApiOrDemo());
+
+    document.getElementById('analyzeBtn').addEventListener('click', async () => {
+      pErr.classList.add('hidden');
+      document.getElementById('analyzeSpin').classList.remove('hidden');
+      try{
+        const payload = {
+          answers: readAnswers(),
+          skills: document.getElementById('skills').value.split(',').map(s=>s.trim()).filter(Boolean),
+          interests: document.getElementById('interests').value.split(',').map(s=>s.trim()).filter(Boolean),
+          studentId: 's1'
+        };
+        const r = await apiFetch(API + '/api/psychometrics/analyze', {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+        });
+        if (!r.ok) throw new Error('Analyze failed ('+r.status+')');
+        const data = await r.json();
+
+        document.getElementById('summary').textContent = data.summary || '';
+
+        const traits = document.getElementById('traits');
+        traits.innerHTML = '';
+        (data.traits||[]).forEach(t => {
+          const row = document.createElement('div');
+          row.className = 'chip-row';
+          row.innerHTML = `<span>${t.name}</span><span class="muted">${t.score}/100</span>`;
+          traits.appendChild(row);
+        });
+
+        const cautions = document.getElementById('cautions');
+        cautions.innerHTML = '';
+        (data.cautions||[]).forEach(c => {
+          const li = document.createElement('li');
+          li.textContent = c; cautions.appendChild(li);
+        });
+
+        document.getElementById('analysis').classList.remove('hidden');
+        showToast('Analysis ready');
+      }catch(err){
+        pErr.textContent = err.message || 'Analyze error';
+        pErr.classList.remove('hidden');
+      }finally{
+        document.getElementById('analyzeSpin').classList.add('hidden');
+      }
+    });
+
+    document.getElementById('matchBtn').addEventListener('click', async () => {
+      mErr.classList.add('hidden');
+      document.getElementById('matchSpin').classList.remove('hidden');
+      try{
+        const body = {
+          skills: document.getElementById('skills').value.split(',').map(s=>s.trim()).filter(Boolean),
+          interests: document.getElementById('interests').value.split(',').map(s=>s.trim()).filter(Boolean),
+          traits: [], topK: 5, studentId:'s1'
+        };
+        const r = await apiFetch(API + '/api/matching/careers', {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+        });
+        if (!r.ok) throw new Error('Matching failed ('+r.status+')');
+        const data = await r.json();
+
+        const wrap = document.getElementById('matches');
+        wrap.innerHTML = '';
+        (data.results||[]).forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'match';
+          card.innerHTML = `
+            <div class="hdr">
+              <div style="font-weight:700">${item.title}</div>
+              <span class="badge">${item.score}% fit</span>
+            </div>
+            <p class="muted" style="margin:6px 0 0; white-space:pre-wrap;">${item.why || ''}</p>
+            ${Array.isArray(item.nextSteps) ? `
+              <ul style="margin:8px 0 0 18px;color:#dfe6ff;">
+                ${item.nextSteps.map(s=>`<li>${s}</li>`).join('')}
+              </ul>` : ''}
+          `;
+          wrap.appendChild(card);
+        });
+        showToast('Matches updated');
+      }catch(err){
+        mErr.textContent = err.message || 'Match error';
+        mErr.classList.remove('hidden');
+      }finally{
+        document.getElementById('matchSpin').classList.add('hidden');
+      }
+    });
+
+    // initial
+    loadFromApiOrDemo();
+  </script>
+
+  <!-- ===================== SUPABASE AUTH (Magic-link + Password) ===================== -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // 🔗 Supabase project (uses your values)
+    // 🔑 Replace with your project if different
     const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
-    const SUPABASE_ANON_KEY =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Expose session helper for API calls
+    window.__supabaseGetSession = async () => {
+      const { data:{session} } = await supabase.auth.getSession();
+      return session?.access_token || null;
+    };
+
+    // Panels & tabs
+    const tabPwd = document.getElementById('tabPwd');
+    const tabMagic = document.getElementById('tabMagic');
+    const panelPwd = document.getElementById('panelPwd');
+    const panelMagic = document.getElementById('panelMagic');
+    tabPwd.addEventListener('click', () => {
+      tabPwd.classList.add('is-active'); tabMagic.classList.remove('is-active');
+      panelPwd.style.display = ''; panelMagic.style.display='none';
+    });
+    tabMagic.addEventListener('click', () => {
+      tabMagic.classList.add('is-active'); tabPwd.classList.remove('is-active');
+      panelMagic.style.display = ''; panelPwd.style.display='none';
     });
 
-    // UI elements
+    // Login vs Signup mode
+    const btnShowLogin = document.getElementById('btnShowLogin');
+    const btnShowSignup = document.getElementById('btnShowSignup');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    btnShowLogin.addEventListener('click', () => {
+      btnShowLogin.classList.add('is-active'); btnShowSignup.classList.remove('is-active');
+      loginForm.style.display = ''; signupForm.style.display='none';
+    });
+    btnShowSignup.addEventListener('click', () => {
+      btnShowSignup.classList.add('is-active'); btnShowLogin.classList.remove('is-active');
+      signupForm.style.display = ''; loginForm.style.display='none';
+    });
+
+    // Handle magic-link return (?code=...)
+    async function handleMagicLinkReturn(){
+      const qs = location.search;
+      if (qs && new URLSearchParams(qs).has("code")){
+        const { error } = await supabase.auth.exchangeCodeForSession(qs);
+        if (!error) history.replaceState({}, document.title, location.pathname);
+      }
+    }
+
+    // UI bindings
     const authSection = document.getElementById("authSection");
-    const authCard = document.getElementById("authCard");
     const authUserBar = document.getElementById("authUserBar");
     const userBadge = document.getElementById("userBadge");
     const userLabel = document.getElementById("userLabel");
     const signOutBtn = document.getElementById("signOutBtn");
+    const emailForm = document.getElementById("emailForm");
+    const emailInput = document.getElementById("emailInput");
+    const emailMsg = document.getElementById("emailMsg");
+    const pwdMsg = document.getElementById("pwdMsg");
     const appRoot = document.getElementById("appRoot");
-
-    const tabLogin = document.getElementById("tabLogin");
-    const tabSignup = document.getElementById("tabSignup");
-    const loginForm = document.getElementById("loginForm");
-    const signupForm = document.getElementById("signupForm");
-    const loginEmail = document.getElementById("loginEmail");
-    const loginPassword = document.getElementById("loginPassword");
-    const signupEmail = document.getElementById("signupEmail");
-    const signupPassword = document.getElementById("signupPassword");
-    const signupConfirm = document.getElementById("signupConfirm");
-    const forgotBtn = document.getElementById("forgotBtn");
-    const authMsg = document.getElementById("authMsg");
-
-    const resetPanel = document.getElementById("resetPanel");
-    const resetPass1 = document.getElementById("resetPass1");
-    const resetPass2 = document.getElementById("resetPass2");
-    const resetSaveBtn = document.getElementById("resetSaveBtn");
-    const resetCancelBtn = document.getElementById("resetCancelBtn");
-    const resetMsg = document.getElementById("resetMsg");
-
     const guestBtn = document.getElementById("guestBtn");
 
-    const questionsEl = document.getElementById("questions");
-    const analyzeBtn = document.getElementById("analyzeBtn");
-    const pErr = document.getElementById("pErr");
-    const analysisPanel = document.getElementById("analysis");
-    const summaryEl = document.getElementById("summary");
-    const traitsEl = document.getElementById("traits");
-    const matchBtn = document.getElementById("matchBtn");
-    const matchesEl = document.getElementById("matches");
-    const mErr = document.getElementById("mErr");
+    function getGuestId(){
+      let id = localStorage.getItem("cw_guest_id");
+      if (!id){
+        id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+        localStorage.setItem("cw_guest_id", id);
+      }
+      return id;
+    }
+    function isGuest(){ return !!localStorage.getItem("cw_guest_id"); }
 
-    // --- helpers
-    function showAuthMsg(text, ok=false){
-      authMsg.textContent = text;
-      authMsg.classList.remove("hidden","text-red-600","text-emerald-700");
-      authMsg.classList.add(ok ? "text-emerald-700" : "text-red-600");
-    }
-    function showResetMsg(text, ok=false){
-      resetMsg.textContent = text;
-      resetMsg.classList.remove("hidden","text-red-600","text-emerald-700");
-      resetMsg.classList.add(ok ? "text-emerald-700" : "text-red-600");
-    }
     function setSignedInUI({ email, label, asGuest=false }){
-      authCard.classList.add("hidden");
-      authUserBar.classList.remove("hidden");
-      appRoot.classList.remove("hidden");
+      authUserBar.classList.remove('hidden');
       userBadge.textContent = (label || email || "U").slice(0,1).toUpperCase();
       userLabel.textContent = asGuest ? `Guest: ${label}` : (email || label || "Signed in");
+      authSection.scrollIntoView({ behavior:'smooth', block:'start' });
+      appRoot.classList.remove('hidden');
     }
     function setSignedOutUI(){
-      authUserBar.classList.add("hidden");
-      authCard.classList.remove("hidden");
-      appRoot.classList.add("hidden");
+      authUserBar.classList.add('hidden');
+      appRoot.classList.add('hidden');
     }
-    function toggleTab(which){
-      if (which === "login"){
-        loginForm.classList.remove("hidden"); signupForm.classList.add("hidden");
-        tabLogin.classList.add("bg-white","shadow","text-slate-900");
-        tabSignup.classList.remove("bg-white","shadow"); tabSignup.classList.add("text-slate-600");
-      } else {
-        signupForm.classList.remove("hidden"); loginForm.classList.add("hidden");
-        tabSignup.classList.add("bg-white","shadow","text-slate-900");
-        tabLogin.classList.remove("bg-white","shadow"); tabLogin.classList.add("text-slate-600");
+
+    // Email + Password: login
+    loginForm.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      pwdMsg.classList.add('hidden');
+      document.getElementById('loginSpin').classList.remove('hidden');
+      const email = (document.getElementById('loginEmail').value||'').trim();
+      const password = document.getElementById('loginPassword').value;
+      try{
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        setSignedInUI({ email: data.user.email });
+        pwdMsg.textContent = "Welcome back!";
+        pwdMsg.classList.remove('hidden'); pwdMsg.classList.add('note-ok'); pwdMsg.classList.remove('note-err');
+      }catch(err){
+        pwdMsg.textContent = err.message || "Login failed";
+        pwdMsg.classList.remove('hidden'); pwdMsg.classList.add('note-err'); pwdMsg.classList.remove('note-ok');
+      }finally{
+        document.getElementById('loginSpin').classList.add('hidden');
       }
-      authMsg.classList.add("hidden");
-    }
-    tabLogin.addEventListener("click", ()=>toggleTab("login"));
-    tabSignup.addEventListener("click", ()=>toggleTab("signup"));
-    document.querySelectorAll("[data-toggle]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const id = btn.getAttribute("data-toggle");
-        const input = document.getElementById(id);
-        const t = input.getAttribute("type")==="password" ? "text":"password";
-        input.setAttribute("type", t);
-        btn.textContent = t==="password" ? "Show":"Hide";
-      });
     });
 
-    // --- session init & recovery
-    async function initAuth(){
-      const { data:{ session } } = await supabase.auth.getSession();
-      if (session?.user){
-        setSignedInUI({ email: session.user.email });
-      } else if (localStorage.getItem("cw_guest_id")){
-        setSignedInUI({ label: localStorage.getItem("cw_guest_id").slice(0,10), asGuest:true });
-      } else {
-        setSignedOutUI();
-      }
-    }
-    // Listen for password recovery redirects and other transitions
-    supabase.auth.onAuthStateChange(async (event, session)=>{
-      if (event === "SIGNED_IN" && session?.user){
-        setSignedInUI({ email: session.user.email });
-      }
-      if (event === "SIGNED_OUT"){
-        setSignedOutUI();
-      }
-      if (event === "PASSWORD_RECOVERY"){
-        resetPanel.classList.remove("hidden");
-        showResetMsg("Enter a new password and click Save.", true);
-      }
-    });
-    await initAuth();
-
-    // --- signup
+    // Email + Password: signup
     signupForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
-      authMsg.classList.add("hidden");
-      const email = signupEmail.value.trim();
-      const pass = signupPassword.value;
-      const conf = signupConfirm.value;
-      if (pass !== conf){ showAuthMsg("Passwords do not match."); return; }
-      if (pass.length < 6){ showAuthMsg("Password must be at least 6 characters."); return; }
+      pwdMsg.classList.add('hidden');
+      document.getElementById('signupSpin').classList.remove('hidden');
+      const email = (document.getElementById('signupEmail').value||'').trim();
+      const password = document.getElementById('signupPassword').value;
       try{
         const { data, error } = await supabase.auth.signUp({
-          email, password: pass,
+          email, password,
           options: { emailRedirectTo: location.origin + location.pathname }
         });
         if (error) throw error;
-        if (data.user?.identities?.length === 0){
-          showAuthMsg("Email already registered. Try logging in.", false);
-        } else if (data.user && !data.session){
-          showAuthMsg("Account created! Check your email to confirm, then log in.", true);
-        } else {
-          showAuthMsg("Signed up and logged in.", true);
-        }
-      }catch(err){ showAuthMsg(err.message || "Sign up failed"); }
+        pwdMsg.textContent = "Check your inbox to confirm your email.";
+        pwdMsg.classList.remove('hidden'); pwdMsg.classList.add('note-ok'); pwdMsg.classList.remove('note-err');
+      }catch(err){
+        pwdMsg.textContent = err.message || "Signup failed";
+        pwdMsg.classList.remove('hidden'); pwdMsg.classList.add('note-err'); pwdMsg.classList.remove('note-ok');
+      }finally{
+        document.getElementById('signupSpin').classList.add('hidden');
+      }
     });
 
-    // --- login
-    loginForm.addEventListener("submit", async (e)=>{
+    // Magic link
+    emailForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
-      authMsg.classList.add("hidden");
+      emailMsg.classList.add('hidden');
+      document.getElementById('magicSpin').classList.remove('hidden');
+      const email = (emailInput.value||'').trim();
       try{
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: loginEmail.value.trim(),
-          password: loginPassword.value
+        const { error } = await supabase.auth.signInWithOtp({
+          email, options:{ emailRedirectTo: location.origin + location.pathname }
         });
         if (error) throw error;
-        if (data?.user) showAuthMsg("Logged in.", true);
-      }catch(err){ showAuthMsg(err.message || "Login failed"); }
+        emailMsg.textContent = "Magic link sent! Check your inbox.";
+        emailMsg.classList.remove('hidden'); emailMsg.classList.remove('note-err'); emailMsg.classList.add('note-ok');
+      }catch(err){
+        emailMsg.textContent = "Failed to send link: " + (err?.message || "Unknown error");
+        emailMsg.classList.remove('hidden'); emailMsg.classList.add('note-err'); emailMsg.classList.remove('note-ok');
+      }finally{
+        document.getElementById('magicSpin').classList.add('hidden');
+      }
     });
 
-    // --- forgot password (send reset email)
-    forgotBtn.addEventListener("click", async ()=>{
-      authMsg.classList.add("hidden");
-      const email = loginEmail.value.trim();
-      if (!email){ showAuthMsg("Enter your email above first."); return; }
-      try{
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: location.origin + location.pathname
-        });
-        if (error) throw error;
-        showAuthMsg("Password reset link sent. Check your inbox.", true);
-      }catch(err){ showAuthMsg(err.message || "Could not send reset link"); }
+    // Guest
+    guestBtn.addEventListener('click', ()=>{
+      const id = getGuestId();
+      setSignedInUI({ label: id.replace("guest_","G-"), asGuest:true });
     });
 
-    // --- complete reset (after recovery redirect)
-    resetSaveBtn.addEventListener("click", async ()=>{
-      resetMsg.classList.add("hidden");
-      const a = resetPass1.value, b = resetPass2.value;
-      if (a !== b){ showResetMsg("Passwords do not match."); return; }
-      if (a.length < 6){ showResetMsg("Minimum 6 characters."); return; }
-      try{
-        const { error } = await supabase.auth.updateUser({ password: a });
-        if (error) throw error;
-        showResetMsg("Password updated. You are signed in.", true);
-        setTimeout(()=> resetPanel.classList.add("hidden"), 1200);
-      }catch(err){ showResetMsg(err.message || "Update failed"); }
-    });
-    resetCancelBtn.addEventListener("click", ()=> resetPanel.classList.add("hidden"));
-
-    // --- guest
-    guestBtn.addEventListener("click", ()=>{
-      let id = localStorage.getItem("cw_guest_id");
-      if (!id){ id = "G-" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2)); localStorage.setItem("cw_guest_id", id); }
-      setSignedInUI({ label: id, asGuest:true });
-    });
-
-    // --- sign out
-    signOutBtn.addEventListener("click", async ()=>{
+    // Sign out
+    document.getElementById('signOutBtn').addEventListener('click', async ()=>{
       await supabase.auth.signOut();
       localStorage.removeItem("cw_guest_id");
       setSignedOutUI();
     });
 
-    // ====== Questions / Analysis / Matches (Supabase direct) ======
-    async function loadQuestions(){
-      const { data, error } = await supabase
-        .from("questions")
-        .select("id, text, section, active")
-        .eq("active", true)
-        .order("id", { ascending:true })
-        .limit(60);
-      const list = (error || !data?.length)
-        ? [
-            { id:"q1", text:"I enjoy solving complex problems." },
-            { id:"q2", text:"I communicate my ideas clearly." },
-            { id:"q3", text:"I like experimenting with new ideas." },
-            { id:"q4", text:"I stay focused until tasks are complete." },
-            { id:"q5", text:"I collaborate well in teams." },
-          ]
-        : data;
-      renderQuestions(list);
-    }
-    function renderQuestions(list){
-      questionsEl.innerHTML = "";
-      list.forEach((q, idx)=>{
-        const row = document.createElement("div");
-        row.className = "p-3 rounded-lg border";
-        row.innerHTML = `
-          <div class="font-medium mb-2">${idx+1}. ${q.text}</div>
-          <div class="flex gap-2" data-qid="${q.id}">
-            ${[1,2,3,4,5].map(v=>`
-              <button type="button" class="px-3 py-1 rounded border bg-white hover:bg-gray-100" data-v="${v}">${v}</button>
-            `).join("")}
-          </div>`;
-        questionsEl.appendChild(row);
+    async function initAuth(){
+      const { data:{session} } = await supabase.auth.getSession();
+      if (session?.user){
+        setSignedInUI({ email: session.user.email });
+      } else if (isGuest()){
+        const id = getGuestId();
+        setSignedInUI({ label: id.replace("guest_","G-"), asGuest:true });
+      } else {
+        setSignedOutUI();
+      }
+      supabase.auth.onAuthStateChange((_event, sess)=>{
+        if (sess?.user){
+          setSignedInUI({ email: sess.user.email });
+        } else if (isGuest()){
+          const id = getGuestId();
+          setSignedInUI({ label: id.replace("guest_","G-"), asGuest:true });
+        } else {
+          setSignedOutUI();
+        }
       });
     }
-    questionsEl.addEventListener("click",(e)=>{
-      const btn = e.target.closest("button[data-v]");
-      if (!btn) return;
-      const row = btn.parentElement;
-      row.querySelectorAll("button").forEach(b=>b.classList.remove("bg-blue-600","text-white"));
-      btn.classList.add("bg-blue-600","text-white");
-      row.setAttribute("data-selected", btn.getAttribute("data-v"));
-    });
-    function readAnswers(){
-      return [...questionsEl.querySelectorAll("div[data-qid]")].map(row=>({
-        id: row.getAttribute("data-qid"),
-        value: Number(row.getAttribute("data-selected") || 3)
-      }));
-    }
-    await loadQuestions();
 
-    analyzeBtn.addEventListener("click", async ()=>{
-      pErr.classList.add("hidden");
-      try{
-        const answers = readAnswers();
-        const skills = document.getElementById("skills").value.split(",").map(s=>s.trim()).filter(Boolean);
-        const interests = document.getElementById("interests").value.split(",").map(s=>s.trim()).filter(Boolean);
-
-        const { data:{ session } } = await supabase.auth.getSession();
-        if (!session?.user){
-          summaryEl.textContent = "Guest preview — sign in to save. (Sample scores shown.)";
-          traitsEl.innerHTML = `
-            <li class="flex items-center justify-between rounded-lg border px-3 py-2"><span>Analytical</span><span class="text-sm text-gray-600">72/100</span></li>
-            <li class="flex items-center justify-between rounded-lg border px-3 py-2"><span>Communication</span><span class="text-sm text-gray-600">66/100</span></li>`;
-          analysisPanel.classList.remove("hidden");
-          return;
-        }
-        const userId = session.user.id;
-        const { data: test, error: tErr } = await supabase.from("tests").insert([{ user_id: userId, status:"started" }]).select("id").single();
-        if (tErr) throw tErr;
-        const upserts = answers.map(a=>({ test_id: test.id, question_id: a.id, value: a.value }));
-        const { error: aErr } = await supabase.from("test_answers").upsert(upserts);
-        if (aErr) throw aErr;
-
-        const { error: fErr } = await supabase.rpc("finalize_test", { p_test_id: test.id, p_skills: skills, p_interests: interests });
-        if (fErr) throw fErr;
-
-        const { data: res, error: rErr } = await supabase.rpc("get_results", { p_test_id: test.id });
-        if (rErr) throw rErr;
-
-        summaryEl.textContent = res?.summary || "Results ready.";
-        traitsEl.innerHTML = "";
-        (res?.traits || []).forEach(t=>{
-          const li=document.createElement("li");
-          li.className="flex items-center justify-between rounded-lg border px-3 py-2";
-          li.innerHTML = `<span>${t.name}</span><span class="text-sm text-gray-600">${t.score}/100</span>`;
-          traitsEl.appendChild(li);
-        });
-        analysisPanel.classList.remove("hidden");
-      }catch(err){
-        pErr.textContent = err.message || "Analyze error";
-        pErr.classList.remove("hidden");
-      }
-    });
-
-    matchBtn.addEventListener("click", async ()=>{
-      mErr.classList.add("hidden");
-      matchesEl.innerHTML = "";
-      try{
-        const { data:{ session } } = await supabase.auth.getSession();
-        if (!session?.user){
-          matchesEl.innerHTML = `<div class="rounded-xl border p-4 bg-amber-50 text-amber-800">Sign in to fetch personalized matches.</div>`;
-          return;
-        }
-        const { data: latest, error: lErr } = await supabase
-          .from("tests").select("id, started_at").eq("user_id", session.user.id)
-          .order("started_at",{ascending:false}).limit(1).single();
-        if (lErr) throw lErr;
-
-        const { data: res, error: rErr } = await supabase.rpc("get_results", { p_test_id: latest.id });
-        if (rErr) throw rErr;
-
-        (res?.matches || []).forEach(item=>{
-          const card = document.createElement("div");
-          card.className = "rounded-xl border p-4";
-          card.innerHTML = `
-            <div class="flex items-center justify-between">
-              <div class="font-semibold">${item.title}</div>
-              <span class="text-xs px-2 py-1 rounded bg-blue-50 text-blue-700">${Math.round(item.score)}% fit</span>
-            </div>
-            <p class="mt-1 text-sm text-gray-700 whitespace-pre-wrap">${item.description || ""}</p>`;
-          matchesEl.appendChild(card);
-        });
-        if (!res?.matches?.length){
-          matchesEl.innerHTML = `<div class="rounded-xl border p-4 text-gray-600">No matches yet.</div>`;
-        }
-      }catch(err){
-        mErr.textContent = err.message || "Match error";
-        mErr.classList.remove("hidden");
-      }
-    });
+    await handleMagicLinkReturn();
+    await initAuth();
   </script>
-
-  <footer class="text-xs text-gray-500 text-center py-8">
-    © 2025 CareerWise. Demo-only—no personal data stored in guest mode.
-  </footer>
 </body>
 </html>
