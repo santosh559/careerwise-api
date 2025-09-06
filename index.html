@@ -2,407 +2,235 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CareerWise — Psychometric</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerWise — Psychometric Test</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-  <!-- ===================== AUTH (Email OTP or Guest) ===================== -->
-  <section id="authSection" class="min-h-[28vh] bg-white/70 border-b">
-    <div class="max-w-3xl mx-auto px-6 py-8">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-semibold">CareerWise</h1>
-          <p class="text-sm text-slate-500">Sign in to save results to your account. Guest mode stores in your browser only.</p>
-        </div>
-        <div id="authUserBar" class="hidden items-center gap-3">
-          <div id="userBadge" class="h-9 w-9 rounded-full bg-blue-600 text-white grid place-items-center font-semibold"></div>
-          <div class="text-sm">
-            <div id="userLabel" class="font-medium"></div>
-            <button id="signOutBtn" class="text-red-600 hover:underline">Sign out</button>
-          </div>
+  <!-- ===================== AUTH SECTION ===================== -->
+  <section id="authSection" class="min-h-[20vh] bg-white border-b">
+    <div class="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-blue-600">CareerWise</h1>
+        <p class="text-sm text-slate-500">Sign in to save results or continue as guest.</p>
+      </div>
+      <div id="authUserBar" class="hidden items-center gap-3">
+        <div id="userBadge" class="h-9 w-9 rounded-full bg-blue-600 text-white grid place-items-center font-semibold"></div>
+        <div class="text-sm">
+          <div id="userLabel" class="font-medium"></div>
+          <button id="signOutBtn" class="text-red-600 hover:underline">Sign out</button>
         </div>
       </div>
+    </div>
 
-      <div id="authCard" class="mt-6 grid md:grid-cols-2 gap-6">
-        <div class="rounded-2xl border bg-white p-5 shadow-sm">
-          <h2 class="font-semibold">Sign in with email</h2>
-          <p class="text-sm text-slate-500 mb-3">We’ll email you a secure magic link.</p>
-          <form id="emailForm" class="space-y-3">
-            <input id="emailInput" type="email" required class="w-full rounded-lg border px-3 py-2" placeholder="you@example.com"/>
-            <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-              Send magic link
-            </button>
-          </form>
-          <p id="emailMsg" class="text-sm text-slate-600 mt-2 hidden"></p>
-        </div>
-
-        <div class="rounded-2xl border bg-white p-5 shadow-sm">
-          <h2 class="font-semibold">Or continue as guest</h2>
-          <p class="text-sm text-slate-500 mb-3">Try the app without email. Results are stored in your browser.</p>
-          <button id="guestBtn" class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">
-            Continue as guest
+    <!-- Login Options -->
+    <div id="authCard" class="max-w-4xl mx-auto px-6 py-6 grid md:grid-cols-2 gap-6">
+      <!-- Email OTP -->
+      <div class="rounded-xl border bg-white p-5 shadow">
+        <h2 class="font-semibold">Sign in with email</h2>
+        <p class="text-sm text-slate-500 mb-3">We’ll email you a secure magic link.</p>
+        <form id="emailForm" class="space-y-3">
+          <input id="emailInput" type="email" required
+            class="w-full rounded-lg border px-3 py-2"
+            placeholder="you@example.com" />
+          <button type="submit"
+            class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+            Send magic link
           </button>
-          <p class="text-xs text-slate-500 mt-2">You can sign in later to save to your account.</p>
-        </div>
+        </form>
+        <p id="emailMsg" class="text-sm text-slate-600 mt-2 hidden"></p>
+      </div>
+
+      <!-- Guest Mode -->
+      <div class="rounded-xl border bg-white p-5 shadow">
+        <h2 class="font-semibold">Or continue as guest</h2>
+        <p class="text-sm text-slate-500 mb-3">
+          Try the test without email. Results will not be saved permanently.
+        </p>
+        <button id="guestBtn"
+          class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">
+          Continue as guest
+        </button>
       </div>
     </div>
   </section>
 
   <!-- ===================== APP ===================== -->
-  <div id="appRoot" class="max-w-3xl mx-auto p-6 space-y-6 hidden">
-    <header class="flex items-center justify-between">
-      <h1 class="text-3xl font-bold text-blue-600">Psychometric Test</h1>
-      <div class="text-xs text-gray-500">
-        DB: <span class="px-2 py-0.5 rounded bg-green-100 text-green-700" id="dbBadge">Supabase</span>
-      </div>
-    </header>
-
-    <section class="bg-white p-6 rounded-2xl shadow-sm">
-      <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-semibold">Questions</h2>
-        <div class="flex gap-2">
-          <button id="btnReloadQuestions" class="px-3 py-1.5 rounded bg-slate-200 hover:bg-slate-300 text-sm">Reload</button>
-          <button id="btnStartTest" class="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">Start/Resume Test</button>
-        </div>
-      </div>
-      <p class="text-gray-600 mb-4">Tap 1–5 quickly. You can edit before submitting.</p>
+  <div id="appRoot" class="max-w-4xl mx-auto p-6 space-y-6 hidden">
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-2">Psychometric Analysis</h2>
+      <p class="text-gray-600 mb-4">Answer quickly on a 1–5 scale.</p>
 
       <div id="questions" class="space-y-3"></div>
 
       <div class="grid md:grid-cols-2 gap-3 mt-4">
-        <input id="skills" class="border p-2 rounded-lg" placeholder="Skills (comma separated)" value="sql, excel"/>
-        <input id="interests" class="border p-2 rounded-lg" placeholder="Interests (comma separated)" value="data, analytics"/>
+        <input id="skills" class="border p-2 rounded-lg" placeholder="Skills (comma separated)" value="sql, excel" />
+        <input id="interests" class="border p-2 rounded-lg" placeholder="Interests (comma separated)" value="data, analytics" />
       </div>
 
-      <div class="mt-4 flex gap-3">
-        <button id="btnSaveAnswers" class="px-4 py-2 rounded-lg bg-slate-800 text-white hover:bg-slate-900">Save Answers</button>
-        <button id="btnFinalize" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Finalize & Analyze</button>
-      </div>
+      <button id="analyzeBtn" class="mt-4 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Run Analysis</button>
       <p id="pErr" class="text-red-600 mt-3 hidden"></p>
-      <p id="pOk" class="text-emerald-700 mt-3 hidden"></p>
 
-      <div id="analysis" class="mt-6 hidden">
-        <div class="rounded-xl border p-4">
-          <h3 class="font-semibold">Summary</h3>
-          <p id="summary" class="mt-1 whitespace-pre-wrap"></p>
-
-          <h3 class="font-semibold mt-4">Traits</h3>
-          <ul id="traits" class="mt-2 grid sm:grid-cols-2 gap-2"></ul>
-
-          <h3 class="font-semibold mt-4">Top Matches</h3>
-          <div id="matches" class="mt-2 grid gap-3"></div>
-        </div>
+      <div id="analysis" class="mt-5 hidden">
+        <h3 class="font-semibold">Summary</h3>
+        <p id="summary" class="mt-1 whitespace-pre-wrap"></p>
+        <h3 class="font-semibold mt-4">Traits</h3>
+        <ul id="traits" class="mt-1 grid sm:grid-cols-2 gap-2"></ul>
       </div>
     </section>
 
-    <footer class="text-xs text-gray-500 text-center">
-      Built on Supabase. Guests save locally only.
-    </footer>
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-2">Career Match</h2>
+      <button id="matchBtn" class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Get Matches</button>
+      <p id="mErr" class="text-red-600 mt-3 hidden"></p>
+      <div id="matches" class="mt-4 grid gap-3"></div>
+    </section>
   </div>
 
-  <!-- ===================== APP SCRIPT ===================== -->
+  <!-- ===================== SCRIPTS ===================== -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // >>> REPLACE WITH YOUR KEYS <<<
     const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE"; // 🔑 replace with your anon key
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ---------- Elements ----------
-    const appRoot = document.getElementById("appRoot");
-    const authSection = document.getElementById("authSection");
+    // ---------------- AUTH HANDLING ----------------
     const authCard = document.getElementById("authCard");
     const authUserBar = document.getElementById("authUserBar");
+    const appRoot = document.getElementById("appRoot");
     const userBadge = document.getElementById("userBadge");
     const userLabel = document.getElementById("userLabel");
-    const signOutBtn = document.getElementById("signOutBtn");
-    const emailForm = document.getElementById("emailForm");
-    const emailInput = document.getElementById("emailInput");
-    const emailMsg = document.getElementById("emailMsg");
-    const guestBtn = document.getElementById("guestBtn");
 
-    const questionsEl = document.getElementById("questions");
-    const btnReloadQuestions = document.getElementById("btnReloadQuestions");
-    const btnStartTest = document.getElementById("btnStartTest");
-    const btnSaveAnswers = document.getElementById("btnSaveAnswers");
-    const btnFinalize = document.getElementById("btnFinalize");
-    const pErr = document.getElementById("pErr");
-    const pOk = document.getElementById("pOk");
-    const summaryEl = document.getElementById("summary");
-    const traitsEl = document.getElementById("traits");
-    const matchesEl = document.getElementById("matches");
-    const analysisEl = document.getElementById("analysis");
-
-    // ---------- Guest helpers ----------
-    function getGuestId() {
-      let id = localStorage.getItem("cw_guest_id");
-      if (!id) {
-        id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
-        localStorage.setItem("cw_guest_id", id);
-      }
-      return id;
-    }
-    function isGuest() {
-      return !!localStorage.getItem("cw_guest_id");
-    }
-
-    // ---------- UI state ----------
-    function setSignedInUI({ email, label, asGuest = false }) {
-      authUserBar.classList.remove("hidden");
-      userBadge.textContent = (label || email || "U").slice(0,1).toUpperCase();
-      userLabel.textContent = asGuest ? `Guest: ${label}` : (email || label || "Signed in");
+    function setSignedInUI(emailOrGuest) {
       authCard.classList.add("hidden");
-      authSection.classList.remove("bg-white/70","border-b");
+      authUserBar.classList.remove("hidden");
       appRoot.classList.remove("hidden");
+      userBadge.textContent = emailOrGuest[0].toUpperCase();
+      userLabel.textContent = emailOrGuest;
     }
     function setSignedOutUI() {
-      authUserBar.classList.add("hidden");
       authCard.classList.remove("hidden");
-      authSection.classList.add("bg-white/70","border-b");
+      authUserBar.classList.add("hidden");
       appRoot.classList.add("hidden");
     }
 
-    // ---------- Auth: magic link ----------
-    emailForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = emailInput.value.trim();
-      if (!email) return;
-      emailMsg.classList.add("hidden");
-      try {
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: location.origin + location.pathname }
-        });
-        if (error) throw error;
-        emailMsg.textContent = "Magic link sent! Check your inbox.";
-        emailMsg.classList.remove("hidden");
-        emailMsg.classList.remove("text-red-600");
-      } catch (err) {
-        emailMsg.textContent = "Failed to send link: " + (err?.message || "Unknown error");
-        emailMsg.classList.remove("hidden");
-        emailMsg.classList.add("text-red-600");
-      }
-    });
+    document.getElementById("guestBtn").onclick = () => {
+      localStorage.setItem("cw_guest_id","guest_"+Math.random().toString(36).slice(2));
+      setSignedInUI("Guest");
+    };
 
-    guestBtn.addEventListener("click", () => {
-      const id = getGuestId();
-      setSignedInUI({ label: id.replace("guest_","G-"), asGuest: true });
-    });
-
-    signOutBtn.addEventListener("click", async () => {
+    document.getElementById("signOutBtn").onclick = async () => {
       await supabase.auth.signOut();
       localStorage.removeItem("cw_guest_id");
       setSignedOutUI();
-    });
+    };
 
-    // Handle magic-link return (?code=...)
-    async function handleMagicLinkReturn() {
-      const qs = window.location.search;
-      if (qs && new URLSearchParams(qs).has("code")) {
-        const { error } = await supabase.auth.exchangeCodeForSession(qs);
-        if (!error) history.replaceState({}, document.title, location.pathname);
+    document.getElementById("emailForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("emailInput").value;
+      const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
+      const emailMsg = document.getElementById("emailMsg");
+      if (error) {
+        emailMsg.textContent = "Error: " + error.message;
+        emailMsg.classList.remove("hidden");
+      } else {
+        emailMsg.textContent = "Magic link sent! Check your inbox.";
+        emailMsg.classList.remove("hidden");
       }
-    }
+    };
 
     async function initAuth() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setSignedInUI({ email: session.user.email });
-      } else if (isGuest()) {
-        const id = getGuestId();
-        setSignedInUI({ label: id.replace("guest_","G-"), asGuest: true });
-      } else {
-        setSignedOutUI();
-      }
-      supabase.auth.onAuthStateChange((_event, sess) => {
-        if (sess?.user) setSignedInUI({ email: sess.user.email });
-        else if (isGuest()) setSignedInUI({ label: getGuestId().replace("guest_","G-"), asGuest: true });
-        else setSignedOutUI();
-      });
+      if (session?.user) setSignedInUI(session.user.email);
+      else if (localStorage.getItem("cw_guest_id")) setSignedInUI("Guest");
+      else setSignedOutUI();
     }
+    initAuth();
 
-    // ---------- App state ----------
-    let questions = [];
-    let answers = {};             // { qid: 1..5 }
-    let currentTestId = null;     // UUID if user signed-in and test created
-
-    // Render questions (1–5 buttons)
+    // ---------------- QUESTIONS RENDER ----------------
+    const demoQuestions = [
+      { id:"q1", text:"I enjoy solving complex problems." },
+      { id:"q2", text:"I communicate my ideas clearly." },
+      { id:"q3", text:"I like experimenting with new ideas." },
+      { id:"q4", text:"I stay focused until tasks are complete." },
+      { id:"q5", text:"I collaborate well in teams." }
+    ];
+    const questionsEl = document.getElementById("questions");
     function renderQuestions(list) {
-      questionsEl.innerHTML = "";
-      list.forEach((q, idx) => {
-        const selected = answers[q.id] ?? 3;
-        const row = document.createElement("div");
-        row.className = "p-3 rounded-lg border";
-        row.innerHTML = `
-          <div class="font-medium mb-2">${idx+1}. ${q.text} <span class="ml-2 text-xs rounded bg-slate-100 px-2 py-0.5">${q.section||''}</span></div>
+      questionsEl.innerHTML="";
+      list.forEach((q,idx)=>{
+        const div=document.createElement("div");
+        div.className="p-3 rounded border";
+        div.innerHTML=`<div class="font-medium mb-2">${idx+1}. ${q.text}</div>
           <div class="flex gap-2" data-qid="${q.id}">
-            ${[1,2,3,4,5].map(v => `
-              <button type="button"
-                      class="px-3 py-1 rounded border ${v===selected?'bg-blue-600 text-white':'bg-white hover:bg-gray-100'}"
-                      data-v="${v}">${v}</button>`).join("")}
-          </div>
-        `;
-        questionsEl.appendChild(row);
+            ${[1,2,3,4,5].map(v=>`<button type="button" class="px-3 py-1 rounded border bg-white hover:bg-gray-100" data-v="${v}">${v}</button>`).join("")}
+          </div>`;
+        questionsEl.appendChild(div);
       });
     }
+    renderQuestions(demoQuestions);
 
-    questionsEl.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-v]");
-      if (!btn) return;
-      const wrap = btn.parentElement;
-      const qid = wrap.getAttribute("data-qid");
-      const v = Number(btn.getAttribute("data-v"));
-      answers[qid] = v;
-      wrap.querySelectorAll("button").forEach(b => b.classList.remove("bg-blue-600","text-white"));
+    questionsEl.addEventListener("click", e=>{
+      const btn=e.target.closest("button[data-v]");
+      if(!btn) return;
+      const row=btn.parentElement;
+      row.querySelectorAll("button").forEach(b=>b.classList.remove("bg-blue-600","text-white"));
       btn.classList.add("bg-blue-600","text-white");
+      row.setAttribute("data-selected",btn.getAttribute("data-v"));
     });
 
-    async function loadQuestions() {
-      const { data, error } = await supabase
-        .from("questions")
-        .select("id, text, section, active")
-        .eq("active", true)
-        .order("id");
-      if (error) throw error;
-      questions = data || [];
-      // default all answers = 3
-      answers = Object.fromEntries(questions.map(q => [q.id, 3]));
-      renderQuestions(questions);
-    }
-
-    // Create or resume a test for signed-in user
-    async function startOrResumeTest() {
-      pErr.classList.add("hidden");
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        currentTestId = null; // guest mode keeps it null
-        pOk.textContent = "Guest mode: answers will be saved locally only.";
-        pOk.classList.remove("hidden");
-        return;
-      }
-      // Try latest 'started' test
-      let { data: existing, error: e1 } = await supabase
-        .from("tests")
-        .select("id,status")
-        .eq("user_id", session.user.id)
-        .eq("status","started")
-        .order("started_at",{ ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (e1 && e1.code !== "PGRST116") throw e1;
-
-      if (existing?.id) {
-        currentTestId = existing.id;
-      } else {
-        const { data: created, error } = await supabase
-          .from("tests")
-          .insert([{ user_id: session.user.id, status: "started" }])
-          .select("id")
-          .single();
-        if (error) throw error;
-        currentTestId = created.id;
-      }
-      pOk.textContent = "Test ready. Your answers will be saved to your account.";
-      pOk.classList.remove("hidden");
-    }
-
-    // Save/Upsert answers (signed-in only)
-    async function saveAnswers() {
-      pErr.classList.add("hidden");
-      pOk.classList.add("hidden");
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user || !currentTestId) {
-        pErr.textContent = "Sign in to save to the database (guest mode stores locally).";
-        pErr.classList.remove("hidden");
-        return;
-      }
-      const rows = Object.entries(answers).map(([question_id, value]) => ({
-        test_id: currentTestId, question_id, value
-      }));
-      const { error } = await supabase.from("test_answers").upsert(rows);
-      if (error) { pErr.textContent = error.message; pErr.classList.remove("hidden"); return; }
-      pOk.textContent = "Answers saved.";
-      pOk.classList.remove("hidden");
-    }
-
-    // Finalize -> compute traits/matches via RPCs; render results
-    async function finalizeAndAnalyze() {
-      pErr.classList.add("hidden");
-      pOk.classList.add("hidden");
-
-      const skills = document.getElementById("skills").value.split(",").map(s=>s.trim()).filter(Boolean);
-      const interests = document.getElementById("interests").value.split(",").map(s=>s.trim()).filter(Boolean);
-
-      const { data: { session } } = await supabase.auth.getSession();
-
-      // If user is guest -> just show a local mock summary so UI doesn’t block
-      if (!session?.user || !currentTestId) {
-        const avg = Math.round(Object.values(answers).reduce((a,b)=>a+b,0)/Object.keys(answers).length * 20);
-        summaryEl.textContent = `Guest preview: average score ~${avg}/100. Sign in to save and get full matches.`;
-        traitsEl.innerHTML = `<li class="flex items-center justify-between rounded-lg border px-3 py-2">
-            <span>Analytical (demo)</span><span class="text-sm text-gray-600">${avg}</span></li>`;
-        matchesEl.innerHTML = "";
-        analysisEl.classList.remove("hidden");
-        return;
-      }
-
-      // Ensure DB has the latest answers first
-      await saveAnswers();
-
-      // 1) finalize_test
-      const { error: finErr } = await supabase.rpc("finalize_test", {
-        p_test_id: currentTestId,
-        p_skills: skills,
-        p_interests: interests
+    function readAnswers(){
+      return [...questionsEl.querySelectorAll("div[data-qid]")].map(row=>{
+        return {id:row.getAttribute("data-qid"),value:Number(row.getAttribute("data-selected")||3)};
       });
-      if (finErr) { pErr.textContent = finErr.message; pErr.classList.remove("hidden"); return; }
-
-      // 2) get_results
-      const { data: res, error } = await supabase.rpc("get_results", { p_test_id: currentTestId });
-      if (error) { pErr.textContent = error.message; pErr.classList.remove("hidden"); return; }
-
-      // ---- Render results ----
-      summaryEl.textContent = res?.summary || "No summary.";
-      traitsEl.innerHTML = "";
-      (res?.traits || []).forEach(t => {
-        const li = document.createElement("li");
-        li.className = "flex items-center justify-between rounded-lg border px-3 py-2";
-        li.innerHTML = `<span>${t.name}</span><span class="text-sm text-gray-600">${t.score}/100</span>`;
-        traitsEl.appendChild(li);
-      });
-      matchesEl.innerHTML = "";
-      (res?.matches || []).forEach(item => {
-        const card = document.createElement("div");
-        card.className = "rounded-xl border p-4";
-        card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="font-semibold">${item.title}</div>
-            <span class="text-xs px-2 py-1 rounded bg-blue-50 text-blue-700">${Math.round(item.score)}% fit</span>
-          </div>
-          ${item.description?`<p class="mt-1 text-sm text-gray-700">${item.description}</p>`:""}
-        `;
-        matchesEl.appendChild(card);
-      });
-      analysisEl.classList.remove("hidden");
-      pOk.textContent = "Analysis complete.";
-      pOk.classList.remove("hidden");
     }
 
-    // ---------- Event bindings ----------
-    btnReloadQuestions.addEventListener("click", loadQuestions);
-    btnStartTest.addEventListener("click", startOrResumeTest);
-    btnSaveAnswers.addEventListener("click", saveAnswers);
-    btnFinalize.addEventListener("click", finalizeAndAnalyze);
+    // ---------------- ANALYZE BUTTON ----------------
+    document.getElementById("analyzeBtn").onclick = async ()=>{
+      const pErr=document.getElementById("pErr"); pErr.classList.add("hidden");
+      try {
+        const answers=readAnswers();
+        const skills=document.getElementById("skills").value.split(",").map(s=>s.trim()).filter(Boolean);
+        const interests=document.getElementById("interests").value.split(",").map(s=>s.trim()).filter(Boolean);
 
-    // ---------- Boot ----------
-    await handleMagicLinkReturn();
-    await initAuth();
-    await loadQuestions();
+        // guest mode preview only
+        if (! (await supabase.auth.getSession()).data.session?.user ) {
+          document.getElementById("summary").textContent="Guest preview only — sign in to save results.";
+          document.getElementById("traits").innerHTML=`<li class="rounded border p-2">Analytical ~ Demo</li>`;
+          document.getElementById("analysis").classList.remove("hidden");
+          return;
+        }
+
+        // save answers → call RPC finalize_test → get_results
+        const { data:test } = await supabase.from("tests").insert([{ user_id:(await supabase.auth.getUser()).data.user.id }]).select("id").single();
+        await supabase.from("test_answers").upsert(answers.map(a=>({test_id:test.id,question_id:a.id,value:a.value})));
+        await supabase.rpc("finalize_test",{p_test_id:test.id,p_skills:skills,p_interests:interests});
+        const { data:res }=await supabase.rpc("get_results",{p_test_id:test.id});
+
+        document.getElementById("summary").textContent=res.summary||"";
+        const ul=document.getElementById("traits"); ul.innerHTML="";
+        (res.traits||[]).forEach(t=>{
+          ul.innerHTML+=`<li class="flex justify-between rounded border p-2"><span>${t.name}</span><span>${t.score}</span></li>`;
+        });
+        document.getElementById("analysis").classList.remove("hidden");
+      } catch(err){ pErr.textContent=err.message; pErr.classList.remove("hidden"); }
+    };
+
+    // ---------------- MATCHES BUTTON ----------------
+    document.getElementById("matchBtn").onclick = async ()=>{
+      const mErr=document.getElementById("mErr"); mErr.classList.add("hidden");
+      try{
+        const { data:test }=await supabase.from("tests").select("id").order("started_at",{ascending:false}).limit(1).single();
+        const { data:res }=await supabase.rpc("get_results",{p_test_id:test.id});
+        const wrap=document.getElementById("matches"); wrap.innerHTML="";
+        (res.matches||[]).forEach(m=>{
+          wrap.innerHTML+=`<div class="rounded border p-3"><div class="font-semibold">${m.title}</div><p>${m.description||""}</p><span>${Math.round(m.score)}%</span></div>`;
+        });
+      }catch(err){ mErr.textContent=err.message; mErr.classList.remove("hidden"); }
+    };
   </script>
 </body>
 </html>
