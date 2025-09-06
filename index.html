@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, user-scalable=no"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
   <title>CareerWise — Discover Your Best-Fit Career</title>
 
   <!-- Inter font -->
@@ -15,24 +12,23 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='14' width='64' height='64' fill='%234f7cff'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='38' font-family='Inter' fill='white'%3ECW%3C/text%3E%3C/svg%3E" />
 
   <style>
-    /* ===== Light, clean, blue theme (only colors/visuals changed) ===== */
     :root{
-      --bg: #f7f9fc;
-      --card: #ffffff;
-      --card-strong: #ffffff;
-      --stroke: #e5e7eb;       /* light gray borders */
-      --text: #0f172a;         /* slate-900 */
-      --muted: #64748b;        /* slate-500 */
-      --primary: #2563eb;      /* blue-600 */
-      --primary-600: #1d4ed8;  /* blue-700 */
-      --success: #16a34a;      /* green-600 */
-      --warning: #d97706;      /* amber-600 */
-      --danger: #dc2626;       /* red-600 */
-      --shadow: 0 8px 24px rgba(2,6,23,.06);
+      --bg: #0b1020;
+      --card: rgba(255,255,255,0.06);
+      --card-strong: rgba(255,255,255,0.12);
+      --stroke: rgba(255,255,255,0.12);
+      --text: #e6eaf2;
+      --muted: #a8b0c3;
+      --primary: #4f7cff;          /* buttons */
+      --love: #2563eb;             /* word "love" */
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
       --radius: 16px;
       --radius-sm: 10px;
       --radius-lg: 22px;
-      --blur: 0;
+      --blur: 12px;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -40,7 +36,11 @@
       margin:0;
       font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       color:var(--text);
-      background: var(--bg);
+      background:
+        radial-gradient(1200px 700px at 15% 5%, #192447 0%, transparent 55%),
+        radial-gradient(900px 600px at 90% 10%, #40286f 0%, transparent 55%),
+        radial-gradient(900px 600px at 50% 100%, #1d3b62 0%, transparent 60%),
+        var(--bg);
     }
     a{color:var(--primary); text-decoration:none}
     .container{max-width:1100px;margin:0 auto;padding:32px}
@@ -50,31 +50,17 @@
     /* Header */
     .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
     .brand{display:flex;align-items:center;gap:12px}
-    .logo{
-      width:36px;height:36px;border-radius:10px;
-      background: linear-gradient(135deg,#7aa2ff 0%, #4f7cff 60%, #3b82f6 100%);
-      box-shadow: 0 6px 16px rgba(59,130,246,.22);
-    }
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);box-shadow:var(--shadow)}
     .brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.3px}
-    .chip{
-      font-size:12px;color:var(--muted);
-      border:1px solid var(--stroke);padding:6px 10px;border-radius:999px;
-      background:var(--card);
-    }
+    .chip{font-size:12px;color:var(--muted);border:1px solid var(--stroke);padding:6px 10px;border-radius:999px;background:var(--card);backdrop-filter: blur(var(--blur))}
 
-    /* Tagline */
-    .tagline h2{
-      margin:0;font-size:28px;font-weight:800;letter-spacing:.2px;color:var(--text)
-    }
-    .tagline p{margin:6px 0 0;color:var(--muted);font-size:14px}
+    /* Hero */
+    .hero h2{font-size:40px;line-height:1.15;margin:6px 0 6px;font-weight:800;color:#eaf0ff}
+    .love{color:var(--love); text-shadow:0 6px 24px rgba(37,99,235,.25)}
+    .sub{color:#cfd7ea;font-weight:700}
 
     /* Cards */
-    .card{
-      background:var(--card); border:1px solid var(--stroke);
-      border-radius:var(--radius); box-shadow: var(--shadow);
-      padding:22px;
-    }
-    .card strong{color:var(--text)}
+    .card{background:var(--card); border:1px solid var(--stroke);border-radius:var(--radius); box-shadow: var(--shadow);backdrop-filter: blur(var(--blur)); padding:22px}
     .section-title{font-size:22px;font-weight:700;margin:0 0 8px}
     .muted{color:var(--muted);font-size:14px}
 
@@ -82,78 +68,51 @@
     .auth-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px}
     @media (max-width: 860px){ .auth-grid{grid-template-columns:1fr} }
 
+    /* Tabs – neutral (no blue fill) */
     .tabs{display:flex;gap:8px;margin-bottom:14px}
     .tab{
       padding:9px 12px;border-radius:10px;border:1px solid var(--stroke);
-      background:#fff;color:var(--text);font-weight:600;font-size:13px;cursor:pointer
+      background:rgba(255,255,255,0.04);color:var(--text);font-weight:600;font-size:13px;cursor:pointer
     }
-    .tab.is-active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .tab.is-active{outline:2px solid rgba(255,255,255,.18)} /* subtle, not blue */
+
+    /* Mode toggles (Login vs Signup) */
     .seg{display:flex;gap:8px;margin-bottom:12px}
-    .seg .ghost{
-      padding:8px 10px;border-radius:10px;border:1px solid var(--stroke);
-      background:#fff;color:var(--text);font-weight:600;font-size:12px;cursor:pointer
-    }
-    .seg .ghost.is-active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .seg .ghost{padding:8px 10px;border-radius:10px;border:1px solid var(--stroke);background:var(--card);color:var(--text);font-weight:600;font-size:12px;cursor:pointer}
+    .seg .ghost.is-active{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.22)}
 
-    /* Inputs */
-    .input,.select{
-      width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--stroke);
-      background:#fff;color:var(--text);outline:none;
-    }
+    /* Inputs / buttons */
+    .input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,0.04);color:var(--text);outline:none}
     .input::placeholder{color:#94a3b8}
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;gap:8px;
-      padding:12px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:700;
-      color:#fff;background:var(--primary);box-shadow:0 6px 14px rgba(37,99,235,.18)
-    }
-    .btn:hover{filter:brightness(1.03)}
-    .btn.secondary{background:#fff;color:var(--text);border:1px solid var(--stroke);box-shadow:none}
-    .btn.success{background:var(--success);box-shadow:0 6px 14px rgba(22,163,74,.18)}
-    .btn.warning{background:var(--warning);color:#fff}
-
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:700;color:#fff;background:linear-gradient(180deg,#6b8aff,#4f7cff);box-shadow:var(--shadow)}
+    .btn.secondary{background:rgba(255,255,255,0.06);border:1px solid var(--stroke);color:var(--text)}
+    .btn.success{background:linear-gradient(180deg,#36d676,#22c55e)}
     .inline-note{font-size:13px;margin-top:8px}
-    .note-ok{color:#16a34a}.note-err{color:#dc2626}
+    .note-ok{color:#86efac}.note-err{color:#fda4af}
+    .spinner{width:16px;height:16px;border-radius:999px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Chips list */
+    /* Lists / chips */
     .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-    .chip-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--stroke);
-      border-radius:12px;padding:10px 12px;background:#fff}
+    .chip-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--stroke);border-radius:12px;padding:10px 12px;background:rgba(255,255,255,0.04)}
 
-    /* Question list */
-    .q{border:1px solid var(--stroke);border-radius:12px;padding:14px;background:#fff}
+    /* Questions */
+    .q{border:1px solid var(--stroke);border-radius:12px;padding:14px;background:rgba(255,255,255,0.04)}
     .rate{display:flex;gap:8px;margin-top:8px}
-    .rate button{
-      width:38px;height:38px;border-radius:12px;border:1px solid var(--stroke);
-      background:#fff;color:var(--text);font-weight:700;cursor:pointer
-    }
-    .rate button.is-on{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .rate button{width:38px;height:38px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,0.06);color:var(--text);font-weight:700;cursor:pointer}
+    .rate button.is-on{background:var(--primary)}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-    /* Match cards */
-    .match{border:1px solid var(--stroke);border-radius:16px;padding:16px;background:#fff}
+    /* Matches */
+    .match{border:1px solid var(--stroke);border-radius:16px;padding:16px;background:rgba(255,255,255,0.05)}
     .match .hdr{display:flex;align-items:center;justify-content:space-between}
-    .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(37,99,235,.12);color:#1d4ed8;border:1px solid rgba(37,99,235,.22)}
+    .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(79,124,255,.18);color:#cfe0ff;border:1px solid rgba(79,124,255,.4)}
 
-    /* Footer */
     footer{color:var(--muted);text-align:center;font-size:12px;margin-top:8px}
-
-    /* Divider heading */
-    .divider{display:flex;align-items:center;gap:12px;margin:10px 0 18px}
-    .divider span{height:1px;flex:1;background:var(--stroke)}
-
-    /* Toast */
-    .toast{
-      position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
-      background:#0b1220;border:1px solid #0b1220;color:#e2e8f0;
-      padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);z-index:50;display:none
-    }
-    .spinner{width:16px;height:16px;border-radius:999px;border:2px solid rgba(15,23,42,.18);border-top-color:#0f172a;animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
   <div class="container stack">
-
     <!-- Top -->
     <div class="topbar" aria-label="Header">
       <div class="brand">
@@ -161,16 +120,15 @@
         <h1>CareerWise</h1>
       </div>
       <div>
-        <span class="chip" id="apiChip">API: <strong id="api">https://careerwise-api.onrender.com</strong>
-        </span>
+        <span class="chip">API: <strong id="api">https://careerwise-api.onrender.com</strong></span>
         <span class="chip" id="apiStatus">checking…</span>
       </div>
     </div>
 
-    <!-- Tagline -->
-    <div class="tagline">
-      <h2>Find the work you <span style="color:var(--primary)">love</span></h2>
-      <p>Take the quick assessment and get precise, role-ready matches.</p>
+    <!-- Hero -->
+    <div class="hero">
+      <h2>Find the work you <span class="love">love</span></h2>
+      <div class="sub">Take a <strong>5-minute assessment</strong> and get <strong>precise, role-ready matches</strong>.</div>
     </div>
 
     <!-- ============ AUTH ============ -->
@@ -178,7 +136,7 @@
       <div class="auth-grid">
         <!-- Left: Email auth -->
         <div>
-          <h2 class="section-title">Sign in</h2>
+          <h3 class="section-title">Sign in</h3>
           <p class="muted">Keep your progress and get personalized matches.</p>
 
           <div class="tabs" role="tablist" aria-label="Sign in method">
@@ -201,7 +159,7 @@
               <button class="btn" type="submit"><span id="loginSpin" class="spinner hidden"></span> Log in</button>
             </form>
 
-            <form id="signupForm" class="stack" style="gap:10px;display:none;margin-top:10px;">
+            <form id="signupForm" class="stack hidden" style="gap:10px;margin-top:10px;">
               <label class="muted" for="signupEmail">Email</label>
               <input id="signupEmail" class="input" type="email" autocomplete="email" placeholder="you@example.com" required>
               <label class="muted" for="signupPassword">Password</label>
@@ -213,8 +171,7 @@
           </div>
 
           <!-- Magic Panel -->
-          <div id="panelMagic" role="tabpanel" aria-labelledby="tabMagic" style="display:none;">
-            <div class="divider"><span></span><p class="muted" style="margin:0;">Email me a secure link</p><span></span></div>
+          <div id="panelMagic" class="hidden" role="tabpanel" aria-labelledby="tabMagic">
             <form id="emailForm" class="stack" style="gap:10px;">
               <label class="muted" for="emailInput">Email</label>
               <input id="emailInput" class="input" type="email" autocomplete="email" placeholder="you@example.com" required>
@@ -226,7 +183,7 @@
 
         <!-- Right: Guest -->
         <div>
-          <h2 class="section-title">Or continue as guest</h2>
+          <h3 class="section-title">Or continue as guest</h3>
           <p class="muted">Try the app instantly. You can sign in any time to save.</p>
           <button id="guestBtn" class="btn success" style="width:100%;margin-top:10px;">Continue as guest</button>
           <div class="stack" style="gap:10px;margin-top:14px;">
@@ -240,7 +197,7 @@
       <div id="authUserBar" class="hidden" style="margin-top:18px;">
         <div class="chip-row" style="align-items:center;">
           <div style="display:flex;align-items:center;gap:10px;">
-            <div id="userBadge" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(180deg,#6b8aff,#4f7cff);display:grid;place-items:center;font-weight:800;color:#fff;">U</div>
+            <div id="userBadge" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(180deg,#6b8aff,#4f7cff);display:grid;place-items:center;font-weight:800;">U</div>
             <div id="userLabel" style="font-weight:700;">Signed in</div>
           </div>
           <button id="signOutBtn" class="btn secondary" type="button">Sign out</button>
@@ -248,12 +205,11 @@
       </div>
     </section>
 
-    <!-- ============ APP ============ -->
+    <!-- ============ APP (next-page view) ============ -->
     <div id="appRoot" class="stack hidden">
-      <!-- Analysis -->
       <section class="card" aria-label="Psychometric Analysis">
         <div class="topbar" style="margin:0 0 10px">
-          <h2 class="section-title" style="margin:0">Psychometric Analysis</h2>
+          <h3 class="section-title" style="margin:0">Psychometric Analysis</h3>
           <div class="stack" style="grid-auto-flow:column;gap:8px;display:grid;">
             <button id="btnReloadApi" class="btn secondary" type="button">Reload from API</button>
             <button id="btnLoadDemo" class="btn secondary" type="button">Load Demo Questions</button>
@@ -274,22 +230,21 @@
         </div>
 
         <div id="analysis" class="hidden" style="margin-top:16px;">
-          <div class="card" style="background:#fff">
-            <h3 style="margin:0 0 6px;font-size:16px;">Summary</h3>
+          <div class="card" style="background:rgba(255,255,255,0.04)">
+            <h4 style="margin:0 0 6px;font-size:16px;">Summary</h4>
             <p id="summary" class="muted" style="white-space:pre-wrap;margin:0"></p>
 
-            <h3 style="margin:14px 0 6px;font-size:16px;">Traits</h3>
+            <h4 style="margin:14px 0 6px;font-size:16px;">Traits</h4>
             <div id="traits" class="chips"></div>
 
-            <h3 style="margin:14px 0 6px;font-size:16px;">Cautions</h3>
-            <ul id="cautions" style="margin:0 0 0 18px;color:#475569"></ul>
+            <h4 style="margin:14px 0 6px;font-size:16px;">Cautions</h4>
+            <ul id="cautions" style="margin:0 0 0 18px;color:#dfe6ff"></ul>
           </div>
         </div>
       </section>
 
-      <!-- Matching -->
       <section class="card" aria-label="Career Match">
-        <h2 class="section-title">Career Match</h2>
+        <h3 class="section-title">Career Match</h3>
         <p class="muted">Uses traits, skills, and interests above.</p>
         <div style="display:flex;gap:10px;margin-top:8px;align-items:center;">
           <button id="matchBtn" class="btn success" type="button"><span id="matchSpin" class="spinner hidden"></span> Get Matches</button>
@@ -300,15 +255,30 @@
 
       <footer>© 2025 CareerWise. Demo-only—no personal data stored in guest mode.</footer>
     </div>
-
   </div>
-
-  <!-- Toast -->
-  <div id="toast" class="toast" role="status"></div>
 
   <!-- ===================== APP LOGIC ===================== -->
   <script>
-    const API = "https://careerwise-api.onrender.com"; // change if needed
+    const API = "https://careerwise-api.onrender.com";
+
+    // "Next page" helpers (app view lives at #app)
+    function goToApp() {
+      document.getElementById('authSection').classList.add('hidden');
+      document.getElementById('appRoot').classList.remove('hidden');
+      if (location.hash !== '#app') {
+        history.pushState({}, '', '#app');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function goToAuth() {
+      document.getElementById('authSection').classList.remove('hidden');
+      document.getElementById('appRoot').classList.add('hidden');
+      if (location.hash) history.replaceState({}, '', location.pathname);
+    }
+    // open app directly if URL already has #app
+    if (location.hash === '#app') {
+      goToApp();
+    }
 
     const demoQuestions = [
       { id: 'q1', text: 'I enjoy solving complex problems.', dimension: 'Analytical Thinking' },
@@ -322,15 +292,8 @@
     const apiStatus = document.getElementById('apiStatus');
     const pErr = document.getElementById('pErr');
     const mErr = document.getElementById('mErr');
-    const toast = document.getElementById('toast');
 
-    function showToast(msg, ms=2000){
-      toast.textContent = msg;
-      toast.style.display = 'block';
-      setTimeout(()=> toast.style.display='none', ms);
-    }
-
-    // --- Persist answers locally so refresh doesn't wipe ---
+    // Local persistence of answers
     const LS_KEY = "cw_answers_v1";
     function saveAnswersLocal(answers){ try{ localStorage.setItem(LS_KEY, JSON.stringify(answers)); }catch{} }
     function readAnswersLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }catch{ return []; } }
@@ -359,8 +322,6 @@
       group.querySelectorAll('button').forEach(b => { b.classList.remove('is-on'); b.setAttribute('aria-pressed','false'); });
       btn.classList.add('is-on'); btn.setAttribute('aria-pressed','true');
       group.setAttribute('data-selected', btn.getAttribute('data-v'));
-
-      // save to local
       const answers = readAnswers();
       saveAnswersLocal(answers);
     });
@@ -373,7 +334,6 @@
         const v = Number(row.getAttribute('data-selected') || 0);
         if (v) answers.push({ id, value: v });
       });
-      // default any unanswered to 3 (as before)
       const ids = new Set(answers.map(a=>a.id));
       document.querySelectorAll('div.rate[data-qid]').forEach(row=>{
         const id = row.getAttribute('data-qid');
@@ -470,7 +430,6 @@
         });
 
         document.getElementById('analysis').classList.remove('hidden');
-        showToast('Analysis ready');
       }catch(err){
         pErr.textContent = err.message || 'Analyze error';
         pErr.classList.remove('hidden');
@@ -506,13 +465,12 @@
             </div>
             <p class="muted" style="margin:6px 0 0; white-space:pre-wrap;">${item.why || ''}</p>
             ${Array.isArray(item.nextSteps) ? `
-              <ul style="margin:8px 0 0 18px;color:#475569;">
+              <ul style="margin:8px 0 0 18px;color:#dfe6ff;">
                 ${item.nextSteps.map(s=>`<li>${s}</li>`).join('')}
               </ul>` : ''}
           `;
           wrap.appendChild(card);
         });
-        showToast('Matches updated');
       }catch(err){
         mErr.textContent = err.message || 'Match error';
         mErr.classList.remove('hidden');
@@ -529,47 +487,45 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // 🔑 Replace with your project if different
     const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Expose session helper for API calls
     window.__supabaseGetSession = async () => {
       const { data:{session} } = await supabase.auth.getSession();
       return session?.access_token || null;
     };
 
-    // Panels & tabs
+    // Tabs
     const tabPwd = document.getElementById('tabPwd');
     const tabMagic = document.getElementById('tabMagic');
     const panelPwd = document.getElementById('panelPwd');
     const panelMagic = document.getElementById('panelMagic');
     tabPwd.addEventListener('click', () => {
       tabPwd.classList.add('is-active'); tabMagic.classList.remove('is-active');
-      panelPwd.style.display = ''; panelMagic.style.display='none';
+      panelPwd.classList.remove('hidden'); panelMagic.classList.add('hidden');
     });
     tabMagic.addEventListener('click', () => {
       tabMagic.classList.add('is-active'); tabPwd.classList.remove('is-active');
-      panelMagic.style.display = ''; panelPwd.style.display='none';
+      panelMagic.classList.remove('hidden'); panelPwd.classList.add('hidden');
     });
 
-    // Login vs Signup mode
+    // Login vs Signup
     const btnShowLogin = document.getElementById('btnShowLogin');
     const btnShowSignup = document.getElementById('btnShowSignup');
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     btnShowLogin.addEventListener('click', () => {
       btnShowLogin.classList.add('is-active'); btnShowSignup.classList.remove('is-active');
-      loginForm.style.display = ''; signupForm.style.display='none';
+      loginForm.classList.remove('hidden'); signupForm.classList.add('hidden');
     });
     btnShowSignup.addEventListener('click', () => {
       btnShowSignup.classList.add('is-active'); btnShowLogin.classList.remove('is-active');
-      signupForm.style.display = ''; loginForm.style.display='none';
+      signupForm.classList.remove('hidden'); loginForm.classList.add('hidden');
     });
 
-    // Handle magic-link return (?code=...)
+    // Magic-link code exchange (?code=...)
     async function handleMagicLinkReturn(){
       const qs = location.search;
       if (qs && new URLSearchParams(qs).has("code")){
@@ -578,7 +534,6 @@
       }
     }
 
-    // UI bindings
     const authSection = document.getElementById("authSection");
     const authUserBar = document.getElementById("authUserBar");
     const userBadge = document.getElementById("userBadge");
@@ -588,7 +543,6 @@
     const emailInput = document.getElementById("emailInput");
     const emailMsg = document.getElementById("emailMsg");
     const pwdMsg = document.getElementById("pwdMsg");
-    const appRoot = document.getElementById("appRoot");
     const guestBtn = document.getElementById("guestBtn");
 
     function getGuestId(){
@@ -605,15 +559,14 @@
       authUserBar.classList.remove('hidden');
       userBadge.textContent = (label || email || "U").slice(0,1).toUpperCase();
       userLabel.textContent = asGuest ? `Guest: ${label}` : (email || label || "Signed in");
-      authSection.scrollIntoView({ behavior:'smooth', block:'start' });
-      appRoot.classList.remove('hidden');
+      goToApp(); // <-- move to next page view
     }
     function setSignedOutUI(){
       authUserBar.classList.add('hidden');
-      appRoot.classList.add('hidden');
+      goToAuth();
     }
 
-    // Email + Password: login
+    // Email + Password: login (only this button triggers it)
     loginForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
       pwdMsg.classList.add('hidden');
@@ -634,7 +587,7 @@
       }
     });
 
-    // Email + Password: signup
+    // Email + Password: signup (confirmation still required)
     signupForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
       pwdMsg.classList.add('hidden');
@@ -642,7 +595,7 @@
       const email = (document.getElementById('signupEmail').value||'').trim();
       const password = document.getElementById('signupPassword').value;
       try{
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: location.origin + location.pathname }
         });
@@ -692,6 +645,7 @@
     });
 
     async function initAuth(){
+      await handleMagicLinkReturn();
       const { data:{session} } = await supabase.auth.getSession();
       if (session?.user){
         setSignedInUI({ email: session.user.email });
@@ -712,9 +666,7 @@
         }
       });
     }
-
-    await handleMagicLinkReturn();
-    await initAuth();
+    initAuth();
   </script>
 </body>
 </html>
