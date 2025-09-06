@@ -15,23 +15,24 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='14' width='64' height='64' fill='%234f7cff'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='38' font-family='Inter' fill='white'%3ECW%3C/text%3E%3C/svg%3E" />
 
   <style>
+    /* ===== Light, clean, blue theme (only colors/visuals changed) ===== */
     :root{
-      --bg: #0b1020;
-      --card: rgba(255,255,255,0.06);
-      --card-strong: rgba(255,255,255,0.12);
-      --stroke: rgba(255,255,255,0.12);
-      --text: #e6eaf2;
-      --muted: #a8b0c3;
-      --primary: #4f7cff;
-      --primary-600: #3f6bff;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+      --bg: #f7f9fc;
+      --card: #ffffff;
+      --card-strong: #ffffff;
+      --stroke: #e5e7eb;       /* light gray borders */
+      --text: #0f172a;         /* slate-900 */
+      --muted: #64748b;        /* slate-500 */
+      --primary: #2563eb;      /* blue-600 */
+      --primary-600: #1d4ed8;  /* blue-700 */
+      --success: #16a34a;      /* green-600 */
+      --warning: #d97706;      /* amber-600 */
+      --danger: #dc2626;       /* red-600 */
+      --shadow: 0 8px 24px rgba(2,6,23,.06);
       --radius: 16px;
       --radius-sm: 10px;
       --radius-lg: 22px;
-      --blur: 12px;
+      --blur: 0;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -39,10 +40,7 @@
       margin:0;
       font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       color:var(--text);
-      background: radial-gradient(1200px 700px at 15% 5%, #192447 0%, transparent 55%),
-                  radial-gradient(900px 600px at 90% 10%, #40286f 0%, transparent 55%),
-                  radial-gradient(900px 600px at 50% 100%, #1d3b62 0%, transparent 60%),
-                  var(--bg);
+      background: var(--bg);
     }
     a{color:var(--primary); text-decoration:none}
     .container{max-width:1100px;margin:0 auto;padding:32px}
@@ -50,29 +48,33 @@
     .hidden{display:none !important}
 
     /* Header */
-    .topbar{
-      display:flex;align-items:center;justify-content:space-between;margin-bottom:12px
-    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
     .brand{display:flex;align-items:center;gap:12px}
     .logo{
       width:36px;height:36px;border-radius:10px;
-      background: linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);
-      box-shadow: var(--shadow);
+      background: linear-gradient(135deg,#7aa2ff 0%, #4f7cff 60%, #3b82f6 100%);
+      box-shadow: 0 6px 16px rgba(59,130,246,.22);
     }
     .brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.3px}
     .chip{
       font-size:12px;color:var(--muted);
       border:1px solid var(--stroke);padding:6px 10px;border-radius:999px;
-      background:var(--card);backdrop-filter: blur(var(--blur));
+      background:var(--card);
     }
+
+    /* Tagline */
+    .tagline h2{
+      margin:0;font-size:28px;font-weight:800;letter-spacing:.2px;color:var(--text)
+    }
+    .tagline p{margin:6px 0 0;color:var(--muted);font-size:14px}
 
     /* Cards */
     .card{
       background:var(--card); border:1px solid var(--stroke);
       border-radius:var(--radius); box-shadow: var(--shadow);
-      backdrop-filter: blur(var(--blur)); padding:22px;
+      padding:22px;
     }
-    .card strong{color:#fff}
+    .card strong{color:var(--text)}
     .section-title{font-size:22px;font-weight:700;margin:0 0 8px}
     .muted{color:var(--muted);font-size:14px}
 
@@ -83,55 +85,54 @@
     .tabs{display:flex;gap:8px;margin-bottom:14px}
     .tab{
       padding:9px 12px;border-radius:10px;border:1px solid var(--stroke);
-      background:var(--card-strong);color:var(--text);font-weight:600;font-size:13px;
-      cursor:pointer
+      background:#fff;color:var(--text);font-weight:600;font-size:13px;cursor:pointer
     }
-    .tab.is-active{background:linear-gradient(180deg,#607dff,#4e6bff);border-color:transparent}
+    .tab.is-active{background:var(--primary);color:#fff;border-color:var(--primary)}
     .seg{display:flex;gap:8px;margin-bottom:12px}
     .seg .ghost{
       padding:8px 10px;border-radius:10px;border:1px solid var(--stroke);
-      background:var(--card);color:var(--text);font-weight:600;font-size:12px;cursor:pointer
+      background:#fff;color:var(--text);font-weight:600;font-size:12px;cursor:pointer
     }
-    .seg .ghost.is-active{background:var(--primary);border-color:transparent}
+    .seg .ghost.is-active{background:var(--primary);color:#fff;border-color:var(--primary)}
 
     /* Inputs */
     .input,.select{
       width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--stroke);
-      background:rgba(255,255,255,0.04);color:var(--text);outline:none;
+      background:#fff;color:var(--text);outline:none;
     }
     .input::placeholder{color:#94a3b8}
     .btn{
       display:inline-flex;align-items:center;justify-content:center;gap:8px;
       padding:12px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:700;
-      color:#fff;background:linear-gradient(180deg,#6b8aff,#4f7cff);box-shadow:var(--shadow)
+      color:#fff;background:var(--primary);box-shadow:0 6px 14px rgba(37,99,235,.18)
     }
-    .btn:hover{filter:brightness(1.04)}
-    .btn.secondary{background:rgba(255,255,255,0.06);border:1px solid var(--stroke);color:var(--text)}
-    .btn.success{background:linear-gradient(180deg,#36d676,#22c55e)}
-    .btn.warning{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
+    .btn:hover{filter:brightness(1.03)}
+    .btn.secondary{background:#fff;color:var(--text);border:1px solid var(--stroke);box-shadow:none}
+    .btn.success{background:var(--success);box-shadow:0 6px 14px rgba(22,163,74,.18)}
+    .btn.warning{background:var(--warning);color:#fff}
+
     .inline-note{font-size:13px;margin-top:8px}
-    .note-ok{color:#86efac}.note-err{color:#fda4af}
+    .note-ok{color:#16a34a}.note-err{color:#dc2626}
 
     /* Chips list */
     .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
     .chip-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--stroke);
-      border-radius:12px;padding:10px 12px;background:rgba(255,255,255,0.04)}
-    .chip-row span{opacity:.9}
+      border-radius:12px;padding:10px 12px;background:#fff}
 
     /* Question list */
-    .q{border:1px solid var(--stroke);border-radius:12px;padding:14px;background:rgba(255,255,255,0.04)}
+    .q{border:1px solid var(--stroke);border-radius:12px;padding:14px;background:#fff}
     .rate{display:flex;gap:8px;margin-top:8px}
     .rate button{
       width:38px;height:38px;border-radius:12px;border:1px solid var(--stroke);
-      background:rgba(255,255,255,0.06);color:var(--text);font-weight:700;cursor:pointer
+      background:#fff;color:var(--text);font-weight:700;cursor:pointer
     }
-    .rate button.is-on{background:var(--primary)}
+    .rate button.is-on{background:var(--primary);color:#fff;border-color:var(--primary)}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
     /* Match cards */
-    .match{border:1px solid var(--stroke);border-radius:16px;padding:16px;background:rgba(255,255,255,0.05)}
+    .match{border:1px solid var(--stroke);border-radius:16px;padding:16px;background:#fff}
     .match .hdr{display:flex;align-items:center;justify-content:space-between}
-    .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(79,124,255,.18);color:#cfe0ff;border:1px solid rgba(79,124,255,.4)}
+    .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(37,99,235,.12);color:#1d4ed8;border:1px solid rgba(37,99,235,.22)}
 
     /* Footer */
     footer{color:var(--muted);text-align:center;font-size:12px;margin-top:8px}
@@ -143,10 +144,10 @@
     /* Toast */
     .toast{
       position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
-      background:rgba(20,24,38,.9);border:1px solid var(--stroke);color:var(--text);
+      background:#0b1220;border:1px solid #0b1220;color:#e2e8f0;
       padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);z-index:50;display:none
     }
-    .spinner{width:16px;height:16px;border-radius:999px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin 1s linear infinite}
+    .spinner{width:16px;height:16px;border-radius:999px;border:2px solid rgba(15,23,42,.18);border-top-color:#0f172a;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
@@ -164,6 +165,12 @@
         </span>
         <span class="chip" id="apiStatus">checking…</span>
       </div>
+    </div>
+
+    <!-- Tagline -->
+    <div class="tagline">
+      <h2>Find the work you <span style="color:var(--primary)">love</span></h2>
+      <p>Take the quick assessment and get precise, role-ready matches.</p>
     </div>
 
     <!-- ============ AUTH ============ -->
@@ -233,7 +240,7 @@
       <div id="authUserBar" class="hidden" style="margin-top:18px;">
         <div class="chip-row" style="align-items:center;">
           <div style="display:flex;align-items:center;gap:10px;">
-            <div id="userBadge" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(180deg,#6b8aff,#4f7cff);display:grid;place-items:center;font-weight:800;">U</div>
+            <div id="userBadge" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(180deg,#6b8aff,#4f7cff);display:grid;place-items:center;font-weight:800;color:#fff;">U</div>
             <div id="userLabel" style="font-weight:700;">Signed in</div>
           </div>
           <button id="signOutBtn" class="btn secondary" type="button">Sign out</button>
@@ -267,7 +274,7 @@
         </div>
 
         <div id="analysis" class="hidden" style="margin-top:16px;">
-          <div class="card" style="background:rgba(255,255,255,0.04)">
+          <div class="card" style="background:#fff">
             <h3 style="margin:0 0 6px;font-size:16px;">Summary</h3>
             <p id="summary" class="muted" style="white-space:pre-wrap;margin:0"></p>
 
@@ -275,7 +282,7 @@
             <div id="traits" class="chips"></div>
 
             <h3 style="margin:14px 0 6px;font-size:16px;">Cautions</h3>
-            <ul id="cautions" style="margin:0 0 0 18px;color:#dfe6ff"></ul>
+            <ul id="cautions" style="margin:0 0 0 18px;color:#475569"></ul>
           </div>
         </div>
       </section>
@@ -499,7 +506,7 @@
             </div>
             <p class="muted" style="margin:6px 0 0; white-space:pre-wrap;">${item.why || ''}</p>
             ${Array.isArray(item.nextSteps) ? `
-              <ul style="margin:8px 0 0 18px;color:#dfe6ff;">
+              <ul style="margin:8px 0 0 18px;color:#475569;">
                 ${item.nextSteps.map(s=>`<li>${s}</li>`).join('')}
               </ul>` : ''}
           `;
