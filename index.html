@@ -101,9 +101,9 @@
     const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    window.__sb = supabase;  
+    window.__sb = supabase;
 
-    // If already signed in, go straight to app
+    // If already signed in (or guest), go straight to app
     (async () => {
       const { data:{session} } = await supabase.auth.getSession();
       if (session || localStorage.getItem("cw_guest_id")) location.href = "app.html";
@@ -132,7 +132,7 @@
       const email = (document.getElementById('loginEmail').value||'').trim();
       const password = document.getElementById('loginPassword').value;
       try{
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         location.href = "app.html";
       }catch(err){
@@ -141,16 +141,17 @@
       }
     });
 
-    // Signup
+    // Signup — robust redirect (works for / and /index.html on GitHub Pages)
     signupForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
       pwdMsg.classList.add('hidden');
       const email = (document.getElementById('signupEmail').value||'').trim();
       const password = document.getElementById('signupPassword').value;
       try{
+        const redirectTo = new URL('app.html', location.href).href;
         const { error } = await supabase.auth.signUp({
           email, password,
-          options:{ emailRedirectTo: location.origin + location.pathname.replace(/index\.html?$/,'') + "app.html" }
+          options:{ emailRedirectTo: redirectTo }
         });
         if (error) throw error;
         pwdMsg.textContent = "Check your inbox to confirm your email, then you'll be taken to the app.";
