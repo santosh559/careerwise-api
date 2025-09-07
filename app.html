@@ -32,7 +32,7 @@
     .rate{display:flex;gap:8px;margin-top:8px}
     .rate button{width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer}
     .rate button.is-on{background:#e3edff;border-color:#c7d2fe;color:#1d4ed8}
-    .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .chips{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px,1fr));gap:10px}
     .chip-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media (max-width:700px){.grid-2{grid-template-columns:1fr}}
@@ -110,6 +110,15 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     window.__sb = supabase;
+
+    // ✅ Handle email confirmation / magic-link redirects
+    const params = new URLSearchParams(location.search);
+    if (params.has('code') || params.has('token_hash') || location.hash.includes('access_token')) {
+      try {
+        const { error } = await supabase.auth.exchangeCodeForSession(location.href);
+        if (!error) history.replaceState({}, '', location.pathname);
+      } catch {}
+    }
 
     async function requireAuth(){
       const { data:{session} } = await supabase.auth.getSession();
@@ -215,7 +224,7 @@
         return dot/(Math.sqrt(na)*Math.sqrt(nb)||1);}
       return (data||[]).map(c=>{
         const ct={}; Object.entries(c.traits||{}).forEach(([k,v])=>ct[k]=+v||0);
-        return {...c,score:Math.round(sim(u,ct)*100)};
+        return {...c,score:Math.round(Math.max(0,sim(u,ct))*100)};
       }).sort((a,b)=>b.score-a.score).slice(0,5);
     }
 
