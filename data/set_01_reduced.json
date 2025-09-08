@@ -1,0 +1,150 @@
+{
+  "set_id": "set_01_reduced",
+  "categories": {
+    "aptitude_reasoning": [
+      {
+        "q": "A train 180 m long is running at a speed of 54 km/hr. In what time will it cross a platform 120 m long?",
+        "options": ["10 sec", "12 sec", "15 sec", "20 sec"],
+        "answer": "15 sec"
+      },
+      {
+        "q": "A person walks 20% slower than usual. He reaches office 10 minutes late. What is the usual time taken to reach the office?",
+        "options": ["30 min", "40 min", "50 min", "60 min"],
+        "answer": "40 min"
+      },
+      {
+        "q": "A can do a work in 18 days and B in 27 days. They work together for 6 days. How much work is left?",
+        "options": ["1/3", "1/4", "5/9", "1/2"],
+        "answer": "5/9"
+      },
+      {
+        "q": "If an item is sold at a 25% profit, and the selling price is ₹500, what is the cost price?",
+        "options": ["₹375", "₹400", "₹425", "₹450"],
+        "answer": "₹400"
+      },
+      {
+        "q": "The sum of ages of A and B is 50. Five years ago, A was twice as old as B. What is the age of B now?",
+        "options": ["20", "25", "30", "35"],
+        "answer": "20"
+      },
+      {
+        "q": "Pipe A can fill a tank in 20 minutes, Pipe B in 30 minutes. If both are opened together but B is closed after 10 minutes, how long will it take to fill the tank?",
+        "options": ["18 min", "22 min", "24 min", "20 min"],
+        "answer": "20 min"
+      },
+      {
+        "q": "A card is drawn from a well-shuffled deck of 52 cards. What is the probability of getting a red queen?",
+        "options": ["1/26", "1/13", "1/52", "1/12"],
+        "answer": "1/26"
+      }
+    ],
+    "personality_big5": [
+      { "q": "I enjoy exploring new tools or workflows, even if it means extra effort initially.", "scale": "1-5" },
+      { "q": "I make detailed task checklists and rarely miss deadlines.", "scale": "1-5" },
+      { "q": "During team meetings, I actively contribute and initiate discussions.", "scale": "1-5" },
+      { "q": "If a teammate is struggling with a deadline, I proactively offer help.", "scale": "1-5" },
+      { "q": "When I receive unexpected negative feedback, I find it difficult to stay calm and focused.", "scale": "1-5", "reverse": true },
+      { "q": "Before finalizing a project, I review all inputs carefully to maintain quality.", "scale": "1-5" },
+      { "q": "I adapt quickly when project goals shift or when learning new tools.", "scale": "1-5" }
+    ],
+    "work_values_motivation": [
+      { "q": "I feel most productive when I can decide how and when to complete my tasks.", "scale": "1-5" },
+      { "q": "I set challenging personal goals at work and take pride in reaching them.", "scale": "1-5" },
+      { "q": "I feel fulfilled when I contribute to a team’s collective success.", "scale": "1-5" },
+      { "q": "Getting appreciated for my contributions significantly boosts my motivation.", "scale": "1-5" },
+      { "q": "I prefer jobs that allow me to contribute to causes I care about.", "scale": "1-5" },
+      { "q": "I am motivated by opportunities for recognition and respect.", "scale": "1-5" },
+      { "q": "I value stability and security in my work environment.", "scale": "1-5" }
+    ],
+    "emotional_intelligence": [
+      { "q": "I can usually identify what emotion I’m feeling in stressful situations.", "scale": "1-5" },
+      { "q": "I naturally sense when a colleague is feeling down, even without being told.", "scale": "1-5" },
+      { "q": "I remain composed when deadlines shift or unexpected problems arise.", "scale": "1-5" },
+      { "q": "I make efforts to resolve misunderstandings before they escalate.", "scale": "1-5" },
+      { "q": "Even after setbacks, I maintain momentum and keep working toward my goal.", "scale": "1-5" },
+      { "q": "I listen carefully to understand others’ perspectives before responding.", "scale": "1-5" },
+      { "q": "I adjust my communication style depending on who I’m speaking with.", "scale": "1-5" }
+    ],
+    "career_adaptability": [
+      { "q": "When faced with unexpected project changes, I quickly reassess priorities and adjust.", "scale": "1-5" },
+      { "q": "I actively seek out opportunities to develop skills beyond my current role.", "scale": "1-5" },
+      { "q": "I feel confident exploring roles that are different from what I’ve done before.", "scale": "1-5" },
+      { "q": "I often reflect on how future industry changes might affect my career path.", "scale": "1-5" },
+      { "q": "When responsibilities shift, I focus on learning instead of resisting change.", "scale": "1-5" },
+      { "q": "I regularly research new tools and technologies relevant to my field.", "scale": "1-5" },
+      { "q": "I can visualize multiple backup plans if my primary career goal doesn’t work out.", "scale": "1-5" }
+    ],
+    "cognitive_thinking": [
+      {
+        "q": "You're leading a student tech fest. Midway through the event, the chief guest cancels. What do you do?",
+        "options": [
+          "Cancel session with apology",
+          "Host impromptu student panel",
+          "Play videos until next slot",
+          "Invite available faculty"
+        ],
+        "answer": "Host impromptu student panel"
+      },
+      {
+        "q": "You’re developing an AI project with 3 teammates. One insists on outdated methods. How do you persuade?",
+        "options": [
+          "Ignore their input",
+          "Present data for newer methods & ask feedback",
+          "Let them use their approach and compare later",
+          "Ask mentor to decide"
+        ],
+        "answer": "Present data for newer methods & ask feedback"
+      },
+      {
+        "q": "During a campus interview, you’re asked a question you don’t know. What do you do?",
+        "options": [
+          "Bluff confidently",
+          "Admit honestly & show eagerness to learn",
+          "Redirect to related topic",
+          "Ask for clarification"
+        ],
+        "answer": "Admit honestly & show eagerness to learn"
+      },
+      {
+        "q": "A teammate disagrees with your strategy in front of a professor. What do you prioritize?",
+        "options": [
+          "Defend idea openly",
+          "Agree publicly, explain privately",
+          "Suggest hybrid of both",
+          "Let professor decide"
+        ],
+        "answer": "Suggest hybrid of both"
+      },
+      {
+        "q": "You have 2 job offers: one high-paying but stressful, the other low-paying but passion-driven. Which do you pick?",
+        "options": [
+          "High-paying",
+          "Passion-driven",
+          "Negotiate hybrid",
+          "Temporary, reassess later"
+        ],
+        "answer": "Passion-driven"
+      },
+      {
+        "q": "Slides fail during seminar & script is lost. How do you manage?",
+        "options": [
+          "Cancel the talk",
+          "Continue from memory & engage",
+          "Ask audience what they expect",
+          "Use whiteboard/props"
+        ],
+        "answer": "Continue from memory & engage"
+      },
+      {
+        "q": "You’re assigned a domain you don’t know but expected to lead. What’s your action?",
+        "options": [
+          "Research quickly & lead",
+          "Let someone else lead",
+          "Divide leadership",
+          "Learn as you go & ask support"
+        ],
+        "answer": "Research quickly & lead"
+      }
+    ]
+  }
+}
