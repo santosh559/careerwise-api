@@ -1,0 +1,59 @@
+{
+  "meta": { "name": "Set 02" },
+  "categories": {
+    "aptitude_reasoning": [
+      { "id": "A1", "text": "If 3 workers take 6 hours to complete a task, how many workers are required to complete it in 2 hours?", "options": ["6","8","9","12"], "correct": "9" },
+      { "id": "A2", "text": "A sequence is 2, 6, 12, 20, ?. What is the next number?", "options": ["30","28","32","36"], "correct": "28" },
+      { "id": "A3", "text": "A train travels 60 km in 1 hour 30 minutes. What is its average speed?", "options": ["30 km/h","40 km/h","45 km/h","50 km/h"], "correct": "45 km/h" },
+      { "id": "A5", "text": "Which number replaces the question mark? 3, 9, 27, ?, 243", "options": ["54","72","81","108"], "correct": "81" },
+      { "id": "A6", "text": "A person spends 1/3 of income on rent, 1/5 on food, and saves the rest. If income = 30000, savings = ?", "options": ["12000","15000","10000","16000"], "correct": "12000" },
+      { "id": "A7", "text": "A clock shows 3:15. What is the angle between the hands?", "options": ["37.5°","45°","52.5°","60°"], "correct": "52.5°" },
+      { "id": "A8", "text": "A man cycles 12 km at 6 km/h and returns at 4 km/h. What is average speed?", "options": ["4.8 km/h","5 km/h","5.2 km/h","5.5 km/h"], "correct": "4.8 km/h" }
+    ],
+    "novel_reasoning": [
+      { "id": "N1", "text": "A farmer has 17 sheep. All but 9 run away. How many are left?", "options": ["8","9","17","None"], "correct": "9" },
+      { "id": "N2", "text": "A sequence is: 2, 6, 12, 20, 30, ?", "options": ["36","40","42","44"], "correct": "42" },
+      { "id": "N3", "text": "You’re shown four figures: three follow the same rule, one doesn’t. What reasoning skill is being tested?", "options": ["Deductive reasoning","Inductive reasoning","Abstract reasoning","Spatial reasoning"], "correct": "Abstract reasoning" },
+      { "id": "N4", "text": "If all roses are flowers, and some flowers fade quickly, which conclusion is valid?", "options": ["All roses fade quickly","Some roses may fade quickly","No roses fade quickly","Data insufficient"], "correct": "Data insufficient" },
+      { "id": "N5", "text": "Find the missing term: 4, 9, 19, 39, ?", "options": ["59","79","99","119"], "correct": "79" },
+      { "id": "N6", "text": "A man points to a photograph and says, “She is my mother’s only son’s daughter.” Who is she to him?", "options": ["Sister","Niece","Daughter","Cousin"], "correct": "Daughter" },
+      { "id": "N9", "text": "A cube has all faces painted. If cut into 27 equal cubes, how many small cubes have exactly 2 painted faces?", "options": ["12","16","18","20"], "correct": "18" }
+    ],
+    "personality": [
+      { "id": "P1", "type": "likert", "text": "In a team, I naturally take the lead to coordinate activities." },
+      { "id": "P2", "type": "likert", "text": "I stay calm and composed even in stressful workplace situations." },
+      { "id": "P3", "type": "likert", "text": "I enjoy socializing and interacting with colleagues regularly." },
+      { "id": "P4", "type": "likert", "text": "I pay close attention to details in my work." },
+      { "id": "P5", "type": "likert", "text": "I am open to trying new ideas and unconventional approaches." },
+      { "id": "P7", "type": "likert", "text": "I remain optimistic even during challenging tasks." },
+      { "id": "P9", "type": "likert", "text": "I adapt quickly to new environments or teams." }
+    ],
+    "values_motivation": [
+      { "id": "W1", "type": "likert", "text": "I believe it’s important to work in a role that allows me to help others." },
+      { "id": "W2", "type": "likert", "text": "I can recognize when my emotions are affecting my decisions at work." },
+      { "id": "W3", "type": "likert", "text": "I value opportunities for personal growth in my career." },
+      { "id": "W4", "type": "likert", "text": "I am able to control my reactions during conflicts." },
+      { "id": "W5", "type": "likert", "text": "I believe teamwork leads to better outcomes than individual effort." },
+      { "id": "W7", "type": "likert", "text": "I try to understand others’ emotions in workplace interactions." },
+      { "id": "W8", "type": "likert", "text": "I am motivated by recognition and rewards for my work." }
+    ],
+    "career_adaptability": [
+      { "id": "C1", "type": "likert", "text": "I feel confident in adapting to new workplace technologies." },
+      { "id": "C2", "type": "likert", "text": "I am comfortable with career shifts and changes in industry trends." },
+      { "id": "C3", "type": "likert", "text": "I proactively prepare for possible future career changes." },
+      { "id": "C4", "type": "likert", "text": "I am able to learn new skills quickly to stay relevant." },
+      { "id": "C5", "type": "likert", "text": "I remain motivated even when career plans face setbacks." },
+      { "id": "C6", "type": "likert", "text": "I am confident in handling unexpected workplace transitions." },
+      { "id": "C10", "type": "likert", "text": "I believe adaptability is one of my strongest career traits." }
+    ],
+    "cognitive_simulator": [
+      { "id": "CT1", "text": "You are leading a project with a tight deadline. One member misses a key task. What’s your first response?", "options": ["Report to management","Reassign task quickly","Understand reason & resolve","Extend deadline"], "correct": "Understand reason & resolve" },
+      { "id": "CT2", "text": "A client challenges your proposal with strong counterpoints. How do you react?", "options": ["Defend strongly","Revise proposal","Listen and adjust","Drop proposal"], "correct": "Listen and adjust" },
+      { "id": "CT3", "text": "Your team disagrees on strategy. What’s the most effective step?", "options": ["Impose decision","Facilitate discussion","Ignore conflict","Escalate to higher-ups"], "correct": "Facilitate discussion" },
+      { "id": "CT4", "text": "You must prioritize tasks: urgent but low-impact vs. high-impact but long-term. What do you do?", "options": ["Always urgent","Always impactful","Balance both","Avoid decision"], "correct": "Balance both" },
+      { "id": "CT5", "text": "If you receive incomplete data before a presentation, what do you do?", "options": ["Cancel presentation","Use available data with clarity","Guess missing info","Delay indefinitely"], "correct": "Use available data with clarity" },
+      { "id": "CT6", "text": "A junior makes a critical mistake. What’s your approach?", "options": ["Punish","Correct privately","Ignore","Escalate"], "correct": "Correct privately" },
+      { "id": "CT8", "text": "Your boss gives unclear instructions. What do you do?", "options": ["Guess and act","Ask for clarification","Do nothing","Escalate"], "correct": "Ask for clarification" }
+    ]
+  }
+}
