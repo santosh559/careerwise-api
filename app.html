@@ -144,6 +144,12 @@
   <!-- APP LOGIC -->
   <script>
   (function(){
+// Read ?set=<filename> from the URL (e.g., set_02.json)
+const urlParams  = new URLSearchParams(location.search);
+const chosenSet  = urlParams.get('set');          // may be null
+const allSets    = ["set_01_reduced.json","set_02.json","set_03.json","set_04.json"];
+function pickRandomSet(){ return allSets[Math.floor(Math.random()*allSets.length)]; }
+
     const sb = () => window.__sb;
 /* ===== Likert label sets by section ===== */
 const SCALE_LABELS = {
@@ -274,12 +280,13 @@ function normalizeSet(raw){
       }));
 
       // If 'correct' is the *label*, convert to the matching key.
-      let correctKey = q.correct;
-      if (correctKey && opts.length){
-        const hit = opts.find(o => (o.key === correctKey) || (o.label === correctKey));
-        if (hit) correctKey = hit.key;
-        else correctKey = undefined; // couldn't match
-      }
+      // If 'correct' or 'answer' is the *label*, convert to the matching key.
+let correctKey = q.correct || q.answer;   // <— add q.answer
+if (correctKey && opts.length){
+  const hit = opts.find(o => (o.key === correctKey) || (o.label === correctKey));
+  correctKey = hit ? hit.key : undefined; // couldn't match → undefined
+}
+
 
       out.questions.push({
         id,
@@ -478,13 +485,16 @@ controls = `
 
     // -------- Buttons --------
     document.getElementById('btnLoadDemo').onclick = async () => {
-      const set = await loadTestSet("set_01_reduced.json");
-      if (set && Array.isArray(set.questions) && set.questions.length) {
-        renderQuestions(set.questions);
-      } else {
-        renderQuestions(demoQuestions);
-      }
-    };
+  // If a set is specified in the URL, use it; else default to set_01
+  const file = chosenSet || "set_01_reduced.json";
+  const set  = await loadTestSet(file);
+  if (set && Array.isArray(set.questions) && set.questions.length) {
+    renderQuestions(set.questions);
+  } else {
+    renderQuestions(demoQuestions);
+  }
+};
+
 
     document.getElementById('btnReloadApi').onclick = async () => {
       try{
@@ -543,16 +553,24 @@ res.badges.forEach(b=>{
     };
 
     // -------- Initial load: prefer DB; fallback JSON; then mini demo --------
-    (async function boot(){
-      try{
-        const list = await loadQuestionsFromDB();
-        renderQuestions(list);
-      }catch{
-        const set = await loadTestSet("set_01_reduced.json");
-        if (set?.questions?.length) renderQuestions(set.questions);
-        else renderQuestions(demoQuestions);
-      }
-    })();
+    // -------- Initial load: prefer DB; fallback JSON (uses ?set=...), else mini demo --------
+(async function boot(){
+  try {
+    // If you have questions in Supabase, use them
+    const list = await loadQuestionsFromDB();
+    renderQuestions(list);
+  } catch {
+    // Otherwise use the set from the URL, or pick one at random if none given
+    const file = chosenSet || pickRandomSet();
+    const set  = await loadTestSet(file);
+    if (set?.questions?.length) {
+      renderQuestions(set.questions);
+    } else {
+      renderQuestions(demoQuestions);
+    }
+  }
+})();
+
   })();
   </script>
 </body>
