@@ -1,0 +1,59 @@
+{
+  "meta": { "name": "Set 03" },
+  "categories": {
+    "aptitude_reasoning": [
+      { "text": "If 3 workers take 6 hours to complete a task, how many workers are required to complete it in 2 hours?", "options": ["6","8","9","12"], "correct": "9" },
+      { "text": "A sequence is 2, 6, 12, 20, ?. What is the next number?", "options": ["30","28","32","36"], "correct": "28" },
+      { "text": "A train travels 60 km in 1 hour 30 minutes. What is its average speed?", "options": ["30 km/h","40 km/h","45 km/h","50 km/h"], "correct": "45 km/h" },
+      { "text": "Find the odd one out: 2, 6, 12, 20, 30, 42", "options": ["12","20","30","42"], "correct": "12" },
+      { "text": "Which number replaces the question mark? 3, 9, 27, ?, 243", "options": ["54","72","81","108"], "correct": "81" },
+      { "text": "A person spends 1/3 of income on rent, 1/5 on food, and saves the rest. What fraction of income does he save?", "options": ["7/15","9/15","11/15","13/15"], "correct": "7/15" },
+      { "text": "The average of 8 numbers is 15. If one number is removed, the average becomes 14. What was the removed number?", "options": ["18","20","22","25"], "correct": "22" }
+    ],
+    "novel_reasoning": [
+      { "text": "Find the missing number: 4, 9, 19, 39, 79, ?", "options": ["159","169","149","139"], "correct": "159" },
+      { "text": "What comes next? 2, 4, 12, 48, 240, ?", "options": ["720","960","1200","1440"], "correct": "960" },
+      { "text": "All doctors are professionals. Some professionals are teachers. Can we conclude: 'Some teachers may be doctors'?", "options": ["Yes","No","Cannot be determined","Only if all teachers are professionals"], "correct": "Yes" },
+      { "text": "Which number is missing? 5, 10, 20, 40, 80, ?", "options": ["100","120","160","200"], "correct": "160" },
+      { "text": "If PEN = 35 and INK = 34, then BOOK = ?", "options": ["43","41","45","47"], "correct": "41" },
+      { "text": "Odd one out: Apple, Mango, Banana, Potato", "options": ["Apple","Mango","Banana","Potato"], "correct": "Potato" },
+      { "text": "A cube has all faces painted. If it is cut into 27 smaller cubes, how many will have exactly two faces painted?", "options": ["8","12","18","24"], "correct": "18" }
+    ],
+    "personality": [
+      { "type": "likert", "text": "When a project demands using a completely unfamiliar method, I view it as a chance to experiment rather than a disruption." },
+      { "type": "likert", "text": "Even under tight deadlines, I resist the urge to submit 'good enough' work and instead double-check for overlooked errors." },
+      { "type": "likert", "text": "In mixed-experience teams, I naturally take on the role of energizing quieter members so discussions remain balanced." },
+      { "type": "likert", "text": "When my idea faces strong opposition, I adjust my approach to align with team consensus rather than push back aggressively." },
+      { "type": "likert", "text": "If a project unexpectedly fails, I remain emotionally stable and focus immediately on next steps rather than ruminating." },
+      { "type": "likert", "text": "I often suggest unconventional solutions even when others prefer proven, safer methods." },
+      { "type": "likert", "text": "During high-stakes presentations, I thrive on the audience’s attention and feel more energized than stressed." }
+    ],
+    "values_motivation": [
+      { "type": "likert", "text": "I feel motivated when my work aligns with my personal values." },
+      { "type": "likert", "text": "I can sense when a colleague is stressed even if they don’t openly express it." },
+      { "type": "likert", "text": "I value recognition and appreciation more than monetary rewards." },
+      { "type": "likert", "text": "I remain calm and solution-focused when unexpected problems arise." },
+      { "type": "likert", "text": "I believe contributing to society through my work is as important as career success." },
+      { "type": "likert", "text": "I prefer roles where collaboration is emphasized over competition." },
+      { "type": "likert", "text": "I believe integrity should never be compromised for short-term gains." }
+    ],
+    "career_adaptability": [
+      { "type": "likert", "text": "I am willing to explore career opportunities outside my comfort zone." },
+      { "type": "likert", "text": "I can quickly adjust my work style when organizational priorities change." },
+      { "type": "likert", "text": "I stay optimistic about my career growth even during uncertain times." },
+      { "type": "likert", "text": "I am open to reskilling or upskilling to remain employable." },
+      { "type": "likert", "text": "I actively look for feedback to refine my career direction." },
+      { "type": "likert", "text": "I adapt well when my role requires responsibilities I haven’t handled before." },
+      { "type": "likert", "text": "I see career setbacks as opportunities to re-strategize rather than failures." }
+    ],
+    "cognitive_simulator": [
+      { "text": "A team member suggests a completely new approach that conflicts with your current plan. What do you do?", "options": ["Reject the idea","Ask for details and evaluate objectively","Stick to the plan","Let the team vote"], "correct": "Ask for details and evaluate objectively" },
+      { "text": "You are given incomplete data for an urgent decision. What’s your approach?", "options": ["Wait","Use assumptions","Seek expert input and decide","Delay indefinitely"], "correct": "Seek expert input and decide" },
+      { "text": "Two colleagues disagree strongly during a meeting. What’s your next step?", "options": ["Take sides","End the meeting","Facilitate discussion","Ignore"], "correct": "Facilitate discussion" },
+      { "text": "A sudden system breakdown halts project work. What would you prioritize first?", "options": ["Inform client","Find immediate workaround","Investigate root cause","Assign blame"], "correct": "Find immediate workaround" },
+      { "text": "You receive two equally strong solutions to a problem. How do you decide?", "options": ["Pick randomly","Choose based on cost-effectiveness","Choose based on popularity","Delay decision"], "correct": "Choose based on cost-effectiveness" },
+      { "text": "A junior team member points out a mistake in your plan. What do you do?", "options": ["Ignore","Appreciate and review","Defend your idea","Reprimand"], "correct": "Appreciate and review" },
+      { "text": "Your manager pressures you to finish a task but quality might drop. What’s your choice?", "options": ["Prioritize speed only","Prioritize quality only","Communicate trade-off & suggest balance","Drop the task"], "correct": "Communicate trade-off & suggest balance" }
+    ]
+  }
+}
