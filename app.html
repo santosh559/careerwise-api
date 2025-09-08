@@ -143,6 +143,41 @@
   <script>
   (function(){
     const sb = () => window.__sb;
+/* ===== Likert label sets by section ===== */
+const SCALE_LABELS = {
+  personality: [
+    "Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"
+  ],
+  values_motivation: [
+    "Not Important","Slightly Important","Moderately Important","Very Important","Extremely Important"
+  ],
+  emotional_intelligence: [
+    "Very Inappropriate","Somewhat Inappropriate","Neutral","Appropriate","Very Appropriate"
+  ],
+  career_adaptability: [
+    "Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"
+  ],
+  default: ["1","2","3","4","5"]
+};
+
+/* Normalize/guess a section slug from q.section (or category text) */
+function sectionSlug(q){
+  const s = (q.section || q.category || "").toLowerCase();
+  if (s.includes("personality")) return "personality";
+  if (s.includes("value") || s.includes("motivation")) return "values_motivation";
+  if (s.includes("emotional") || s.includes("ei")) return "emotional_intelligence";
+  if (s.includes("adapt")) return "career_adaptability";
+  if (s.includes("aptitude") || s.includes("reasoning") || s.includes("novel")) return "aptitude_reasoning";
+  if (s.includes("cognitive")) return "cognitive_simulator";
+  return "default";
+}
+
+/* Get the correct label set for a Likert question */
+function labelsForQuestion(q){
+  const slug = sectionSlug(q);
+  return SCALE_LABELS[slug] || SCALE_LABELS.default;
+}
+
 
     // --- Demo fallback for emergencies ---
     const demoQuestions = [
