@@ -306,12 +306,18 @@ function normalizeSet(raw){
               `).join('')}
             </div>`;
         } else {
-          // default likert 1..5
-          controls = `
-            <div class="rate" data-qid="${q.id}" data-type="likert"
-                 data-weights='${JSON.stringify(q.weights||{})}'>
-              ${[1,2,3,4,5].map(v => `<button type="button" data-v="${v}">${v}</button>`).join('')}
-            </div>`;
+          // default likert with section-specific labels
+const labels = labelsForQuestion(q);
+controls = `
+  <div class="rate" data-qid="${q.id}" data-type="likert"
+       data-weights='${JSON.stringify(q.weights||{})}'
+       data-section='${sectionSlug(q)}'
+       ${q.reverse ? 'data-reverse="1"' : ''}>
+    ${[1,2,3,4,5].map((v,i) =>
+      `<button type="button" data-v="${v}">${v}. ${labels[i] || v}</button>`
+    ).join('')}
+  </div>`;
+
         }
 
         row.innerHTML = `
