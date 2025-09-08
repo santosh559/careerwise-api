@@ -1,0 +1,59 @@
+{
+  "meta": { "name": "Set 04" },
+  "categories": {
+    "aptitude_reasoning": [
+      { "text": "In a certain code, CAT is written as DBU. How will DOG be written?", "options": ["EPH","EOH","DPQ","EPQ"], "correct": "EPH" },
+      { "text": "Pointing to a man, Rahul says, 'He is the son of my grandfather’s only son.' How is the man related to Rahul?", "options": ["Brother","Uncle","Cousin","Father"], "correct": "Brother" },
+      { "text": "A man walks 3 km north, then 4 km east, then 5 km south. How far is he from the starting point?", "options": ["2 km","3 km","4 km","5 km"], "correct": "5 km" },
+      { "text": "3, 9, 27, 81, ?", "options": ["162","243","324","256"], "correct": "243" },
+      { "text": "Find the odd one out: Lion, Tiger, Leopard, Wolf", "options": ["Lion","Tiger","Leopard","Wolf"], "correct": "Wolf" },
+      { "text": "If a company has 400 employees distributed as HR:20%, Tech:40%, Sales:25%, Admin:15%, how many work in Tech?", "options": ["100","120","150","160"], "correct": "160" },
+      { "text": "If 1st March 2021 was a Monday, what day was 1st March 2022?", "options": ["Tuesday","Wednesday","Thursday","Monday"], "correct": "Tuesday" }
+    ],
+    "personality": [
+      { "type": "likert", "text": "I take initiative to coordinate tasks when my team seems unclear about next steps." },
+      { "type": "likert", "text": "When faced with multiple project setbacks, I stay motivated and keep working toward the goal." },
+      { "type": "likert", "text": "I enjoy brainstorming unconventional solutions, even if some ideas seem risky at first." },
+      { "type": "likert", "text": "I am honest about mistakes I make at work, even if it might affect my evaluation." },
+      { "type": "likert", "text": "When given incomplete information, I can still make a reasonable choice without overthinking." },
+      { "type": "likert", "text": "I actively seek input from quieter team members to ensure everyone’s ideas are considered." },
+      { "type": "likert", "text": "When a project’s priority suddenly changes, I can quickly re-plan my tasks and keep pace." }
+    ],
+    "values_motivation": [
+      { "type": "likert", "text": "I break down complex problems into smaller, manageable parts before deciding what to do." },
+      { "type": "likert", "text": "I prefer to collect and analyze relevant data before taking action, even if it takes more time." },
+      { "type": "likert", "text": "I can make decisions quickly when required, without overanalyzing minor details." },
+      { "type": "likert", "text": "When faced with a challenge, I actively think of creative solutions instead of sticking to old methods." },
+      { "type": "likert", "text": "I am comfortable taking calculated risks when the potential reward justifies it." },
+      { "type": "likert", "text": "After making a poor decision, I reflect on what went wrong to avoid repeating it." },
+      { "type": "likert", "text": "I value team brainstorming sessions when solving tough issues." }
+    ],
+    "career_adaptability": [
+      { "type": "likert", "text": "I often inspire others by sharing a clear picture of what success will look like." },
+      { "type": "likert", "text": "I trust team members to take ownership of tasks instead of micromanaging." },
+      { "type": "likert", "text": "I am driven more by personal satisfaction and learning than by external rewards." },
+      { "type": "likert", "text": "I seek input from others before making important team decisions." },
+      { "type": "likert", "text": "I make it a point to celebrate my team’s achievements publicly." },
+      { "type": "likert", "text": "Setting ambitious goals keeps me focused and energized at work." },
+      { "type": "likert", "text": "I enjoy guiding others to develop their skills and confidence." }
+    ],
+    "cognitive_simulator": [
+      { "text": "You’re working on a research project and a teammate plagiarizes content to meet a deadline. What’s your immediate step?", "options": ["Remove it","Inform privately and suggest fix","Report to supervisor","Ignore"], "correct": "Inform privately and suggest fix" },
+      { "text": "During a hackathon, your code fails minutes before the final submission. What is your best action?", "options": ["Panic","Present what is working and explain","Risk last-minute fix","Ask for extension"], "correct": "Present what is working and explain" },
+      { "text": "You notice two team members not participating actively. How do you handle this?", "options": ["Call them out","Ask privately if they need support","Assign urgent tasks","Do the work yourself"], "correct": "Ask privately if they need support" },
+      { "text": "Your professor says your solution is correct but overly complex. What should you do?", "options": ["Defend approach","Simplify for clarity","Keep as is","Wait to be asked to revise"], "correct": "Simplify for clarity" },
+      { "text": "Your mentor assigns you a task outside your comfort zone. How do you respond?", "options": ["Request different task","Attempt it and ask help when stuck","Delay","Hand it to a peer"], "correct": "Attempt it and ask help when stuck" },
+      { "text": "Your group project is behind schedule, team is demotivated. What do you do?", "options": ["Set small achievable goals","Push overtime","Do most yourself","Request extension"], "correct": "Set small achievable goals" },
+      { "text": "You are asked to present to senior leaders in 1 hour but slides are unfinished. What’s next?", "options": ["Postpone","Focus on key slides, present simply","Copy data online","Ask teammate"], "correct": "Focus on key slides, present simply" }
+    ],
+    "ethics_professional_responsibility": [
+      { "text": "You notice a colleague taking credit for work you did. What is the most professional response?", "options": ["Confront publicly","Speak privately and clarify","Ignore","Report immediately"], "correct": "Speak privately and clarify" },
+      { "text": "You discover a calculation error in a submitted report. What should you do?", "options": ["Do nothing","Inform supervisor and correct","Wait","Blame someone"], "correct": "Inform supervisor and correct" },
+      { "text": "A close friend asks you to share confidential company data. What should you do?", "options": ["Share","Refuse and explain confidentiality","Share partially","Delay"], "correct": "Refuse and explain confidentiality" },
+      { "text": "You are offered a gift by a vendor during negotiations. What should you do?", "options": ["Accept quietly","Refuse politely and follow policy","Accept but tell later","Ignore"], "correct": "Refuse politely and follow policy" },
+      { "text": "Your team is under pressure and a colleague suggests cutting corners. What is the most ethical choice?", "options": ["Agree","Suggest alternative maintaining quality","Ignore","Complain to boss"], "correct": "Suggest alternative maintaining quality" },
+      { "text": "During an exam, you see someone cheating. What should you do?", "options": ["Ignore","Report via channel","Confront","Help"], "correct": "Report via channel" },
+      { "text": "Your manager asks you to manipulate data to make results look better. What should you do?", "options": ["Refuse and explain ethics","Do it since boss said","Do it quietly","Tell others"], "correct": "Refuse and explain ethics" }
+    ]
+  }
+}
