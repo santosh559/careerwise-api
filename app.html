@@ -29,8 +29,8 @@
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
     .inline{display:flex;align-items:center;gap:10px}
     .q{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff}
-    .rate{display:flex;gap:8px;margin-top:8px}
-    .rate button{width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer}
+    .rate{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .rate button{padding:8px 12px;min-width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer}
     .rate button.is-on{background:#e3edff;border-color:#c7d2fe;color:#1d4ed8}
     .chips{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px,1fr));gap:10px}
     .chip-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff}
@@ -62,7 +62,7 @@
           <button id="btnLoadDemo" class="btn" type="button">Load Demo</button>
         </div>
       </div>
-      <p class="muted">Answer quickly on a 1–5 scale.</p>
+      <p class="muted">Answer the questions. Some are multiple-choice; others use a 1–5 scale.</p>
 
       <div id="questions" class="inline" style="flex-direction:column;gap:10px;margin-top:12px"></div>
 
@@ -111,7 +111,7 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     window.__sb = supabase;
 
-    // ✅ Handle email confirmation / magic-link redirects
+    // Handle confirmation / magic-link redirects
     const params = new URLSearchParams(location.search);
     if (params.has('code') || params.has('token_hash') || location.hash.includes('access_token')) {
       try {
@@ -143,111 +143,230 @@
   <script>
   (function(){
     const sb = () => window.__sb;
+
+    // --- Demo fallback for emergencies ---
     const demoQuestions = [
-      { id:'q1', text:'I enjoy solving complex problems.', weights:{Analytical:0.8,Persistence:0.3} },
-      { id:'q2', text:'I communicate my ideas clearly.', weights:{Communication:0.9} },
-      { id:'q3', text:'I like experimenting with new ideas.', weights:{Creativity:0.8,Adaptability:0.2} },
-      { id:'q4', text:'I stay focused until tasks are complete.', weights:{Persistence:0.9} },
-      { id:'q5', text:'I collaborate well in teams.', weights:{Collaboration:0.9} }
+      { id:'q1', type:'likert', text:'I enjoy solving complex problems.', weights:{Analytical:0.8,Persistence:0.3} },
+      { id:'q2', type:'likert', text:'I communicate my ideas clearly.',   weights:{Communication:0.9} },
+      { id:'q3', type:'likert', text:'I like experimenting with new ideas.', weights:{Creativity:0.8,Adaptability:0.2} },
+      { id:'q4', type:'likert', text:'I stay focused until tasks are complete.', weights:{Persistence:0.9} },
+      { id:'q5', type:'likert', text:'I collaborate well in teams.', weights:{Collaboration:0.9} }
     ];
 
-    const questionsEl=document.getElementById('questions');
-    const pErr=document.getElementById('pErr');
-    const mErr=document.getElementById('mErr');
+    const questionsEl = document.getElementById('questions');
+    const pErr = document.getElementById('pErr');
+    const mErr = document.getElementById('mErr');
 
+    // -------- Test set loader (from /data) --------
+    async function loadTestSet(setFile = "set_01_reduced.json"){
+      try{
+        const res = await fetch(`data/${setFile}`, { cache:"no-store" });
+        if(!res.ok) throw new Error(`${setFile} (${res.status})`);
+        const json = await res.json(); // {meta, questions:[...]}
+        return json;
+      }catch(e){
+        console.warn("Test set load error:", e);
+        return null;
+      }
+    }
+
+    // --------- Renderers (supports Likert + MCQ) ----------
     function renderQuestions(list){
-      questionsEl.innerHTML='';
-      list.forEach((q,i)=>{
-        const row=document.createElement('div');
-        row.className='q';
-        row.innerHTML=`
-          <div style="font-weight:600">${i+1}. ${q.text}</div>
-          <div class="rate" data-qid="${q.id}" data-weights='${JSON.stringify(q.weights||{})}'>
-            ${[1,2,3,4,5].map(v=>`<button type="button" data-v="${v}">${v}</button>`).join('')}
-          </div>`;
+      questionsEl.innerHTML = '';
+      list.forEach((q, idx) => {
+        const row = document.createElement('div');
+        row.className = 'q';
+
+        let controls = '';
+        if (q.type === 'mcq' && Array.isArray(q.options)) {
+          controls = `
+            <div class="rate" data-qid="${q.id}" data-type="mcq"
+                 data-weights='${JSON.stringify(q.weights||{})}'
+                 data-correct='${q.correct ?? ""}'>
+              ${q.options.map(opt => `
+                <button type="button" data-v="${opt.key}">${opt.key}. ${opt.label}</button>
+              `).join('')}
+            </div>`;
+        } else {
+          // default likert 1..5
+          controls = `
+            <div class="rate" data-qid="${q.id}" data-type="likert"
+                 data-weights='${JSON.stringify(q.weights||{})}'>
+              ${[1,2,3,4,5].map(v => `<button type="button" data-v="${v}">${v}</button>`).join('')}
+            </div>`;
+        }
+
+        row.innerHTML = `
+          <div style="font-weight:600">${idx+1}. ${q.text}</div>
+          ${controls}`;
         questionsEl.appendChild(row);
       });
     }
 
-    questionsEl.addEventListener('click',e=>{
-      const btn=e.target.closest('button[data-v]'); if(!btn)return;
-      const grp=btn.parentElement;
+    // click to select
+    questionsEl.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-v]'); if(!btn) return;
+      const grp = btn.parentElement;
       grp.querySelectorAll('button').forEach(b=>b.classList.remove('is-on'));
       btn.classList.add('is-on');
-      grp.setAttribute('data-selected',btn.getAttribute('data-v'));
+      grp.setAttribute('data-selected', btn.getAttribute('data-v'));
     });
 
+    // collect answers (numeric for likert, key for mcq)
     function readAnswers(){
-      const rows=questionsEl.querySelectorAll('.rate[data-qid]');
+      const rows = questionsEl.querySelectorAll('.rate[data-qid]');
       return Array.from(rows).map(r=>{
-        const id=r.getAttribute('data-qid');
-        const v=r.getAttribute('data-selected')||3;
-        return {id,value:Number(v)};
+        const id = r.getAttribute('data-qid');
+        const type = r.getAttribute('data-type') || 'likert';
+        const sel = r.getAttribute('data-selected');
+        return { id, type, value: type==='likert' ? Number(sel||3) : (sel||'') };
       });
     }
 
-    async function loadQuestions(){
-      try{
-        const {data,error}=await sb().from('questions').select('id,text,weights').eq('active',true);
-        if(error||!data.length) throw error;
-        renderQuestions(data);
-      }catch{ renderQuestions(demoQuestions); }
+    // -------- DB questions (optional) --------
+    async function loadQuestionsFromDB(){
+      const {data,error}=await sb().from('questions').select('id,text,weights,type,options,correct').eq('active',true);
+      if(error||!data?.length) throw error||new Error('No questions in DB');
+      // normalize options shape: [{key,label}]
+      const normalized = data.map(q=>{
+        const opts = Array.isArray(q.options)? q.options : null;
+        return { id:q.id, text:q.text, type:q.type||'likert', options:opts, correct:q.correct, weights:q.weights||{} };
+      });
+      return normalized;
     }
 
+    // ---------- Analysis (trait aggregation only) ----------
     function analyze(){
-      const rows=questionsEl.querySelectorAll('.rate[data-qid]');
-      const agg={};
-      rows.forEach(r=>{
-        const v=Number(r.getAttribute('data-selected')||3);
-        const z=(v-3)/2;
-        const w=JSON.parse(r.getAttribute('data-weights')||'{}');
-        Object.entries(w).forEach(([k,val])=>{
-          if(!agg[k]) agg[k]={sum:0,wsum:0};
-          agg[k].sum+=z*val; agg[k].wsum+=Math.abs(val);
+      // Sum weighted z-scores for likert; for MCQ we only use weights if provided
+      const rows = questionsEl.querySelectorAll('.rate[data-qid]');
+      const agg = {}; // trait -> {sum, wsum}
+      rows.forEach(row=>{
+        const type = row.getAttribute('data-type') || 'likert';
+        const weights = JSON.parse(row.getAttribute('data-weights')||'{}');
+        let contrib = 0;
+
+        if (type === 'likert') {
+          const v = Number(row.getAttribute('data-selected') || 3); // 1..5
+          contrib = (v - 3) / 2; // -1..+1
+        } else {
+          // MCQ: if a correct key is provided, give +1 for correct, -1 for incorrect; then scale to -1..+1
+          const pick = row.getAttribute('data-selected') || '';
+          const correct = row.getAttribute('data-correct') || '';
+          if (correct) contrib = pick ? (pick === correct ? 1 : -1) : 0;
+          else contrib = 0; // if no correct & only traits, we’ll just apply weights as-is below
+        }
+
+        Object.entries(weights).forEach(([trait,w])=>{
+          if(!agg[trait]) agg[trait]={sum:0,wsum:0};
+          agg[trait].sum  += contrib * Number(w);
+          agg[trait].wsum += Math.abs(Number(w));
         });
       });
-      const traits=Object.entries(agg).map(([name,o])=>{
-        const z=o.wsum?(o.sum/o.wsum):0;
-        return {name,score:Math.round(50+z*50)};
+
+      const traits = Object.entries(agg).map(([name,v])=>{
+        const z = v.wsum ? (v.sum / v.wsum) : 0;         // -1..+1
+        return { name, score: Math.round(50 + z*50) };   // 0..100
       }).sort((a,b)=>b.score-a.score);
-      const summary=traits.length?`Top strengths: ${traits.slice(0,3).map(t=>t.name).join(', ')}`:'Answer questions to see results';
-      const cautions=traits.filter(t=>t.score<45).map(t=>`Consider developing ${t.name}`);
-      return {summary,traits,cautions};
+
+      const summary = traits.length
+        ? `Top strengths: ${traits.slice(0,3).map(t=>t.name).join(', ')}`
+        : 'Answer questions to see results.';
+      const cautions = traits.filter(t=>t.score < 45).map(t=>`Consider developing ${t.name}.`);
+
+      return { summary, traits, cautions };
     }
 
+    // -------- Career matches from Supabase --------
     async function getMatches(){
       const {data}=await sb().from('careers').select('title,traits,description');
       const {traits}=analyze();
       const u={}; traits.forEach(t=>u[t.name]=t.score/100);
-      function sim(a,b){const k=new Set([...Object.keys(a),...Object.keys(b)]);
-        let dot=0,na=0,nb=0; k.forEach(x=>{dot+=(a[x]||0)*(b[x]||0);na+=(a[x]||0)**2;nb+=(b[x]||0)**2});
-        return dot/(Math.sqrt(na)*Math.sqrt(nb)||1);}
-      return (data||[]).map(c=>{
-        const ct={}; Object.entries(c.traits||{}).forEach(([k,v])=>ct[k]=+v||0);
-        return {...c,score:Math.round(Math.max(0,sim(u,ct))*100)};
-      }).sort((a,b)=>b.score-a.score).slice(0,5);
+
+      function sim(a,b){
+        const keys=new Set([...Object.keys(a),...Object.keys(b)]);
+        let dot=0,na=0,nb=0;
+        keys.forEach(k=>{ const x=a[k]||0, y=b[k]||0; dot+=x*y; na+=x*x; nb+=y*y; });
+        const d = Math.sqrt(na)*Math.sqrt(nb) || 1;
+        return dot/d;
+      }
+
+      return (data||[])
+        .map(c=>{
+          const ct={}; Object.entries(c.traits||{}).forEach(([k,v])=>ct[k]=Number(v)||0);
+          return {...c, score: Math.round(Math.max(0,sim(u,ct))*100)};
+        })
+        .sort((a,b)=>b.score-a.score)
+        .slice(0,5);
     }
 
-    document.getElementById('btnLoadDemo').onclick=()=>renderQuestions(demoQuestions);
-    document.getElementById('btnReloadApi').onclick=()=>loadQuestions();
-    document.getElementById('analyzeBtn').onclick=()=>{
-      const res=analyze();
-      document.getElementById('summary').textContent=res.summary;
-      const traitsEl=document.getElementById('traits'); traitsEl.innerHTML='';
-      res.traits.forEach(t=>traitsEl.innerHTML+=`<div class="chip-row"><span>${t.name}</span><span class="muted">${t.score}/100</span></div>`);
-      const cautionsEl=document.getElementById('cautions'); cautionsEl.innerHTML='';
-      res.cautions.forEach(c=>cautionsEl.innerHTML+=`<li>${c}</li>`);
-      document.getElementById('analysis').classList.remove('hidden');
-    };
-    document.getElementById('matchBtn').onclick=async()=>{
-      const wrap=document.getElementById('matches'); wrap.innerHTML='Loading...';
-      const res=await getMatches(); wrap.innerHTML='';
-      res.forEach(r=>{
-        wrap.innerHTML+=`<div class="match"><div class="hdr"><div style="font-weight:700">${r.title}</div><span class="badge-pill">${r.score}% fit</span></div><p class="muted">${r.description||''}</p></div>`;
-      });
+    // -------- Buttons --------
+    document.getElementById('btnLoadDemo').onclick = async () => {
+      const set = await loadTestSet("set_01_reduced.json");
+      if (set && Array.isArray(set.questions) && set.questions.length) {
+        renderQuestions(set.questions);
+      } else {
+        renderQuestions(demoQuestions);
+      }
     };
 
-    loadQuestions();
+    document.getElementById('btnReloadApi').onclick = async () => {
+      try{
+        const list = await loadQuestionsFromDB();
+        renderQuestions(list);
+      }catch{
+        renderQuestions(demoQuestions);
+      }
+    };
+
+    document.getElementById('analyzeBtn').onclick = () => {
+      const res = analyze();
+      document.getElementById('summary').textContent = res.summary;
+
+      const traitsEl = document.getElementById('traits'); traitsEl.innerHTML='';
+      res.traits.forEach(t=>{
+        const row = document.createElement('div');
+        row.className='chip-row';
+        row.innerHTML=`<span>${t.name}</span><span class="muted">${t.score}/100</span>`;
+        traitsEl.appendChild(row);
+      });
+
+      const cautionsEl = document.getElementById('cautions'); cautionsEl.innerHTML='';
+      res.cautions.forEach(c=>{
+        const li=document.createElement('li'); li.textContent=c; cautionsEl.appendChild(li);
+      });
+
+      document.getElementById('analysis').classList.remove('hidden');
+    };
+
+    document.getElementById('matchBtn').onclick = async () => {
+      mErr.classList.add('hidden');
+      const wrap = document.getElementById('matches'); wrap.innerHTML='Loading…';
+      try{
+        const res = await getMatches(); wrap.innerHTML='';
+        res.forEach(r=>{
+          const card=document.createElement('div'); card.className='match';
+          card.innerHTML=`
+            <div class="hdr"><div style="font-weight:700">${r.title}</div>
+              <span class="badge-pill">${r.score}% fit</span></div>
+            <p class="muted" style="margin:6px 0 0;white-space:pre-wrap">${r.description||''}</p>`;
+          wrap.appendChild(card);
+        });
+      }catch(err){
+        wrap.innerHTML=''; mErr.textContent = err?.message || 'Match error'; mErr.classList.remove('hidden');
+      }
+    };
+
+    // -------- Initial load: prefer DB; fallback JSON; then mini demo --------
+    (async function boot(){
+      try{
+        const list = await loadQuestionsFromDB();
+        renderQuestions(list);
+      }catch{
+        const set = await loadTestSet("set_01_reduced.json");
+        if (set?.questions?.length) renderQuestions(set.questions);
+        else renderQuestions(demoQuestions);
+      }
+    })();
   })();
   </script>
 </body>
