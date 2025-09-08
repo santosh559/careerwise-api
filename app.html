@@ -158,17 +158,100 @@
     const mErr = document.getElementById('mErr');
 
     // -------- Test set loader (from /data) --------
-    async function loadTestSet(setFile = "set_01_reduced.json"){
-      try{
-        const res = await fetch(`data/${setFile}`, { cache:"no-store" });
-        if(!res.ok) throw new Error(`${setFile} (${res.status})`);
-        const json = await res.json(); // {meta, questions:[...]}
-        return json;
-      }catch(e){
-        console.warn("Test set load error:", e);
-        return null;
-      }
+    // -------- Test set loader (from /data) --------
+// Accepts both shapes:
+//  A) { questions: [...] }  (already fine)
+//  B) { categories: { aptitude_reasoning:[], personality:[], ... } }
+async function loadTestSet(setFile = "set_01_reduced.json"){
+  try{
+    // Try relative path first, then absolute GH Pages URL as fallback
+    const rel = await fetch(`data/${setFile}`, { cache:"no-store" });
+    let json;
+    if (rel.ok) json = await rel.json();
+    else {
+      const absUrl = "https://santosh559.github.io/careerwise-api/data/" + setFile;
+      const abs = await fetch(absUrl, { cache:"no-store" });
+      if (!abs.ok) throw new Error(`${setFile} (${abs.status})`);
+      json = await abs.json();
     }
+    return normalizeSet(json);
+  }catch(e){
+    console.warn("Test set load error:", e);
+    return null;
+  }
+}
+
+// Normalize into a flat questions[] array the renderer understands.
+// - Flattens categories -> questions
+// - Auto-ids
+// - Converts MCQ options ["10 sec","12 sec",...] to
+//   [{key:"A",label:"10 sec"}, ...] and maps correct:"15 sec" -> "C".
+function normalizeSet(raw){
+  if (!raw) return null;
+
+  // If already in the expected shape:
+  if (Array.isArray(raw.questions)) return raw;
+
+  const out = { meta: raw.meta || {}, questions: [] };
+
+  // Helper: give keys A, B, C, D, ...
+  const abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+  function pushQ(q, fallbackPrefix){
+    if (!q) return;
+
+    const id = q.id || `${fallbackPrefix}_${out.questions.length+1}`;
+
+    // Detect MCQ vs Likert by presence of 'options'
+    if (Array.isArray(q.options) && q.options.length){
+      // MCQ path
+      const opts = q.options.map((label, i) => ({
+        key: abc[i] || String(i+1),
+        label
+      }));
+
+      // If 'correct' is the *label*, convert to the matching key.
+      let correctKey = q.correct;
+      if (correctKey && opts.length){
+        const hit = opts.find(o => (o.key === correctKey) || (o.label === correctKey));
+        if (hit) correctKey = hit.key;
+        else correctKey = undefined; // couldn't match
+      }
+
+      out.questions.push({
+        id,
+        type: "mcq",
+        text: q.q || q.text || "",
+        options: opts,
+        correct: correctKey,                // e.g., "C"
+        weights: q.weights || {},           // optional trait weights
+        section: q.section || q.category || fallbackPrefix
+      });
+    } else {
+      // Likert/default path
+      out.questions.push({
+        id,
+        type: "likert",
+        text: q.q || q.text || "",
+        reverse: !!q.reverse,               // optional
+        weights: q.weights || {},
+        section: q.section || q.category || fallbackPrefix
+      });
+    }
+  }
+
+  // Flatten categories if present
+  if (raw.categories && typeof raw.categories === "object"){
+    Object.entries(raw.categories).forEach(([cat, arr])=>{
+      (arr || []).forEach(q => pushQ(q, cat));
+    });
+  }
+
+  // If nothing got pushed, return null so caller can fallback to demo
+  if (!out.questions.length) return null;
+  return out;
+}
+
 
     // --------- Renderers (supports Likert + MCQ) ----------
     function renderQuestions(list){
