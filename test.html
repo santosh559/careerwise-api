@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerWise — Psychometric Analysis</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#ffffff; --surface:#ffffff; --border:#e5e7eb; --text:#0f172a; --muted:#6b7280; --primary:#3165ff; --primary-600:#2656f5; --radius:14px; --shadow:0 10px 30px rgba(15,23,42,.06) }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .container{max-width:1080px;margin:0 auto;padding:24px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);box-shadow:var(--shadow)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;border:1px solid var(--border);cursor:pointer;background:#fff;font-weight:600}
+    .btn.primary{background:var(--primary);border-color:transparent;color:#fff}.btn.primary:hover{background:var(--primary-600)}
+    .badge{width:28px;height:28px;border-radius:8px;background:#eef2ff;color:#1d4ed8;display:grid;place-items:center;font-weight:800}
+    .muted{color:var(--muted)} .hidden{display:none!important}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    .q{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff}
+    .rate{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .rate button{padding:8px 12px;min-width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer}
+    .rate button.is-on{background:#e3edff;border-color:#c7d2fe;color:#1d4ed8}
+    .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .chip-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand"><div class="logo"></div><strong>CareerWise</strong></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="who" class="muted"></span>
+        <span id="badge" class="badge">U</span>
+        <a class="btn" href="dashboard.html">← Dashboard</a>
+        <button id="signOutBtn" class="btn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="topbar" style="margin-bottom:8px">
+        <h3 style="margin:0">Psychometric Analysis</h3>
+        <div style="display:flex;gap:8px">
+          <button id="btnReloadApi" class="btn" type="button">Reload from DB</button>
+          <button id="btnLoadSet" class="btn" type="button">Load Set</button>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:0">Answer the questions. Likert questions show labels; MCQs show options.</p>
+
+      <div id="questions" style="display:flex;flex-direction:column;gap:10px;margin-top:12px"></div>
+
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button id="analyzeBtn" class="btn primary" type="button">Analyze</button>
+        <button id="saveBtn" class="btn" type="button">Save Results</button>
+        <span id="pErr" class="muted hidden"></span>
+        <span id="pOk" class="muted hidden" style="color:#16a34a">Saved!</span>
+      </div>
+
+      <div id="analysis" class="hidden" style="margin-top:16px;">
+        <div class="card" style="background:#f6f7f9">
+          <h4 style="margin:0 0 6px">Summary</h4>
+          <p id="summary" class="muted" style="white-space:pre-wrap;margin:0"></p>
+          <h4 style="margin:14px 0 6px">Badges</h4>
+          <div id="badges" class="chips"></div>
+          <h4 style="margin:14px 0 6px">Traits</h4>
+          <div id="traits" class="chips"></div>
+          <h4 style="margin:14px 0 6px">Cautions</h4>
+          <ul id="cautions" style="margin:0 0 0 18px;color:#111827"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Auth -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    const SUPABASE_URL="https://awsuhluvyrxwmogzyfhr.supabase.co";
+    const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.__sb = supabase;
+
+    const params = new URLSearchParams(location.search);
+    if (params.has('code') || params.has('token_hash') || location.hash.includes('access_token')) {
+      try { const { error } = await supabase.auth.exchangeCodeForSession(location.href); if(!error) history.replaceState({}, '', location.pathname); } catch {}
+    }
+
+    async function requireAuth(){
+      const { data:{session} } = await supabase.auth.getSession();
+      const guest = localStorage.getItem("cw_guest_id");
+      if(session){ setupUser(session.user.email); return; }
+      if(guest){ setupUser(`Guest: ${guest.replace("guest_","G-")}`); return; }
+      location.href="index.html";
+    }
+    function setupUser(label){
+      who.textContent = label; badge.textContent = (label||'U').slice(0,1).toUpperCase();
+      signOutBtn.onclick = async ()=>{ await supabase.auth.signOut().catch(()=>{}); localStorage.removeItem("cw_guest_id"); location.href="index.html"; };
+    }
+    await requireAuth();
+  </script>
+
+  <!-- App -->
+  <script>
+  (function(){
+    const sb = ()=>window.__sb;
+
+    // --- Read ?set= or pick random if missing
+    const urlParams  = new URLSearchParams(location.search);
+    const chosenSet  = urlParams.get('set');
+    const allSets    = ["set_01_reduced.json","set_02.json","set_03.json","set_04.json","set_05.json"];
+    const pickRandomSet = ()=> allSets[Math.floor(Math.random()*allSets.length)];
+
+    // ===== Likert labels by section =====
+    const SCALE_LABELS = {
+      personality: ["Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"],
+      values_motivation: ["Not Important","Slightly Important","Moderately Important","Very Important","Extremely Important"],
+      emotional_intelligence: ["Very Inappropriate","Somewhat Inappropriate","Neutral","Appropriate","Very Appropriate"],
+      career_adaptability: ["Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"],
+      default: ["1","2","3","4","5"]
+    };
+    function sectionSlug(q){
+      const s=(q.section||q.category||"").toLowerCase();
+      if(s.includes("personality")) return "personality";
+      if(s.includes("value")||s.includes("motivation")) return "values_motivation";
+      if(s.includes("emotional")||s.includes("ei")) return "emotional_intelligence";
+      if(s.includes("adapt")) return "career_adaptability";
+      if(s.includes("aptitude")||s.includes("reasoning")||s.includes("novel")) return "aptitude_reasoning";
+      if(s.includes("cognitive")) return "cognitive_simulator";
+      return "default";
+    }
+    function labelsForQuestion(q){ return SCALE_LABELS[sectionSlug(q)] || SCALE_LABELS.default; }
+
+    // ===== Badges =====
+    const BADGE_RULES = [
+      { when: s => (s.aptitude_reasoning ?? 0) >= 80, badge:{key:"logical_solver",label:"🧠 Logical Solver"} },
+      { when: s => (s.aptitude_reasoning ?? 0) >= 60 && (s.aptitude_reasoning ?? 0) < 80, badge:{key:"pattern_pro",label:"🧩 Pattern Pro"} },
+      { when: (_,t) => scoreOf(t,"Conscientiousness")>=80, badge:{key:"detail_driver",label:"📋 Detail-Driven"} },
+      { when: (_,t) => scoreOf(t,"Openness")>=80,         badge:{key:"creative_idealist",label:"🌟 Creative Idealist"} },
+      { when: s => (s.values_motivation ?? 0) >= 80,      badge:{key:"impact_builder",label:"🤝 Impact Builder"} },
+      { when: s => (s.emotional_intelligence ?? 0) >= 80, badge:{key:"empathic_listener",label:"💗 Empathic Listener"} },
+      { when: s => (s.career_adaptability ?? 0) >= 80,    badge:{key:"confident_explorer",label:"🧭 Confident Explorer"} },
+    ];
+    function scoreOf(traitsArr, name){ const t=(traitsArr||[]).find(x=>x.name===name); return t?t.score:0; }
+
+    const questionsEl = document.getElementById('questions');
+    const pErr = document.getElementById('pErr'); const pOk=document.getElementById('pOk');
+
+    // ----- Loaders -----
+    async function loadQuestionsFromDB(){
+      const {data,error}=await sb().from('questions').select('id,text,weights,type,options,correct').eq('active',true);
+      if(error||!data?.length) throw error||new Error('No questions in DB');
+      return data.map(q=>({ id:q.id, text:q.text, type:q.type||'likert', options:q.options||null, correct:q.correct, weights:q.weights||{} }));
+    }
+
+    async function loadTestSet(setFile="set_01_reduced.json"){
+      try{
+        const rel = await fetch(`data/${setFile}`,{cache:"no-store"});
+        let json;
+        if(rel.ok) json=await rel.json();
+        else {
+          const abs = await fetch(`https://santosh559.github.io/careerwise-api/data/${setFile}`,{cache:"no-store"});
+          if(!abs.ok) throw new Error(`${setFile} (${abs.status})`);
+          json=await abs.json();
+        }
+        return normalizeSet(json);
+      }catch(e){ console.warn("Test set load error:",e); return null; }
+    }
+
+    function normalizeSet(raw){
+      if(!raw) return null;
+      if(Array.isArray(raw.questions)) return raw;
+      const out={ meta:raw.meta||{}, questions:[] };
+      const abc="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+      function pushQ(q, tag){
+        if(!q) return;
+        const id=q.id || `${tag}_${out.questions.length+1}`;
+        if(Array.isArray(q.options) && q.options.length){
+          const opts=q.options.map((label,i)=>({key:abc[i]||String(i+1),label}));
+          let correctKey=q.answer||q.correct;
+          if(correctKey){
+            const hit=opts.find(o=>o.key===correctKey || o.label===correctKey);
+            correctKey = hit? hit.key : undefined;
+          }
+          out.questions.push({ id, type:"mcq", text:q.q||q.text||"", options:opts, correct:correctKey, weights:q.weights||{}, section:q.section||q.category||tag });
+        }else{
+          out.questions.push({ id, type:"likert", text:q.q||q.text||"", reverse:!!q.reverse, weights:q.weights||{}, section:q.section||q.category||tag });
+        }
+      }
+      if(raw.categories && typeof raw.categories==="object"){
+        Object.entries(raw.categories).forEach(([cat,arr])=> (arr||[]).forEach(q=>pushQ(q,cat)));
+      }
+      return out.questions.length? out : null;
+    }
+
+    // ----- Render -----
+    function renderQuestions(list){
+      questionsEl.innerHTML='';
+      list.forEach((q,idx)=>{
+        const row=document.createElement('div'); row.className='q';
+        let controls='';
+        if(q.type==='mcq' && Array.isArray(q.options)){
+          controls = `
+            <div class="rate" data-qid="${q.id}" data-type="mcq"
+                 data-weights='${JSON.stringify(q.weights||{})}'
+                 data-correct='${q.correct ?? ""}'
+                 data-section='${sectionSlug(q)}'>
+              ${q.options.map(opt=>`<button type="button" data-v="${opt.key}">${opt.key}. ${opt.label}</button>`).join('')}
+            </div>`;
+        }else{
+          const labels=labelsForQuestion(q);
+          controls = `
+            <div class="rate" data-qid="${q.id}" data-type="likert"
+                 data-weights='${JSON.stringify(q.weights||{})}'
+                 data-section='${sectionSlug(q)}' ${q.reverse?'data-reverse="1"':''}>
+              ${[1,2,3,4,5].map((v,i)=>`<button type="button" data-v="${v}">${v}. ${labels[i]||v}</button>`).join('')}
+            </div>`;
+        }
+        row.innerHTML = `<div style="font-weight:600">${idx+1}. ${q.text}</div>${controls}`;
+        questionsEl.appendChild(row);
+      });
+    }
+
+    questionsEl.addEventListener('click',(e)=>{
+      const btn=e.target.closest('button[data-v]'); if(!btn) return;
+      const grp=btn.parentElement; grp.querySelectorAll('button').forEach(b=>b.classList.remove('is-on'));
+      btn.classList.add('is-on'); grp.setAttribute('data-selected', btn.getAttribute('data-v'));
+    });
+
+    // ----- Analysis -----
+    function analyze(){
+      const traitAgg={}, secAgg={};
+      const rows=document.querySelectorAll('.rate[data-qid]');
+      rows.forEach(row=>{
+        const type=row.getAttribute('data-type')||'likert';
+        const weights=JSON.parse(row.getAttribute('data-weights')||'{}');
+        const section=row.getAttribute('data-section')||'default';
+        let likert0to100=null, contrib=0;
+        if(type==='likert'){
+          const v=Number(row.getAttribute('data-selected')||3);
+          likert0to100=((v-1)/4)*100;
+          contrib=(v-3)/2;
+          if(row.hasAttribute('data-reverse')) contrib*=-1;
+        }else{
+          const pick=row.getAttribute('data-selected')||'';
+          const correct=row.getAttribute('data-correct')||'';
+          const correct01=correct ? (pick ? (pick===correct?1:0):0) : null;
+          if(correct01!==null) likert0to100 = correct01*100;
+          contrib = correct ? (pick ? (pick===correct?1:-1):0) : 0;
+        }
+        if(likert0to100!==null){ if(!secAgg[section]) secAgg[section]={sum:0,count:0}; secAgg[section].sum+=likert0to100; secAgg[section].count++; }
+        Object.entries(weights).forEach(([trait,w])=>{
+          if(!traitAgg[trait]) traitAgg[trait]={sum:0,wsum:0};
+          traitAgg[trait].sum += contrib*Number(w);
+          traitAgg[trait].wsum += Math.abs(Number(w));
+        });
+      });
+
+      const traits = Object.entries(traitAgg).map(([name,v])=>{
+        const z=v.wsum ? (v.sum/v.wsum) : 0; return {name, score: Math.round(50 + z*50)};
+      }).sort((a,b)=>b.score-a.score);
+
+      const sections={}; Object.entries(secAgg).forEach(([slug,o])=>{ sections[slug]= o.count? Math.round(o.sum/o.count):0; });
+
+      const badges=[]; BADGE_RULES.forEach(rule=>{ try{ if(rule.when(sections,traits)) badges.push(rule.badge); }catch{} });
+
+      const summary = (badges.length||traits.length) ? `Top strengths: ${traits.slice(0,3).map(t=>t.name).join(', ')}` : 'Answer questions to see results.';
+      const cautions = traits.filter(t=>t.score<45).map(t=>`Consider developing ${t.name}.`);
+      return { summary, traits, cautions, sections, badges };
+    }
+
+    // ----- Save to Supabase (table: results) -----
+    async function saveResults(payload){
+      try{
+        const { data:{ user } } = await sb().auth.getUser();
+        if(!user) throw new Error('Not signed in');
+        const row = { user_id:user.id, traits:payload.traits, sections:payload.sections, badges:payload.badges, summary:payload.summary, created_at:new Date().toISOString() };
+        const { error } = await sb().from('results').insert(row);
+        if(error) throw error;
+        pOk.classList.remove('hidden'); setTimeout(()=>pOk.classList.add('hidden'), 2000);
+      }catch(e){ pErr.textContent=e.message||'Save failed'; pErr.classList.remove('hidden'); }
+    }
+
+    // ----- Buttons -----
+    document.getElementById('btnLoadSet').onclick = async ()=>{
+      const file = chosenSet || pickRandomSet();
+      const set = await loadTestSet(file);
+      if(set?.questions?.length) renderQuestions(set.questions);
+    };
+    document.getElementById('btnReloadApi').onclick = async ()=>{
+      try{ renderQuestions(await loadQuestionsFromDB()); }catch{ /* ignore */ }
+    };
+    document.getElementById('analyzeBtn').onclick = ()=>{
+      const res=analyze();
+      summary.textContent=res.summary;
+      // badges
+      badges.innerHTML=''; res.badges.forEach(b=>{ const d=document.createElement('div'); d.className='chip-row'; d.innerHTML=`<span>${b.label}</span>`; badges.appendChild(d); });
+      // traits
+      traits.innerHTML=''; res.traits.forEach(t=>{ const d=document.createElement('div'); d.className='chip-row'; d.innerHTML=`<span>${t.name}</span><span class="muted">${t.score}/100</span>`; traits.appendChild(d); });
+      // cautions
+      cautions.innerHTML=''; res.cautions.forEach(c=>{ const li=document.createElement('li'); li.textContent=c; cautions.appendChild(li); });
+      analysis.classList.remove('hidden');
+      window.__latestAnalysis = res;
+    };
+    document.getElementById('saveBtn').onclick = ()=>{ if(window.__latestAnalysis) saveResults(window.__latestAnalysis); else { pErr.textContent='Run Analysis first'; pErr.classList.remove('hidden'); } };
+
+    // ----- Boot: prefer DB, else URL set, else random, else demo -----
+    (async function boot(){
+      try{ renderQuestions(await loadQuestionsFromDB()); }
+      catch{
+        const file = chosenSet || pickRandomSet();
+        const set = await loadTestSet(file);
+        if(set?.questions?.length) renderQuestions(set.questions);
+        else renderQuestions([{id:'q1',type:'likert',text:'I enjoy solving complex problems.'}]);
+      }
+    })();
+  })();
+  </script>
+</body>
+</html>
