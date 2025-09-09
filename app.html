@@ -147,7 +147,8 @@
 // Read ?set=<filename> from the URL (e.g., set_02.json)
 const urlParams  = new URLSearchParams(location.search);
 const chosenSet  = urlParams.get('set');          // may be null
-const allSets    = ["set_01_reduced.json","set_02.json","set_03.json","set_04.json"];
+const allSets = ["set_01_reduced.json","set_02.json","set_03.json","set_04.json","set_05.json"];
+
 function pickRandomSet(){ return allSets[Math.floor(Math.random()*allSets.length)]; }
 
     const sb = () => window.__sb;
