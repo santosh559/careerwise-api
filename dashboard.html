@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerWise — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#ffffff; --surface:#ffffff; --border:#e5e7eb; --text:#0f172a; --muted:#6b7280; --primary:#3165ff; --primary-600:#2656f5; --radius:14px; --shadow:0 10px 30px rgba(15,23,42,.06); }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .container{max-width:1080px;margin:0 auto;padding:24px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);box-shadow:var(--shadow)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;border:1px solid var(--border);cursor:pointer;background:#fff;font-weight:600}
+    .badge{width:28px;height:28px;border-radius:8px;background:#eef2ff;color:#1d4ed8;display:grid;place-items:center;font-weight:800}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+    .tile{display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid var(--border);border-radius:16px;text-decoration:none;color:inherit}
+    .icon{font-size:36px}
+    .muted{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand"><div class="logo"></div><strong>CareerWise</strong></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="who" class="muted"></span>
+        <span id="badge" class="badge">U</span>
+        <button id="signOutBtn" class="btn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2 style="margin:0 0 6px">Welcome</h2>
+      <p class="muted" style="margin-top:0">Choose what you want to do today.</p>
+
+      <div class="grid" style="margin-top:12px">
+        <a class="tile" href="test.html">
+          <div class="icon">🧠</div>
+          <div>
+            <div style="font-weight:700">Psychometric Analysis</div>
+            <div class="muted">Take the assessment to profile your traits.</div>
+          </div>
+        </a>
+
+        <a class="tile" href="match.html">
+          <div class="icon">🎯</div>
+          <div>
+            <div style="font-weight:700">Career Matching</div>
+            <div class="muted">Use your results + skills & interests to get roles.</div>
+          </div>
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    const SUPABASE_URL="https://awsuhluvyrxwmogzyfhr.supabase.co";
+    const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const params = new URLSearchParams(location.search);
+    if (params.has('code') || params.has('token_hash') || location.hash.includes('access_token')) {
+      try { const { error } = await supabase.auth.exchangeCodeForSession(location.href); if (!error) history.replaceState({}, '', location.pathname); } catch {}
+    }
+
+    async function requireAuth(){
+      const { data:{session} } = await supabase.auth.getSession();
+      const guest = localStorage.getItem("cw_guest_id");
+      if(session){ setupUser(session.user.email); return; }
+      if(guest){ setupUser(`Guest: ${guest.replace("guest_","G-")}`); return; }
+      location.href="index.html";
+    }
+    function setupUser(label){
+      who.textContent = label; badge.textContent = (label||'U').slice(0,1).toUpperCase();
+      signOutBtn.onclick = async ()=>{ await supabase.auth.signOut().catch(()=>{}); localStorage.removeItem("cw_guest_id"); location.href="index.html"; };
+    }
+    await requireAuth();
+  </script>
+</body>
+</html>
