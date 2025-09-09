@@ -1,0 +1,59 @@
+{
+  "set_id": "set_05",
+  "categories": {
+    "Aptitude_Reasoning": [
+      { "id": "A1", "q": "A train 180 m long runs at 54 km/h. How long to cross a 120 m platform?", "options": ["10 sec","12 sec","15 sec","20 sec"], "answer": "15 sec" },
+      { "id": "A2", "q": "Which number replaces the question mark: 3, 9, 27, ?, 243", "options": ["36","54","81","72"], "answer": "81" },
+      { "id": "A3", "q": "A test has 60 questions. A student answers 80% correctly. How many wrong?", "options": ["8","10","12","15"], "answer": "12" },
+      { "id": "A4", "q": "If Monday was 3 days before yesterday, what day is tomorrow?", "options": ["Friday","Saturday","Sunday","Monday"], "answer": "Sunday" },
+      { "id": "A5", "q": "Average of 8 numbers is 15. Removing one number makes the average 14. Removed number?", "options": ["18","20","22","25"], "answer": "22" },
+      { "id": "A6", "q": "A clock shows 3:15. What is the angle between hour and minute hands?", "options": ["37.5°","45°","52.5°","60°"], "answer": "52.5°" },
+      { "id": "A7", "q": "A person spends 1/3 on rent, 1/5 on food, and saves the rest. What fraction is saved?", "options": ["7/15","8/15","9/15","11/15"], "answer": "7/15" }
+    ],
+    "Novel_Reasoning": [
+      { "id": "N1", "q": "Find the next term: 2, 6, 12, 20, 30, ?", "options": ["36","40","42","44"], "answer": "42" },
+      { "id": "N2", "q": "Find the missing number: 4, 9, 19, 39, ?", "options": ["59","79","99","119"], "answer": "79" },
+      { "id": "N3", "q": "All doctors are professionals. Some professionals are teachers. Can we conclude: 'Some teachers may be doctors'?", "options": ["Yes","No","Cannot be determined","Only if all teachers are professionals"], "answer": "Yes" },
+      { "id": "N4", "q": "A cube has all faces painted. If cut into 27 equal cubes, how many small cubes have exactly 2 painted faces?", "options": ["12","16","18","20"], "answer": "18" },
+      { "id": "N5", "q": "If PEN = 35 and INK = 34, then BOOK = ?", "options": ["41","43","45","47"], "answer": "41" },
+      { "id": "N6", "q": "A farmer has 17 sheep. All but 9 run away. How many are left?", "options": ["8","9","17","None"], "answer": "9" },
+      { "id": "N7", "q": "Odd one out: Apple, Mango, Banana, Potato", "options": ["Apple","Mango","Banana","Potato"], "answer": "Potato" }
+    ],
+    "Personality_BigFive": [
+      { "id": "P1", "q": "In a team, I naturally take the lead to coordinate activities.", "scale": [1,2,3,4,5] },
+      { "id": "P2", "q": "I stay calm and composed even in stressful workplace situations.", "scale": [1,2,3,4,5] },
+      { "id": "P3", "q": "I enjoy socializing and interacting with colleagues regularly.", "scale": [1,2,3,4,5] },
+      { "id": "P4", "q": "I pay close attention to details in my work.", "scale": [1,2,3,4,5] },
+      { "id": "P5", "q": "I am open to trying new ideas and unconventional approaches.", "scale": [1,2,3,4,5] },
+      { "id": "P6", "q": "I remain optimistic even during challenging tasks.", "scale": [1,2,3,4,5] },
+      { "id": "P7", "q": "I adapt quickly to new environments or teams.", "scale": [1,2,3,4,5] }
+    ],
+    "WorkValues_EmotionalIntelligence": [
+      { "id": "W1", "q": "I believe it’s important to work in a role that allows me to help others.", "scale": [1,2,3,4,5] },
+      { "id": "W2", "q": "I can recognize when my emotions are affecting my decisions at work.", "scale": [1,2,3,4,5] },
+      { "id": "W3", "q": "I value opportunities for personal growth in my career.", "scale": [1,2,3,4,5] },
+      { "id": "W4", "q": "I am able to control my reactions during conflicts.", "scale": [1,2,3,4,5] },
+      { "id": "W5", "q": "I believe teamwork leads to better outcomes than individual effort.", "scale": [1,2,3,4,5] },
+      { "id": "W6", "q": "I try to understand others’ emotions in workplace interactions.", "scale": [1,2,3,4,5] },
+      { "id": "W7", "q": "I am motivated by recognition and rewards for my work.", "scale": [1,2,3,4,5] }
+    ],
+    "Career_Adaptability": [
+      { "id": "C1", "q": "I feel confident in adapting to new workplace technologies.", "scale": [1,2,3,4,5] },
+      { "id": "C2", "q": "I am comfortable with career shifts and changes in industry trends.", "scale": [1,2,3,4,5] },
+      { "id": "C3", "q": "I proactively prepare for possible future career changes.", "scale": [1,2,3,4,5] },
+      { "id": "C4", "q": "I am able to learn new skills quickly to stay relevant.", "scale": [1,2,3,4,5] },
+      { "id": "C5", "q": "I remain motivated even when career plans face setbacks.", "scale": [1,2,3,4,5] },
+      { "id": "C6", "q": "I am confident in handling unexpected workplace transitions.", "scale": [1,2,3,4,5] },
+      { "id": "C7", "q": "I believe adaptability is one of my strongest career traits.", "scale": [1,2,3,4,5] }
+    ],
+    "Cognitive_Thinking": [
+      { "id": "CT1", "q": "You are leading a project with a tight deadline. One member misses a key task. What’s your first response?", "options": ["Report to management","Reassign task quickly","Understand reason & resolve","Extend deadline"], "answer": "Understand reason & resolve" },
+      { "id": "CT2", "q": "A client challenges your proposal with strong counterpoints. How do you react?", "options": ["Defend strongly","Revise proposal","Listen and adjust","Drop proposal"], "answer": "Listen and adjust" },
+      { "id": "CT3", "q": "Your team disagrees on strategy. What’s the most effective step?", "options": ["Impose decision","Facilitate discussion","Ignore conflict","Escalate to higher-ups"], "answer": "Facilitate discussion" },
+      { "id": "CT4", "q": "You must prioritize tasks: urgent but low-impact vs. high-impact but long-term. What do you do?", "options": ["Always urgent","Always impactful","Balance both","Avoid decision"], "answer": "Balance both" },
+      { "id": "CT5", "q": "You receive incomplete data before a presentation. What do you do?", "options": ["Cancel presentation","Use available data with clarity","Guess missing info","Delay indefinitely"], "answer": "Use available data with clarity" },
+      { "id": "CT6", "q": "A junior makes a critical mistake. What’s your approach?", "options": ["Punish","Correct privately","Ignore","Escalate"], "answer": "Correct privately" },
+      { "id": "CT7", "q": "Your boss gives unclear instructions. What do you do?", "options": ["Guess and act","Ask for clarification","Do nothing","Escalate"], "answer": "Ask for clarification" }
+    ]
+  }
+}
