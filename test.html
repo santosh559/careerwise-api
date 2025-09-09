@@ -79,22 +79,28 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     window.__sb = supabase;
 
-    const params = new URLSearchParams(location.search);
-    if (params.has('code') || params.has('token_hash') || location.hash.includes('access_token')) {
-      try { const { error } = await supabase.auth.exchangeCodeForSession(location.href); if(!error) history.replaceState({}, '', location.pathname); } catch {}
-    }
-
     async function requireAuth(){
       const { data:{session} } = await supabase.auth.getSession();
       const guest = localStorage.getItem("cw_guest_id");
+      const whoEl = document.getElementById('who');
+      const badgeEl = document.getElementById('badge');
+      const signOutBtn = document.getElementById('signOutBtn');
+
+      function setupUser(label){
+        whoEl.textContent = label;
+        badgeEl.textContent = (label||'U').slice(0,1).toUpperCase();
+        signOutBtn.onclick = async ()=>{
+          await supabase.auth.signOut().catch(()=>{});
+          localStorage.removeItem("cw_guest_id");
+          location.href="index.html";
+        };
+      }
+
       if(session){ setupUser(session.user.email); return; }
       if(guest){ setupUser(`Guest: ${guest.replace("guest_","G-")}`); return; }
       location.href="index.html";
     }
-    function setupUser(label){
-      who.textContent = label; badge.textContent = (label||'U').slice(0,1).toUpperCase();
-      signOutBtn.onclick = async ()=>{ await supabase.auth.signOut().catch(()=>{}); localStorage.removeItem("cw_guest_id"); location.href="index.html"; };
-    }
+
     await requireAuth();
   </script>
 
@@ -143,6 +149,11 @@
 
     const questionsEl = document.getElementById('questions');
     const pErr = document.getElementById('pErr'); const pOk=document.getElementById('pOk');
+    const summaryEl = document.getElementById('summary');
+    const badgesEl  = document.getElementById('badges');
+    const traitsEl  = document.getElementById('traits');
+    const cautionsEl= document.getElementById('cautions');
+    const analysisEl= document.getElementById('analysis');
 
     // ----- Loaders -----
     async function loadQuestionsFromDB(){
@@ -290,14 +301,14 @@
     };
     document.getElementById('analyzeBtn').onclick = ()=>{
       const res=analyze();
-      summary.textContent=res.summary;
+      summaryEl.textContent=res.summary;
       // badges
-      badges.innerHTML=''; res.badges.forEach(b=>{ const d=document.createElement('div'); d.className='chip-row'; d.innerHTML=`<span>${b.label}</span>`; badges.appendChild(d); });
+      badgesEl.innerHTML=''; res.badges.forEach(b=>{ const d=document.createElement('div'); d.className='chip-row'; d.innerHTML=`<span>${b.label}</span>`; badgesEl.appendChild(d); });
       // traits
-      traits.innerHTML=''; res.traits.forEach(t=>{ const d=document.createElement('div'); d.className='chip-row'; d.innerHTML=`<span>${t.name}</span><span class="muted">${t.score}/100</span>`; traits.appendChild(d); });
+      traitsEl.innerHTML=''; res.traits.forEach(t=>{ const d=document.createElement('div'); d.className='chip-row'; d.innerHTML=`<span>${t.name}</span><span class="muted">${t.score}/100</span>`; traitsEl.appendChild(d); });
       // cautions
-      cautions.innerHTML=''; res.cautions.forEach(c=>{ const li=document.createElement('li'); li.textContent=c; cautions.appendChild(li); });
-      analysis.classList.remove('hidden');
+      cautionsEl.innerHTML=''; res.cautions.forEach(c=>{ const li=document.createElement('li'); li.textContent=c; cautionsEl.appendChild(li); });
+      analysisEl.classList.remove('hidden');
       window.__latestAnalysis = res;
     };
     document.getElementById('saveBtn').onclick = ()=>{ if(window.__latestAnalysis) saveResults(window.__latestAnalysis); else { pErr.textContent='Run Analysis first'; pErr.classList.remove('hidden'); } };
