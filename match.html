@@ -61,10 +61,12 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     window.__sb = supabase;
 
-    const params = new URLSearchParams(location.search);
-    if (params.has('code') || params.has('token_hash') || location.hash.includes('access_token')) {
-      try { const { error } = await supabase.auth.exchangeCodeForSession(location.href); if(!error) history.replaceState({}, '', location.pathname); } catch {}
-    }
+    const whoEl = document.getElementById('who');
+    const badgeEl = document.getElementById('badge');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const latestEl = document.getElementById('latest');
+    const matchesEl = document.getElementById('matches');
+    const mErr = document.getElementById('mErr');
 
     async function requireAuth(){
       const { data:{session} } = await supabase.auth.getSession();
@@ -74,9 +76,13 @@
       location.href="index.html";
     }
     function setupUser(label){
-      who.textContent = label; const b=document.createElement('span'); b.className='badge'; b.textContent=(label||'U').slice(0,1).toUpperCase();
-      const badgeHolder=document.getElementById('badge'); badgeHolder?.replaceWith(b); b.id='badge';
-      signOutBtn.onclick = async ()=>{ await supabase.auth.signOut().catch(()=>{}); localStorage.removeItem("cw_guest_id"); location.href="index.html"; };
+      whoEl.textContent = label;
+      badgeEl.textContent = (label||'U').slice(0,1).toUpperCase();
+      signOutBtn.onclick = async ()=>{
+        await supabase.auth.signOut().catch(()=>{});
+        localStorage.removeItem("cw_guest_id");
+        location.href="index.html";
+      };
     }
     await requireAuth();
 
@@ -105,16 +111,28 @@
       return data||[];
     }
 
+    function setLatestBanner(result){
+      if(!result){ latestEl.textContent = ""; return; }
+      const d = new Date(result.created_at);
+      latestEl.innerHTML = `Using your latest assessment from <strong>${d.toLocaleString()}</strong>.`;
+    }
+
     document.getElementById('matchBtn').onclick = async ()=>{
-      mErr.style.display='none'; matches.innerHTML='Loading…';
+      mErr.style.display='none';
+      matchesEl.innerHTML='Loading…';
       const latest = await getLatestResult();
-      if(!latest){ matches.innerHTML=''; mErr.textContent='No psychometric results found. Please take the test first.'; mErr.style.display='inline'; return; }
-      latestEl(latest);
+      if(!latest){
+        matchesEl.innerHTML='';
+        mErr.textContent='No psychometric results found. Please take the test first.';
+        mErr.style.display='inline';
+        return;
+      }
+      setLatestBanner(latest);
 
       // vector from traits (0..1)
       const u={}; (latest.traits||[]).forEach(t=>u[t.name]= (t.score||0)/100);
 
-      // optionally factor skills/interests as soft boosts (very simple)
+      // soft boosts from skills/interests
       const skills = (document.getElementById('skills').value||'').toLowerCase();
       const interests = (document.getElementById('interests').value||'').toLowerCase();
 
@@ -122,7 +140,6 @@
       const ranked = careers.map(c=>{
         const ct={}; Object.entries(c.traits||{}).forEach(([k,v])=>ct[k]=Number(v)||0);
         let base = Math.max(0, cosine(u, ct));
-        // soft text boost
         const text = (c.title + ' ' + (c.description||'')).toLowerCase();
         let boost = 0;
         skills.split(',').map(s=>s.trim()).filter(Boolean).forEach(s=>{ if(text.includes(s)) boost += 0.03; });
@@ -130,24 +147,16 @@
         return {...c, score: Math.round(Math.min(1, base + boost)*100) };
       }).sort((a,b)=>b.score-a.score).slice(0,5);
 
-      matches.innerHTML='';
+      matchesEl.innerHTML='';
       ranked.forEach(r=>{
         const card=document.createElement('div'); card.className='match';
         card.innerHTML = `
           <div class="hdr"><div style="font-weight:700">${r.title}</div>
             <span class="badge-pill">${r.score}% fit</span></div>
           <p class="muted" style="margin:6px 0 0;white-space:pre-wrap">${r.description||''}</p>`;
-        matches.appendChild(card);
+        matchesEl.appendChild(card);
       });
     };
-
-    function latestEl(latest){
-      latest.innerHTML = `Using your latest assessment from <strong>${new Date(latest.created_at).toLocaleString()}</strong>.`;
-    }
-
-    const latest = document.getElementById('latest');
-    const matches = document.getElementById('matches');
-    const mErr = document.getElementById('mErr');
   </script>
 </body>
 </html>
