@@ -104,10 +104,12 @@
     window.__sb = supabase;
 
     // If already signed in (or guest), go straight to app
-    (async () => {
-      const { data:{session} } = await supabase.auth.getSession();
-      if (session || localStorage.getItem("cw_guest_id")) location.href = "app.html";
-    })();
+    // If already signed in (or guest), go straight to dashboard
+(async () => {
+  const { data:{session} } = await supabase.auth.getSession();
+  if (session || localStorage.getItem("cw_guest_id")) location.href = "dashboard.html";
+})();
+
 
     // UI toggles
     const btnShowLogin = document.getElementById('btnShowLogin');
@@ -134,7 +136,7 @@
       try{
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        location.href = "app.html";
+        location.href = "dashboard.html";
       }catch(err){
         pwdMsg.textContent = err.message || "Login failed";
         pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#b91c1c";
@@ -148,7 +150,8 @@
       const email = (document.getElementById('signupEmail').value||'').trim();
       const password = document.getElementById('signupPassword').value;
       try{
-        const redirectTo = new URL('app.html', location.href).href;
+        const redirectTo = new URL('dashboard.html', location.href).href;
+
         const { error } = await supabase.auth.signUp({
           email, password,
           options:{ emailRedirectTo: redirectTo }
@@ -169,7 +172,7 @@
         id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
         localStorage.setItem("cw_guest_id", id);
       }
-      location.href = "app.html";
+      location.href = "dashboard.html";
     };
   </script>
 </body>
