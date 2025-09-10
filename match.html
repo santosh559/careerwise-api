@@ -165,3 +165,9 @@
   </script>
 </body>
 </html>
+
+<script>
+// Dynamically set API base depending on environment
+const API_BASE = location.hostname === "localhost" ? "http://localhost:4001" : "" + window.__API_BASE + "";
+window.__API_BASE = API_BASE;
+</script>
