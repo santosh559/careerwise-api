@@ -250,13 +250,24 @@
           likert0to100=((v-1)/4)*100;
           contrib=(v-3)/2;
           if(row.hasAttribute('data-reverse')) contrib*=-1;
-        }else{
-          const pick=row.getAttribute('data-selected')||'';
-          const correct=row.getAttribute('data-correct')||'';
-          const correct01=correct ? (pick ? (pick===correct?1:0):0) : null;
-          if(correct01!==null) likert0to100 = correct01*100;
-          contrib = correct ? (pick ? (pick===correct?1:-1):0) : 0;
-        }
+       }else{
+  const pick=row.getAttribute('data-selected')||'';
+  const correct=row.getAttribute('data-correct')||'';
+  const correct01 = correct ? (pick ? (pick===correct ? 1 : 0) : 0) : null;
+
+  if(correct01 !== null) {
+    likert0to100 = correct01*100;
+
+    // Boost aptitude/cognitive sections with actual marks
+    if(section === "aptitude_reasoning" || section === "cognitive_simulator") {
+      if(!secAgg[section]) secAgg[section] = { sum:0, count:0, correct:0, total:0 };
+      secAgg[section].correct += correct01;
+      secAgg[section].total   += 1;
+    }
+  }
+  contrib = correct ? (pick ? (pick===correct?1:-1):0) : 0;
+}
+
         if(likert0to100!==null){ if(!secAgg[section]) secAgg[section]={sum:0,count:0}; secAgg[section].sum+=likert0to100; secAgg[section].count++; }
         Object.entries(weights).forEach(([trait,w])=>{
           if(!traitAgg[trait]) traitAgg[trait]={sum:0,wsum:0};
@@ -269,7 +280,17 @@
         const z=v.wsum ? (v.sum/v.wsum) : 0; return {name, score: Math.round(50 + z*50)};
       }).sort((a,b)=>b.score-a.score);
 
-      const sections={}; Object.entries(secAgg).forEach(([slug,o])=>{ sections[slug]= o.count? Math.round(o.sum/o.count):0; });
+      const sections = {};
+Object.entries(secAgg).forEach(([slug,o])=>{
+  if(o.total) {
+    // MCQ scoring (aptitude, cognitive)
+    sections[slug] = Math.round((o.correct / o.total) * 100);
+  } else {
+    // Likert scoring (0..100)
+    sections[slug] = o.count ? Math.round(o.sum / o.count) : 0;
+  }
+});
+
 
       const badges=[]; BADGE_RULES.forEach(rule=>{ try{ if(rule.when(sections,traits)) badges.push(rule.badge); }catch{} });
 
