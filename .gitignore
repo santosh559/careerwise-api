@@ -6,3 +6,5 @@ ok
 
 # local backups
 api-server/src/server.js.bak*
+
+node_modules/
