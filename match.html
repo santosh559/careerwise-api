@@ -54,21 +54,25 @@
     </section>
   </div>
 
-<script>
-  // PROD (Render)
-  window.__API_BASE = "https://careerwise-api.onrender.com";
-
-  // DEV (local): comment the above and use the line below when testing locally
-  // window.__API_BASE = "http://localhost:4001";
-</script>
+  <!-- API base (prod vs local). Keep this BEFORE the module script. -->
+  <script>
+    // PROD on Render:
+    window.__API_BASE = "https://careerwise-api.onrender.com";
+    // DEV (local): comment the line above and use:
+    // window.__API_BASE = "http://localhost:4001";
+  </script>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // ====== CONFIG ======
+    const API_BASE = window.__API_BASE || "http://localhost:4001";
     const SUPABASE_URL="https://awsuhluvyrxwmogzyfhr.supabase.co";
     const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     window.__sb = supabase;
 
+    // ====== AUTH GUARD ======
     const whoEl = document.getElementById('who');
     const badgeEl = document.getElementById('badge');
     const signOutBtn = document.getElementById('signOutBtn');
@@ -94,7 +98,7 @@
     }
     await requireAuth();
 
-    // Fetch latest psychometric result
+    // ====== DATA: latest psychometric result ======
     async function getLatestResult(){
       const uid = window.__uid;
       if(!uid) return null;
@@ -107,27 +111,35 @@
       if(error) return null;
       return data?.[0] || null;
     }
-
-    function cosine(a,b){
-      const keys=new Set([...Object.keys(a),...Object.keys(b)]); let dot=0,na=0,nb=0;
-      keys.forEach(k=>{ const x=a[k]||0, y=b[k]||0; dot+=x*y; na+=x*x; nb+=y*y; });
-      const d=Math.sqrt(na)*Math.sqrt(nb)||1; return dot/d;
-    }
-
-    async function fetchCareers(){
-      const { data } = await supabase.from('careers').select('title,traits,description');
-      return data||[];
-    }
-
     function setLatestBanner(result){
       if(!result){ latestEl.textContent = ""; return; }
       const d = new Date(result.created_at);
       latestEl.innerHTML = `Using your latest assessment from <strong>${d.toLocaleString()}</strong>.`;
     }
 
+    // ====== RENDER ======
+    function renderMatches(list){
+      matchesEl.innerHTML = '';
+      (list || []).forEach(r=>{
+        const card = document.createElement('div');
+        card.className = 'match';
+        card.innerHTML = `
+          <div class="hdr">
+            <div style="font-weight:700">${r.title}</div>
+            <span class="badge-pill">${Math.round(r.score)}% fit</span>
+          </div>
+          ${r.description ? `<p class="muted" style="margin:6px 0 0;white-space:pre-wrap">${r.description}</p>` : ''}
+          ${r.why ? `<div class="muted" style="margin-top:6px"><strong>Why this match:</strong> ${r.why}</div>` : ''}
+        `;
+        matchesEl.appendChild(card);
+      });
+    }
+
+    // ====== BUTTON ======
     document.getElementById('matchBtn').onclick = async ()=>{
       mErr.style.display='none';
       matchesEl.innerHTML='Loading…';
+
       const latest = await getLatestResult();
       if(!latest){
         matchesEl.innerHTML='';
@@ -137,40 +149,33 @@
       }
       setLatestBanner(latest);
 
-      // vector from traits (0..1)
-      const u={}; (latest.traits||[]).forEach(t=>u[t.name]= (t.score||0)/100);
+      const skills = (document.getElementById('skills').value||'').trim();
+      const interests = (document.getElementById('interests').value||'').trim();
 
-      // soft boosts from skills/interests
-      const skills = (document.getElementById('skills').value||'').toLowerCase();
-      const interests = (document.getElementById('interests').value||'').toLowerCase();
-
-      const careers = await fetchCareers();
-      const ranked = careers.map(c=>{
-        const ct={}; Object.entries(c.traits||{}).forEach(([k,v])=>ct[k]=Number(v)||0);
-        let base = Math.max(0, cosine(u, ct));
-        const text = (c.title + ' ' + (c.description||'')).toLowerCase();
-        let boost = 0;
-        skills.split(',').map(s=>s.trim()).filter(Boolean).forEach(s=>{ if(text.includes(s)) boost += 0.03; });
-        interests.split(',').map(s=>s.trim()).filter(Boolean).forEach(s=>{ if(text.includes(s)) boost += 0.03; });
-        return {...c, score: Math.round(Math.min(1, base + boost)*100) };
-      }).sort((a,b)=>b.score-a.score).slice(0,5);
-
-      matchesEl.innerHTML='';
-      ranked.forEach(r=>{
-        const card=document.createElement('div'); card.className='match';
-        card.innerHTML = `
-          <div class="hdr"><div style="font-weight:700">${r.title}</div>
-            <span class="badge-pill">${r.score}% fit</span></div>
-          <p class="muted" style="margin:6px 0 0;white-space:pre-wrap">${r.description||''}</p>`;
-        matchesEl.appendChild(card);
-      });
+      try{
+        const resp = await fetch(`${API_BASE}/match`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({
+            skills,
+            interests,
+            traits: Object.fromEntries((latest.traits||[])
+                      .map(t => [t.name, (t.score||0)/100])),
+            sections: latest.sections || {}
+          })
+        });
+        if(!resp.ok){
+          const err = await resp.json().catch(()=>({error:'Match API error'}));
+          throw new Error(err.error || 'Match API error');
+        }
+        const data = await resp.json(); // { matches: [ { title, score, description, why }, ... ] }
+        renderMatches(data.matches || []);
+      }catch(e){
+        matchesEl.innerHTML='';
+        mErr.textContent = e.message || 'Match request failed';
+        mErr.style.display='inline';
+      }
     };
   </script>
 </body>
 </html>
-
-<script>
-// Dynamically set API base depending on environment
-const API_BASE = location.hostname === "localhost" ? "http://localhost:4001" : "" + window.__API_BASE + "";
-window.__API_BASE = API_BASE;
-</script>
