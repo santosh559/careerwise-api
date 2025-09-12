@@ -1,8 +1,8 @@
+import OpenAI from "openai";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
-import OpenAI from "openai";
 
 dotenv.config();
 
@@ -127,3 +127,97 @@ app.listen(PORT, () => console.log(`✅ API running on http://localhost:${PORT}`
 app.get('/health', (req, res) => {
   res.type('text/plain').send('ok');
 });
+
+/* ========= Realtime AI-powered matching (no DB) ========= */
+
+app.post("/match-ai", async (req, res) => {
+  try {
+    const { skills = "", interests = "", traits = {}, sections = {} } = req.body;
+
+    const aptitudePct  = Number(sections?.aptitude_reasoning ?? 0);   // 0..100
+    const cognitivePct = Number(sections?.cognitive_simulator ?? 0);  // 0..100
+
+    // Build an input "skill bag" from skills + interests
+    const userSkills = `${skills}, ${interests}`
+      .toLowerCase()
+      .split(/[, ]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const system = `You are a precise career advisor.
+Return STRICT JSON array of 7 to 10 objects ONLY (no prose), like:
+[
+  {
+    "title": "Data Analyst",
+    "description": "Summarize what the role does in one line.",
+    "required_skills": ["sql","excel","tableau","statistics"],
+    "why": "One crisp sentence why this fits the given user."
+  }
+]
+Rules:
+- Tailor to supplied skills, interests, and psychometric hints (traits/sections).
+- required_skills must be 3–8 concise terms.
+- Vary across domains (tech + non-tech) when appropriate.`;
+
+    const user = { skills, interests, traits, sections };
+
+    const ai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const resp = await ai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      temperature: 0.4,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: JSON.stringify(user) }
+      ]
+    });
+
+    // Parse AI JSON
+    let aiCareers = [];
+    try {
+      aiCareers = JSON.parse(resp.choices?.[0]?.message?.content || "[]");
+    } catch (e) {
+      console.error("OpenAI JSON parse error:", e.message);
+    }
+
+    // Helpers
+    function jaccard(a, b) {
+      const A = new Set(a), B = new Set(b);
+      let inter = 0;
+      for (const x of A) if (B.has(x)) inter++;
+      const union = A.size + B.size - inter || 1;
+      return inter / union;
+    }
+
+    // Compute fit% using your schema 25/25/50
+    const scored = (aiCareers || [])
+      .filter(x => x && x.title)
+      .map(c => {
+        const req = Array.isArray(c.required_skills)
+          ? c.required_skills.map(s => String(s).toLowerCase())
+          : [];
+        const skillsPct = Math.round(jaccard(userSkills, req) * 100);
+        const fitPct = Math.round(
+          aptitudePct  * 0.25 +
+          cognitivePct * 0.25 +
+          skillsPct    * 0.50
+        );
+        return {
+          title: String(c.title).trim(),
+          description: String(c.description || "").trim(),
+          required_skills: req,
+          why: String(c.why || "").trim(),
+          score: Math.max(0, Math.min(100, fitPct))
+        };
+      })
+      .sort((a,b)=>b.score-a.score)
+      .slice(0, 10);
+
+    // Ensure 7–10 items
+    const out = scored.slice(0, Math.min(10, Math.max(7, scored.length)));
+    res.json({ matches: out });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message || "match_ai_failed" });
+  }
+});
+/* ========= End realtime route ========= */
