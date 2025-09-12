@@ -137,14 +137,13 @@
 
     // ===== Badges =====
     const BADGE_RULES = [
-      { when: s => (s.aptitude_reasoning ?? 0) >= 80, badge:{key:"logical_solver",label:"🧠 Logical Solver"} },
-      { when: s => (s.aptitude_reasoning ?? 0) >= 60 && (s.aptitude_reasoning ?? 0) < 80, badge:{key:"pattern_pro",label:"🧩 Pattern Pro"} },
-      { when: (_,t) => scoreOf(t,"Conscientiousness")>=80, badge:{key:"detail_driver",label:"📋 Detail-Driven"} },
-      { when: (_,t) => scoreOf(t,"Openness")>=80,         badge:{key:"creative_idealist",label:"🌟 Creative Idealist"} },
-      { when: s => (s.values_motivation ?? 0) >= 80,      badge:{key:"impact_builder",label:"🤝 Impact Builder"} },
-      { when: s => (s.emotional_intelligence ?? 0) >= 80, badge:{key:"empathic_listener",label:"💗 Empathic Listener"} },
-      { when: s => (s.career_adaptability ?? 0) >= 80,    badge:{key:"confident_explorer",label:"🧭 Confident Explorer"} },
-    ];
+    { when: s => (s.aptitude_reasoning ?? 0) >= 80, badge: { key: "logical_solver", label: "🧠 Logical Solver" } },
+    { when: s => (s.cognitive_simulator ?? 0) >= 80, badge: { key: "rapid_reasoner", label: "⚡ Rapid Reasoner" } },
+    { when: s => (s.personality ?? 0) >= 80, badge: { key: "professional_focus", label: "📋 Professional Focus" } },
+    { when: s => (s.emotional_intelligence ?? 0) >= 80, badge: { key: "empathic_listener", label: "💗 Empathic Listener" } },
+    { when: s => (s.values_motivation ?? 0) >= 80, badge: { key: "impact_builder", label: "🤝 Impact Builder" } },
+    { when: s => (s.career_adaptability ?? 0) >= 80, badge: { key: "confident_explorer", label: "🧭 Confident Explorer" } },
+  ];
     function scoreOf(traitsArr, name){ const t=(traitsArr||[]).find(x=>x.name===name); return t?t.score:0; }
 
     const questionsEl = document.getElementById('questions');
@@ -236,80 +235,129 @@
       btn.classList.add('is-on'); grp.setAttribute('data-selected', btn.getAttribute('data-v'));
     });
 
-    // ----- Analysis -----
     function analyze(){
-      const traitAgg={}, secAgg={};
-      const rows=document.querySelectorAll('.rate[data-qid]');
-      rows.forEach(row=>{
-        const type=row.getAttribute('data-type')||'likert';
-        const weights=JSON.parse(row.getAttribute('data-weights')||'{}');
-        const section=row.getAttribute('data-section')||'default';
-        let likert0to100=null, contrib=0;
-        if(type==='likert'){
-          const v=Number(row.getAttribute('data-selected')||3);
-          likert0to100=((v-1)/4)*100;
-          contrib=(v-3)/2;
-          if(row.hasAttribute('data-reverse')) contrib*=-1;
-       }else{
-  const pick=row.getAttribute('data-selected')||'';
-  const correct=row.getAttribute('data-correct')||'';
-  const correct01 = correct ? (pick ? (pick===correct ? 1 : 0) : 0) : null;
+    // Aggregate per-question selections
+    const traitAgg = {};            // if your questions provide weights, they still work
+    const sectionAgg = {};          // { slug: { sumPct, count } }
+    const mcqAgg = {};              // { slug: { correct, total } }
 
-  if(correct01 !== null) {
-    likert0to100 = correct01*100;
+    const rows = document.querySelectorAll('.rate[data-qid]');
+    rows.forEach(row => {
+      const type    = row.getAttribute('data-type') || 'likert';
+      const weights = JSON.parse(row.getAttribute('data-weights') || '{}');
+      const slug    = row.getAttribute('data-section') || 'default';
 
-    // Boost aptitude/cognitive sections with actual marks
-    if(section === "aptitude_reasoning" || section === "cognitive_simulator") {
-      if(!secAgg[section]) secAgg[section] = { sum:0, count:0, correct:0, total:0 };
-      secAgg[section].correct += correct01;
-      secAgg[section].total   += 1;
-    }
-  }
-  contrib = correct ? (pick ? (pick===correct?1:-1):0) : 0;
-}
+      let selected = row.getAttribute('data-selected');
+      if (!sectionAgg[slug]) sectionAgg[slug] = { sumPct: 0, count: 0 };
+      if (!mcqAgg[slug]) mcqAgg[slug] = { correct: 0, total: 0 };
 
-        if(likert0to100!==null){ if(!secAgg[section]) secAgg[section]={sum:0,count:0}; secAgg[section].sum+=likert0to100; secAgg[section].count++; }
-        Object.entries(weights).forEach(([trait,w])=>{
-          if(!traitAgg[trait]) traitAgg[trait]={sum:0,wsum:0};
-          traitAgg[trait].sum += contrib*Number(w);
+      if (type === 'likert') {
+        // Likert (1..5) -> 0..100
+        const v = Number(selected || 3);
+        const pct = ((v - 1) / 4) * 100;
+        sectionAgg[slug].sumPct += pct;
+        sectionAgg[slug].count  += 1;
+
+        // optional weighted trait nudges (kept from your previous design)
+        const contrib = (v - 3) / 2; // -1 .. +1
+        Object.entries(weights).forEach(([trait, w]) => {
+          if (!traitAgg[trait]) traitAgg[trait] = { sum: 0, wsum: 0 };
+          traitAgg[trait].sum  += contrib * Number(w);
           traitAgg[trait].wsum += Math.abs(Number(w));
         });
-      });
+      } else {
+        // MCQ with "correct" key; average correctness per section
+        const correct = row.getAttribute('data-correct') || '';
+        if (correct) {
+          mcqAgg[slug].total += 1;
+          if (selected && selected === correct) mcqAgg[slug].correct += 1;
+        }
+      }
+    });
 
-      const traits = Object.entries(traitAgg).map(([name,v])=>{
-        const z=v.wsum ? (v.sum/v.wsum) : 0; return {name, score: Math.round(50 + z*50)};
-      }).sort((a,b)=>b.score-a.score);
+    // Convert section aggregates to 0..100
+    const sections = {};
+    Object.entries(sectionAgg).forEach(([slug, x]) => {
+      sections[slug] = x.count ? Math.round(x.sumPct / x.count) : 0;
+    });
 
-      const sections = {};
-Object.entries(secAgg).forEach(([slug,o])=>{
-  if(o.total) {
-    // MCQ scoring (aptitude, cognitive)
-    sections[slug] = Math.round((o.correct / o.total) * 100);
-  } else {
-    // Likert scoring (0..100)
-    sections[slug] = o.count ? Math.round(o.sum / o.count) : 0;
+    // Fold MCQ correctness into those sections as percentages too
+    Object.entries(mcqAgg).forEach(([slug, x]) => {
+      if (x.total > 0) {
+        const pct = Math.round((x.correct / x.total) * 100);
+        // If the section already had Likert avg, blend 50/50; otherwise just use MCQ
+        sections[slug] = sections[slug] ? Math.round((sections[slug] + pct) / 2) : pct;
+      }
+    });
+
+    // Guarantee the 6 key slugs exist (default to 0)
+    const need = ["aptitude_reasoning","cognitive_simulator","personality","emotional_intelligence","values_motivation","career_adaptability"];
+    need.forEach(k => { if (typeof sections[k] !== "number") sections[k] = 0; });
+
+    // Derive a robust trait vector from sections (always filled)
+    const traits = [
+      { name: "Analytical",              score: Math.round((sections.aptitude_reasoning + sections.cognitive_simulator) / 2) },
+      { name: "Professionalism",         score: sections.personality },
+      { name: "Empathy",                 score: sections.emotional_intelligence },
+      { name: "Motivation & Values Fit", score: sections.values_motivation },
+      { name: "Adaptability",            score: sections.career_adaptability },
+      { name: "Cognitive Agility",       score: sections.cognitive_simulator }
+    ];
+
+    // (Optional) also apply weighted trait nudges from question-level weights, if used
+    Object.entries(traitAgg).forEach(([name, v]) => {
+      const z = v.wsum ? (50 + (v.sum / v.wsum) * 50) : 50; // 0..100 centered at 50
+      const i = traits.findIndex(t => t.name === name);
+      if (i >= 0) traits[i].score = Math.round((traits[i].score + z) / 2);
+      else traits.push({ name, score: Math.round(z) });
+    });
+
+    // Badges from thresholds
+    const badges = [];
+    BADGE_RULES.forEach(rule => { try { if (rule.when(sections)) badges.push(rule.badge); } catch {} });
+
+    // Summary
+    const top = [...traits].sort((a,b)=>b.score-a.score).slice(0,3).map(t => t.name);
+    const summary = top.length
+      ? `Top strengths: ${top.join(", ")}.`
+      : "Answer questions to see results.";
+
+    // Cautions for very low traits
+    const cautions = traits.filter(t => t.score < 45).map(t => `Consider developing ${t.name}.`);
+
+    return { summary, traits, cautions, sections, badges };
   }
-});
-
-
-      const badges=[]; BADGE_RULES.forEach(rule=>{ try{ if(rule.when(sections,traits)) badges.push(rule.badge); }catch{} });
-
-      const summary = (badges.length||traits.length) ? `Top strengths: ${traits.slice(0,3).map(t=>t.name).join(', ')}` : 'Answer questions to see results.';
-      const cautions = traits.filter(t=>t.score<45).map(t=>`Consider developing ${t.name}.`);
-      return { summary, traits, cautions, sections, badges };
-    }
-
     // ----- Save to Supabase (table: results) -----
     async function saveResults(payload){
-      try{
-        const { data:{ user } } = await sb().auth.getUser();
-        if(!user) throw new Error('Not signed in');
-        const row = { user_id:user.id, traits:payload.traits, sections:payload.sections, badges:payload.badges, summary:payload.summary, created_at:new Date().toISOString() };
-        const { error } = await sb().from('results').insert(row);
-        if(error) throw error;
-        pOk.classList.remove('hidden'); setTimeout(()=>pOk.classList.add('hidden'), 2000);
-      }catch(e){ pErr.textContent=e.message||'Save failed'; pErr.classList.remove('hidden'); }
+    try{
+      const { data: { user } } = await window.__sb.auth.getUser();
+      if(!user) throw new Error("Not signed in");
+
+      // Save exactly what match.html expects later
+      const row = {
+        user_id:   user.id,
+        traits:    payload.traits,     // array of {name, score}
+        sections:  payload.sections,   // map of section -> 0..100
+        badges:    payload.badges,     // array of {key,label}
+        summary:   payload.summary,
+        created_at: new Date().toISOString()
+      };
+
+      const { error } = await window.__sb.from("results").insert(row);
+      if(error) throw error;
+
+      // UI
+      const ok = document.getElementById('pOk');
+      const err= document.getElementById('pErr');
+      err.classList.add('hidden');
+      ok.classList.remove('hidden');
+      setTimeout(()=>ok.classList.add('hidden'), 1800);
+    }catch(e){
+      const err= document.getElementById('pErr');
+      err.textContent = e.message || "Save failed";
+      err.classList.remove('hidden');
     }
+  }
 
     // ----- Buttons -----
     document.getElementById('btnLoadSet').onclick = async ()=>{
