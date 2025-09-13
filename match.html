@@ -63,31 +63,22 @@
   </script>
 
   <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  const SUPABASE_URL="https://awsuhluvyrxwmogzyfhr.supabase.co";
+  const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  window.__sb = supabase;
 
-    // ====== CONFIG ======
-    const API_BASE = window.__API_BASE || "http://localhost:4001";
-    const SUPABASE_URL="https://awsuhluvyrxwmogzyfhr.supabase.co";
-    const SUPABASE_ANON_KEY="YOUR_KEY";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    window.__sb = supabase;
+  const whoEl = document.getElementById('who');
+  const badgeEl = document.getElementById('badge');
+  const signOutBtn = document.getElementById('signOutBtn');
 
-    // ====== AUTH GUARD ======
-    const whoEl = document.getElementById('who');
-    const badgeEl = document.getElementById('badge');
-    const signOutBtn = document.getElementById('signOutBtn');
-    const latestEl = document.getElementById('latest');
-    const matchesEl = document.getElementById('matches');
-    const mErr = document.getElementById('mErr');
-    const btn = document.getElementById('matchBtn');
+  async function requireAuth(){
+    // getSession can be stale after navigation; getUser is the reliable one
+    const { data: { user } } = await supabase.auth.getUser();
 
-    async function requireAuth(){
-      const { data:{session} } = await supabase.auth.getSession();
-      const guest = localStorage.getItem("cw_guest_id");
-      if(session){ setupUser(session.user.email); window.__uid=session.user.id; return; }
-      if(guest){ setupUser(`Guest: ${guest.replace("guest_","G-")}`); return; }
-      location.href="index.html";
-    }
+    const guest = localStorage.getItem("cw_guest_id");
+
     function setupUser(label){
       whoEl.textContent = label;
       badgeEl.textContent = (label||'U').slice(0,1).toUpperCase();
@@ -97,21 +88,42 @@
         location.href="index.html";
       };
     }
-    await requireAuth();
+
+    if (user) {
+      window.__uid = user.id;                // ✅ set the UID here
+      setupUser(user.email);
+      return;
+    }
+
+    if (guest) {
+      window.__uid = null;                   // guests have no uid => no results query
+      setupUser(`Guest: ${guest.replace("guest_","G-")}`);
+      return;
+    }
+
+    location.href="index.html";
+  }
+
+  await requireAuth();
+</script>
+
 
     // ====== DATA: latest psychometric result ======
     async function getLatestResult(){
-      const uid = window.__uid;
-      if(!uid) return null;
-      const { data, error } = await supabase
-        .from('results')
-        .select('traits, sections, badges, summary, created_at')
-        .eq('user_id', uid)
-        .order('created_at', { ascending:false })
-        .limit(1);
-      if(error) return null;
-      return data?.[0] || null;
-    }
+  const uid = window.__uid;
+  if (!uid) return null; // guests/no auth => no DB query
+
+  const { data, error } = await window.__sb
+    .from('results')
+    .select('traits, sections, badges, summary, created_at')
+    .eq('user_id', uid)
+    .order('created_at', { ascending:false })
+    .limit(1);
+
+  if (error) { console.warn('results select error:', error); return null; }
+  return data?.[0] || null;
+}
+
     function setLatestBanner(result){
       if(!result){ latestEl.textContent = ""; return; }
       const d = new Date(result.created_at);
