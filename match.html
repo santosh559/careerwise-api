@@ -54,75 +54,79 @@
     </section>
   </div>
 
-  <!-- API base (prod vs local). Keep this BEFORE the module script. -->
+  <!-- Set API base first (Render vs local) -->
   <script>
-    // PROD on Render:
     window.__API_BASE = "https://careerwise-api.onrender.com";
-    // DEV (local): comment the line above and use:
+    // For local dev, comment the line above and use:
     // window.__API_BASE = "http://localhost:4001";
   </script>
 
+  <!-- Main module script -->
   <script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-  const SUPABASE_URL="https://awsuhluvyrxwmogzyfhr.supabase.co";
-  const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  window.__sb = supabase;
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-  const whoEl = document.getElementById('who');
-  const badgeEl = document.getElementById('badge');
-  const signOutBtn = document.getElementById('signOutBtn');
+    // ===== Config =====
+    const API_BASE = window.__API_BASE || "http://localhost:4001";
+    const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
 
-  async function requireAuth(){
-    // getSession can be stale after navigation; getUser is the reliable one
-    const { data: { user } } = await supabase.auth.getUser();
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.__sb = supabase;
 
-    const guest = localStorage.getItem("cw_guest_id");
+    // ===== UI refs =====
+    const whoEl     = document.getElementById('who');
+    const badgeEl   = document.getElementById('badge');
+    const signOutBtn= document.getElementById('signOutBtn');
+    const latestEl  = document.getElementById('latest');
+    const matchesEl = document.getElementById('matches');
+    const mErr      = document.getElementById('mErr');
+    const btn       = document.getElementById('matchBtn');
 
-    function setupUser(label){
-      whoEl.textContent = label;
-      badgeEl.textContent = (label||'U').slice(0,1).toUpperCase();
-      signOutBtn.onclick = async ()=>{
-        await supabase.auth.signOut().catch(()=>{});
-        localStorage.removeItem("cw_guest_id");
-        location.href="index.html";
-      };
+    // ===== Auth guard =====
+    async function requireAuth(){
+      // getUser is reliable across pages
+      const { data: { user } } = await supabase.auth.getUser();
+      const guest = localStorage.getItem("cw_guest_id");
+
+      function setupUser(label){
+        whoEl.textContent = label;
+        badgeEl.textContent = (label||'U').slice(0,1).toUpperCase();
+        signOutBtn.onclick = async ()=>{
+          await supabase.auth.signOut().catch(()=>{});
+          localStorage.removeItem("cw_guest_id");
+          location.href="index.html";
+        };
+      }
+
+      if (user) {
+        window.__uid = user.id;
+        setupUser(user.email);
+        return;
+      }
+
+      if (guest) {
+        window.__uid = null; // guests cannot query results
+        setupUser(`Guest: ${guest.replace("guest_","G-")}`);
+        return;
+      }
+
+      location.href = "index.html";
     }
+    await requireAuth();
 
-    if (user) {
-      window.__uid = user.id;                // ✅ set the UID here
-      setupUser(user.email);
-      return;
-    }
-
-    if (guest) {
-      window.__uid = null;                   // guests have no uid => no results query
-      setupUser(`Guest: ${guest.replace("guest_","G-")}`);
-      return;
-    }
-
-    location.href="index.html";
-  }
-
-  await requireAuth();
-</script>
-
-
-    // ====== DATA: latest psychometric result ======
+    // ===== Latest result =====
     async function getLatestResult(){
-  const uid = window.__uid;
-  if (!uid) return null; // guests/no auth => no DB query
-
-  const { data, error } = await window.__sb
-    .from('results')
-    .select('traits, sections, badges, summary, created_at')
-    .eq('user_id', uid)
-    .order('created_at', { ascending:false })
-    .limit(1);
-
-  if (error) { console.warn('results select error:', error); return null; }
-  return data?.[0] || null;
-}
+      const uid = window.__uid;
+      if (!uid) return null; // guests/no auth
+      const { data, error } = await supabase
+        .from('results')
+        .select('traits, sections, badges, summary, created_at')
+        .eq('user_id', uid)
+        .order('created_at', { ascending:false })
+        .limit(1);
+      if (error) { console.warn('results select error:', error); return null; }
+      return data?.[0] || null;
+    }
 
     function setLatestBanner(result){
       if(!result){ latestEl.textContent = ""; return; }
@@ -130,7 +134,7 @@
       latestEl.innerHTML = `Using your latest assessment from <strong>${d.toLocaleString()}</strong>.`;
     }
 
-    // ====== RENDER ======
+    // ===== Render =====
     function renderMatches(list){
       matchesEl.innerHTML = '';
       if (!list || !list.length){
@@ -152,7 +156,7 @@
       });
     }
 
-    // ====== BUTTON ======
+    // ===== Action =====
     btn.onclick = async ()=>{
       btn.disabled = true; btn.textContent = 'Working…';
       mErr.style.display='none';
@@ -168,7 +172,7 @@
         }
         setLatestBanner(latest);
 
-        const skills = (document.getElementById('skills').value||'').trim();
+        const skills    = (document.getElementById('skills').value||'').trim();
         const interests = (document.getElementById('interests').value||'').trim();
 
         const resp = await fetch(`${API_BASE}/match-ai`, {
@@ -177,11 +181,11 @@
           body: JSON.stringify({
             skills,
             interests,
-            traits: Object.fromEntries((latest.traits||[])
-                      .map(t => [t.name, (t.score||0)/100])),
+            traits: Object.fromEntries((latest.traits||[]).map(t => [t.name, (t.score||0)/100])),
             sections: latest.sections || {}
           })
         });
+
         if(!resp.ok){
           const err = await resp.json().catch(()=>({error:'Match API error'}));
           throw new Error(err.error || 'Match API error');
@@ -196,6 +200,9 @@
         btn.disabled = false; btn.textContent = 'Get Matches';
       }
     };
+
+    // Prefetch latest result for banner on load
+    (async ()=>{ setLatestBanner(await getLatestResult()); })();
   </script>
 </body>
 </html>
