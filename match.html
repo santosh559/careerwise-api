@@ -21,6 +21,7 @@
     .match{border:1px solid var(--border);border-radius:16px;padding:16px;background:#fff}
     .match .hdr{display:flex;align-items:center;justify-content:space-between}
     .badge-pill{font-size:12px;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#1d4ed8;border:1px solid #c7d2fe}
+    .field-label{font-size:12px;font-weight:700;color:#6b7280;margin-bottom:6px}
   </style>
 </head>
 <body>
@@ -37,11 +38,17 @@
 
     <section class="card">
       <h3 style="margin:0">Career Matching</h3>
-      <p class="muted" style="margin-top:6px">We use your latest psychometric results plus your skills & interests.</p>
+      <p class="muted" style="margin-top:6px">We use your latest psychometric results plus your skills & interested job roles.</p>
 
       <div class="grid-2" style="margin-top:12px;">
-        <input id="skills" class="btn" style="text-align:left" placeholder="Skills (comma separated)" value="sql, excel" />
-        <input id="interests" class="btn" style="text-align:left" placeholder="Interests (comma separated)" value="data, analytics" />
+        <div>
+          <div class="field-label">Skills (comma separated)</div>
+          <input id="skills" class="btn" style="text-align:left;width:100%" placeholder="e.g., python, sql, html" value="" />
+        </div>
+        <div>
+          <div class="field-label">Interested job roles (comma separated)</div>
+          <input id="roles" class="btn" style="text-align:left;width:100%" placeholder="e.g., software developer, data analyst" value="" />
+        </div>
       </div>
 
       <div style="display:flex;gap:10px;margin-top:12px">
@@ -54,38 +61,35 @@
     </section>
   </div>
 
-  <!-- Set API base first (Render vs local) -->
+  <!-- API base (prod vs local). Keep this BEFORE the module script. -->
   <script>
+    // PROD on Render:
     window.__API_BASE = "https://careerwise-api.onrender.com";
-    // For local dev, comment the line above and use:
+    // DEV (local): comment the line above and use:
     // window.__API_BASE = "http://localhost:4001";
   </script>
 
-  <!-- Main module script -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // ===== Config =====
+    // ====== CONFIG ======
     const API_BASE = window.__API_BASE || "http://localhost:4001";
-    const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
-
+    const SUPABASE_URL="https://awsuhluvyrxwmogzyfhr.supabase.co";
+    const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     window.__sb = supabase;
 
-    // ===== UI refs =====
-    const whoEl     = document.getElementById('who');
-    const badgeEl   = document.getElementById('badge');
-    const signOutBtn= document.getElementById('signOutBtn');
-    const latestEl  = document.getElementById('latest');
+    // ====== AUTH GUARD ======
+    const whoEl = document.getElementById('who');
+    const badgeEl = document.getElementById('badge');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const latestEl = document.getElementById('latest');
     const matchesEl = document.getElementById('matches');
-    const mErr      = document.getElementById('mErr');
-    const btn       = document.getElementById('matchBtn');
+    const mErr = document.getElementById('mErr');
+    const btn = document.getElementById('matchBtn');
 
-    // ===== Auth guard =====
     async function requireAuth(){
-      // getUser is reliable across pages
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data:{ user } } = await supabase.auth.getUser();
       const guest = localStorage.getItem("cw_guest_id");
 
       function setupUser(label){
@@ -98,47 +102,36 @@
         };
       }
 
-      if (user) {
-        window.__uid = user.id;
-        setupUser(user.email);
-        return;
-      }
-
-      if (guest) {
-        window.__uid = null; // guests cannot query results
-        setupUser(`Guest: ${guest.replace("guest_","G-")}`);
-        return;
-      }
-
-      location.href = "index.html";
+      if(user){ window.__uid = user.id; setupUser(user.email); return; }
+      if(guest){ window.__uid = null; setupUser(`Guest: ${guest.replace("guest_","G-")}`); return; }
+      location.href="index.html";
     }
     await requireAuth();
 
-    // ===== Latest result =====
+    // ====== DATA: latest psychometric result ======
     async function getLatestResult(){
       const uid = window.__uid;
-      if (!uid) return null; // guests/no auth
-      const { data, error } = await supabase
+      if(!uid) return null; // guests can't query results
+      const { data, error } = await window.__sb
         .from('results')
         .select('traits, sections, badges, summary, created_at')
         .eq('user_id', uid)
         .order('created_at', { ascending:false })
         .limit(1);
-      if (error) { console.warn('results select error:', error); return null; }
+      if(error){ console.warn('results select error:', error); return null; }
       return data?.[0] || null;
     }
-
     function setLatestBanner(result){
       if(!result){ latestEl.textContent = ""; return; }
       const d = new Date(result.created_at);
       latestEl.innerHTML = `Using your latest assessment from <strong>${d.toLocaleString()}</strong>.`;
     }
 
-    // ===== Render =====
+    // ====== RENDER ======
     function renderMatches(list){
       matchesEl.innerHTML = '';
-      if (!list || !list.length){
-        matchesEl.innerHTML = '<span class="muted">No matches yet — try adding more skills or interests.</span>';
+      if(!list || !list.length){
+        matchesEl.innerHTML = '<span class="muted">No matches yet — try adding more skills or roles.</span>';
         return;
       }
       list.forEach(r=>{
@@ -156,13 +149,13 @@
       });
     }
 
-    // ===== Action =====
+    // ====== BUTTON ======
     btn.onclick = async ()=>{
       btn.disabled = true; btn.textContent = 'Working…';
       mErr.style.display='none';
       matchesEl.innerHTML='Loading…';
 
-      try {
+      try{
         const latest = await getLatestResult();
         if(!latest){
           matchesEl.innerHTML='';
@@ -172,37 +165,34 @@
         }
         setLatestBanner(latest);
 
-        const skills    = (document.getElementById('skills').value||'').trim();
-        const interests = (document.getElementById('interests').value||'').trim();
+        const skills = (document.getElementById('skills').value||'').trim();
+        // renamed input to "roles" but keep API field "interests" for compatibility
+        const roles  = (document.getElementById('roles').value||'').trim();
 
         const resp = await fetch(`${API_BASE}/match-ai`, {
           method:'POST',
           headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify({
             skills,
-            interests,
+            interests: roles, // <-- send roles as "interests" to backend
             traits: Object.fromEntries((latest.traits||[]).map(t => [t.name, (t.score||0)/100])),
             sections: latest.sections || {}
           })
         });
-
         if(!resp.ok){
           const err = await resp.json().catch(()=>({error:'Match API error'}));
           throw new Error(err.error || 'Match API error');
         }
         const data = await resp.json();
         renderMatches(data.matches || []);
-      } catch(e){
+      }catch(e){
         matchesEl.innerHTML='';
         mErr.textContent = e.message || 'Match request failed';
         mErr.style.display='inline';
-      } finally {
+      }finally{
         btn.disabled = false; btn.textContent = 'Get Matches';
       }
     };
-
-    // Prefetch latest result for banner on load
-    (async ()=>{ setLatestBanner(await getLatestResult()); })();
   </script>
 </body>
 </html>
