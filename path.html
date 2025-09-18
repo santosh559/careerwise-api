@@ -108,8 +108,10 @@
     const pathContainer = document.getElementById("pathContainer");
 
     btn.addEventListener("click", async () => {
-      const role = (document.getElementById("roleSelect")).value;
-      const audience = (document.getElementById("audienceSelect")).value;
+      const role = document.getElementById("roleSelect").value;
+      const audience = document.getElementById("audienceSelect").value;
+
+      console.log("🔹 Sending request:", { role, audience });
 
       pathContainer.innerHTML = `<div class="section">Generating…</div>`;
       try {
@@ -117,33 +119,37 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": \`Bearer \${ANON}\`
+            "Authorization": `Bearer ${ANON}`
           },
           body: JSON.stringify({ role, audience })
         });
-        const data = await res.json();
+
+        console.log("🔹 Response status:", res.status);
+
+        const data = await res.json().catch(e => ({ error: "Invalid JSON", detail: e }));
+        console.log("🔹 Response data:", data);
 
         if (!res.ok || data?.error) {
-          pathContainer.innerHTML = `<div class="section" style="color:#b91c1c">Error: \${data?.error || res.statusText}</div>`;
+          pathContainer.innerHTML = `<div class="section" style="color:#b91c1c">Error: ${data?.error || res.statusText}</div>`;
           return;
         }
 
         pathContainer.innerHTML = `
           ${(data.stages || []).map((s) => `
             <div class="section">
-              <h3 style="margin:0 0 6px">\${s.name}</h3>
-              \${Array.isArray(s.outcomes) ? \`<ul>\${s.outcomes.map((o)=>\`<li>\${o}</li>\`).join("")}</ul>\` : ""}
+              <h3 style="margin:0 0 6px">${s.name}</h3>
+              ${Array.isArray(s.outcomes) ? `<ul>${s.outcomes.map((o)=>`<li>${o}</li>`).join("")}</ul>` : ""}
 
               <h4 style="margin:12px 0 6px">Core</h4>
-              <ul>\${(s.core||[]).map((c)=>\`<li><a href="\${c.url}" target="_blank" rel="noreferrer">\${c.title}</a> · \${c.provider}</li>\`).join("")}</ul>
+              <ul>${(s.core||[]).map((c)=>`<li><a href="${c.url}" target="_blank" rel="noreferrer">${c.title}</a> · ${c.provider}</li>`).join("")}</ul>
 
-              \${s.recommended_now?.length ? `
+              ${s.recommended_now?.length ? `
                 <h4 style="margin:12px 0 6px">Recommended now</h4>
-                <ul>\${s.recommended_now.map((r)=>\`<li><a href="\${r.url}" target="_blank" rel="noreferrer">\${r.title}</a> · \${r.provider} · \${r.score}</li>\`).join("")}</ul>
+                <ul>${s.recommended_now.map((r)=>`<li><a href="${r.url}" target="_blank" rel="noreferrer">${r.title}</a> · ${r.provider} · ${r.score}</li>`).join("")}</ul>
               ` : ``}
 
               <h4 style="margin:12px 0 6px">Projects</h4>
-              <ul>\${(s.projects||[]).map((p)=>\`<li>\${p.title}\${p.deliverable?\` — \${p.deliverable}\`:""}</li>\`).join("")}</ul>
+              <ul>${(s.projects||[]).map((p)=>`<li>${p.title}${p.deliverable?` — ${p.deliverable}`:""}</li>`).join("")}</ul>
             </div>
           `).join("")}
         `;
@@ -151,14 +157,15 @@
         if (data.timeline) {
           const t = data.timeline;
           pathContainer.insertAdjacentHTML("afterbegin",
-            \`<div class="section" style="display:flex;gap:8px;align-items:center">
-              <span class="chip">Fast-track: \${t.fastTrackMonths || "—"} months</span>
-              <span class="chip">Standard: \${t.standardMonths || "—"} months</span>
-            </div>\`
+            `<div class="section" style="display:flex;gap:8px;align-items:center">
+              <span class="chip">Fast-track: ${t.fastTrackMonths || "—"} months</span>
+              <span class="chip">Standard: ${t.standardMonths || "—"} months</span>
+            </div>`
           );
         }
       } catch (e) {
-        pathContainer.innerHTML = \`<div class="section" style="color:#b91c1c">Network error: \${e}</div>\`;
+        console.error("❌ Fetch/network error:", e);
+        pathContainer.innerHTML = `<div class="section" style="color:#b91c1c">Network error: ${e}</div>`;
       }
     });
   </script>
