@@ -17,7 +17,7 @@
     .badge{width:28px;height:28px;border-radius:8px;background:#eef2ff;color:#1d4ed8;display:grid;place-items:center;font-weight:800}
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-    .tile{display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid var(--border);border-radius:16px;text-decoration:none;color:inherit}
+    .tile{display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid var(--border);border-radius:16px;text-decoration:none;color:inherit;background:#fff}
     .tile:hover{box-shadow:var(--shadow)}
     .icon{font-size:36px}
     .muted{color:var(--muted)}
@@ -52,6 +52,15 @@
           <div>
             <div style="font-weight:700">Career Matching</div>
             <div class="muted">Use your results + skills & interests to get roles.</div>
+          </div>
+        </a>
+
+        <!-- 🔥 Special Feature: separate from Career Matching -->
+        <a class="tile" href="path.html">
+          <div class="icon">🛤️</div>
+          <div>
+            <div style="font-weight:700">Personalized Path Generator</div>
+            <div class="muted">Get a roadmap, courses & workshops for your chosen role.</div>
           </div>
         </a>
       </div>
