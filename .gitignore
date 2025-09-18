@@ -8,3 +8,5 @@ ok
 api-server/src/server.js.bak*
 
 node_modules/
+
+supabase.tar.gz
