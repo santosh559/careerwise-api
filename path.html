@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerWise — Personalized Path Generator</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#ffffff; --surface:#ffffff; --border:#e5e7eb; --text:#0f172a; --muted:#6b7280; --primary:#3165ff; --primary-600:#2656f5; --radius:14px; --shadow:0 10px 30px rgba(15,23,42,.06); }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .container{max-width:1080px;margin:0 auto;padding:24px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);box-shadow:var(--shadow)}
+    .btn{display:inline-flex;align-items:center;gap:8px;justify-content:center;padding:10px 14px;border-radius:12px;border:1px solid var(--border);cursor:pointer;background:#fff;font-weight:600}
+    .badge{width:28px;height:28px;border-radius:8px;background:#eef2ff;color:#1d4ed8;display:grid;place-items:center;font-weight:800}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .select{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+    .section{margin:14px 0;padding:16px;border:1px solid var(--border);border-radius:14px;background:#fff}
+    .muted{color:var(--muted)}
+    a{color:#1d4ed8;text-decoration:none}
+    a:hover{text-decoration:underline}
+    .chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:12px;color:#374151}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand"><div class="logo"></div><strong>CareerWise</strong></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="who" class="muted"></span>
+        <span id="badge" class="badge">U</span>
+        <button id="signOutBtn" class="btn" type="button">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0 0 6px">Personalized Path Generator</h2>
+          <p class="muted" style="margin-top:0">Get a step-by-step roadmap with courses, workshops, and projects.</p>
+        </div>
+        <a href="dashboard.html" class="btn" aria-label="Back to dashboard">← Back</a>
+      </div>
+
+      <!-- Controls -->
+      <div class="row" style="margin-top:12px">
+        <label class="chip">
+          Role&nbsp;
+          <select id="roleSelect" class="select" style="margin-left:6px">
+            <option value="data-scientist">Data Scientist</option>
+            <!-- Add more roles here as you seed them in Supabase -->
+          </select>
+        </label>
+
+        <label class="chip">
+          Audience&nbsp;
+          <select id="audienceSelect" class="select" style="margin-left:6px">
+            <option value="student">Student</option>
+            <option value="fresher">Fresher</option>
+            <option value="switcher">Career Switcher</option>
+            <option value="experienced">Experienced</option>
+          </select>
+        </label>
+
+        <button id="generatePathBtn" class="btn" type="button">🛤️ Generate Path</button>
+      </div>
+
+      <!-- Results -->
+      <div id="pathContainer" style="margin-top:14px"></div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    const SUPABASE_URL="https://awsuhluvyrxwmogzyfhr.supabase.co";
+    const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const whoEl   = document.getElementById('who');
+    const badgeEl = document.getElementById('badge');
+    const signOutBtn = document.getElementById('signOutBtn');
+
+    async function requireAuth(){
+      const { data:{session} } = await supabase.auth.getSession();
+      const guest = localStorage.getItem("cw_guest_id");
+      if (session)      { setupUser(session.user.email); return; }
+      if (guest)        { setupUser(`Guest: ${guest.replace("guest_","G-")}`); return; }
+      location.href = "index.html";
+    }
+
+    function setupUser(label){
+      whoEl.textContent = label;
+      badgeEl.textContent = (label || 'U').slice(0,1).toUpperCase();
+      signOutBtn.onclick = async ()=>{
+        await supabase.auth.signOut().catch(()=>{});
+        localStorage.removeItem("cw_guest_id");
+        location.href = "index.html";
+      };
+    }
+
+    await requireAuth();
+
+    // ---------- Path Generator ----------
+    const FN_URL = "https://awsuhluvyrxwmogzyfhr.functions.supabase.co/paths-generate";
+    const ANON   = SUPABASE_ANON_KEY; // send anon JWT (your function currently verifies JWT)
+
+    const btn = document.getElementById("generatePathBtn");
+    const pathContainer = document.getElementById("pathContainer");
+
+    btn.addEventListener("click", async () => {
+      const role = (document.getElementById("roleSelect") as HTMLSelectElement).value;
+      const audience = (document.getElementById("audienceSelect") as HTMLSelectElement).value;
+
+      pathContainer.innerHTML = `<div class="section">Generating…</div>`;
+      try {
+        const res = await fetch(FN_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${ANON}`
+          },
+          body: JSON.stringify({ role, audience })
+        });
+        const data = await res.json();
+
+        if (!res.ok || data?.error) {
+          pathContainer.innerHTML = `<div class="section" style="color:#b91c1c">Error: ${data?.error || res.statusText}</div>`;
+          return;
+        }
+
+        // Render roadmap
+        pathContainer.innerHTML = `
+          ${(data.stages || []).map((s:any) => `
+            <div class="section">
+              <h3 style="margin:0 0 6px">${s.name}</h3>
+              ${Array.isArray(s.outcomes) ? `<ul>${s.outcomes.map((o:string)=>`<li>${o}</li>`).join("")}</ul>` : ""}
+
+              <h4 style="margin:12px 0 6px">Core</h4>
+              <ul>${(s.core||[]).map((c:any)=>`<li><a href="${c.url}" target="_blank" rel="noreferrer">${c.title}</a> · ${c.provider}</li>`).join("")}</ul>
+
+              ${s.recommended_now?.length ? `
+                <h4 style="margin:12px 0 6px">Recommended now</h4>
+                <ul>${s.recommended_now.map((r:any)=>`<li><a href="${r.url}" target="_blank" rel="noreferrer">${r.title}</a> · ${r.provider} · ${r.score}</li>`).join("")}</ul>
+              ` : ``}
+
+              <h4 style="margin:12px 0 6px">Projects</h4>
+              <ul>${(s.projects||[]).map((p:any)=>`<li>${p.title}${p.deliverable?` — ${p.deliverable}`:""}</li>`).join("")}</ul>
+            </div>
+          `).join("")}
+        `;
+
+        // Timeline chip
+        if (data.timeline) {
+          const t = data.timeline;
+          pathContainer.insertAdjacentHTML("afterbegin",
+            `<div class="section" style="display:flex;gap:8px;align-items:center">
+              <span class="chip">Fast-track: ${t.fastTrackMonths || "—"} months</span>
+              <span class="chip">Standard: ${t.standardMonths || "—"} months</span>
+            </div>`
+          );
+        }
+      } catch (e:any) {
+        pathContainer.innerHTML = `<div class="section" style="color:#b91c1c">Network error: ${e?.message || e}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>
