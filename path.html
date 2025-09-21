@@ -23,6 +23,8 @@
     a{color:#1d4ed8;text-decoration:none} a:hover{text-decoration:underline}
     .chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:12px;color:#374151}
     .small{font-size:12px;color:#6b7280}
+    /* Better PDF page breaks */
+    .section{break-inside: avoid; page-break-inside: avoid;}
   </style>
 </head>
 <body>
@@ -48,12 +50,20 @@
       <div class="row" style="margin-top:12px">
         <input id="roleInput" class="input" type="text" placeholder="Type a role… e.g., Data Scientist" />
         <button id="generatePathBtn" class="btn" type="button">🛤️ Generate Path</button>
+        <button id="downloadBtn" class="btn" type="button" disabled>⬇️ Download PDF</button>
       </div>
 
       <div id="lastGen" class="small" style="margin-top:8px"></div>
-      <div id="pathContainer" style="margin-top:14px"></div>
+      <!-- This wrapper will be used to compose the PDF -->
+      <div id="pdfContent">
+        <div id="timelineChips" style="margin-top:8px"></div>
+        <div id="pathContainer" style="margin-top:14px"></div>
+      </div>
     </section>
   </div>
+
+  <!-- PDF lib (must be before the module script) -->
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
@@ -79,17 +89,26 @@
     await requireAuth();
 
     // --- Path Generator (free-text role) ---
-    const FN_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co/functions/v1/paths-generate"; // project domain endpoint
+    const FN_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co/functions/v1/paths-generate";
     const btn   = document.getElementById("generatePathBtn");
     const input = document.getElementById("roleInput");
     const pathContainer = document.getElementById("pathContainer");
+    const chips = document.getElementById("timelineChips");
     const lastGen = document.getElementById("lastGen");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    // simple slug for filename
+    const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 
     btn.addEventListener("click", async () => {
       const roleText = (input.value || "").trim();
       if (!roleText) { input.focus(); return; }
 
+      // disable PDF until we render a fresh plan
+      downloadBtn.disabled = true;
+
       pathContainer.innerHTML = `<div class="section">Generating a roadmap for <b>${roleText}</b>…</div>`;
+      chips.innerHTML = "";
       lastGen.textContent = "";
       try {
         const res = await fetch(FN_URL, {
@@ -98,7 +117,7 @@
             "Content-Type": "application/json",
             "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
           },
-          body: JSON.stringify({ query: roleText }) // <- free-text
+          body: JSON.stringify({ query: roleText }) // free-text
         });
         const data = await res.json();
 
@@ -107,7 +126,19 @@
           return;
         }
 
-        lastGen.textContent = data.generated_at ? `Last generated: ${new Date(data.generated_at).toLocaleString()}` : "";
+        // timeline
+        chips.innerHTML = "";
+        if (data.timeline) {
+          const t = data.timeline;
+          chips.insertAdjacentHTML("beforeend",
+            `<div class="row" style="margin-top:8px">
+              <span class="chip">Fast-track: ${t.fastTrackMonths || "—"} months</span>
+              <span class="chip">Standard: ${t.standardMonths || "—"} months</span>
+            </div>`
+          );
+        }
+
+        // stages
         pathContainer.innerHTML = `
           ${(data.stages || []).map((s) => `
             <div class="section">
@@ -128,18 +159,51 @@
           `).join("")}
         `;
 
-        if (data.timeline) {
-          const t = data.timeline;
-          pathContainer.insertAdjacentHTML("afterbegin",
-            `<div class="section" style="display:flex;gap:8px;align-items:center">
-              <span class="chip">Fast-track: ${t.fastTrackMonths || "—"} months</span>
-              <span class="chip">Standard: ${t.standardMonths || "—"} months</span>
-            </div>`
-          );
-        }
+        lastGen.textContent = data.generated_at ? `Last generated: ${new Date(data.generated_at).toLocaleString()}` : "";
+
+        // enable PDF
+        downloadBtn.disabled = false;
+
+        // store the last role for filename
+        downloadBtn.dataset.role = roleText;
+
       } catch (e) {
         pathContainer.innerHTML = `<div class="section" style="color:#b91c1c">Network error: ${e}</div>`;
       }
+    });
+
+    // --- Download PDF ---
+    downloadBtn.addEventListener("click", async () => {
+      if (downloadBtn.disabled) return;
+      const roleText = downloadBtn.dataset.role || (input.value || "Roadmap");
+      const when = new Date().toISOString().slice(0,10);
+
+      // Build a lightweight “printable” node off-screen
+      const ghost = document.createElement("div");
+      ghost.style.position = "absolute";
+      ghost.style.left = "-9999px";
+      ghost.style.top = "0";
+      ghost.style.width = "794px"; /* A4 width at 96dpi-ish for nicer layout */
+      ghost.innerHTML = `
+        <div style="font-family: Inter, Arial, sans-serif; padding: 16px">
+          <h2 style="margin:0 0 6px">CareerWise — Roadmap: ${roleText}</h2>
+          <div style="color:#6b7280; font-size:12px; margin-bottom:10px">Generated: ${new Date().toLocaleString()}</div>
+          ${document.getElementById("timelineChips").outerHTML}
+          ${document.getElementById("pathContainer").outerHTML}
+        </div>`;
+      document.body.appendChild(ghost);
+
+      const opt = {
+        margin:       10,
+        filename:     `roadmap_${slug(roleText)}_${when}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['css', 'legacy'] }
+      };
+
+      await html2pdf().set(opt).from(ghost).save();
+      document.body.removeChild(ghost);
     });
   </script>
 </body>
