@@ -174,37 +174,31 @@
 
     // --- Download PDF ---
     downloadBtn.addEventListener("click", async () => {
-      if (downloadBtn.disabled) return;
-      const roleText = downloadBtn.dataset.role || (input.value || "Roadmap");
-      const when = new Date().toISOString().slice(0,10);
+  if (downloadBtn.disabled) return;
 
-      // Build a lightweight “printable” node off-screen
-      const ghost = document.createElement("div");
-      ghost.style.position = "absolute";
-      ghost.style.left = "-9999px";
-      ghost.style.top = "0";
-      ghost.style.width = "794px"; /* A4 width at 96dpi-ish for nicer layout */
-      ghost.innerHTML = `
-        <div style="font-family: Inter, Arial, sans-serif; padding: 16px">
-          <h2 style="margin:0 0 6px">CareerWise — Roadmap: ${roleText}</h2>
-          <div style="color:#6b7280; font-size:12px; margin-bottom:10px">Generated: ${new Date().toLocaleString()}</div>
-          ${document.getElementById("timelineChips").outerHTML}
-          ${document.getElementById("pathContainer").outerHTML}
-        </div>`;
-      document.body.appendChild(ghost);
+  const roleText = downloadBtn.dataset.role || (input.value || "Roadmap");
+  const when = new Date().toISOString().slice(0,10);
+  const source = document.getElementById("pdfContent"); // export the visible node
 
-      const opt = {
-        margin:       10,
-        filename:     `roadmap_${slug(roleText)}_${when}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'] }
-      };
+  // wait for fonts to load (prevents blank PDFs on some browsers)
+  if (document.fonts?.ready) { try { await document.fonts.ready; } catch {} }
 
-      await html2pdf().set(opt).from(ghost).save();
-      document.body.removeChild(ghost);
-    });
-  </script>
+  const opt = {
+    margin: 10,
+    filename: `roadmap_${slug(roleText)}_${when}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff', // force white background
+      logging: false
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] } // respects .section { break-inside: avoid; }
+  };
+
+  await html2pdf().set(opt).from(source).save();
+});
+</script>
 </body>
 </html>
