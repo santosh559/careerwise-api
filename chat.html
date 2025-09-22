@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerWise — Career Chatbot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --border:#e5e7eb; --muted:#6b7280; --bg:#fff; --card:#fff; --shadow:0 10px 30px rgba(15,23,42,.06); }
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f8fafc}
+    .wrap{max-width:920px;margin:0 auto;padding:24px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:18px}
+    .row{display:flex;gap:10px;align-items:center}
+    .input{flex:1;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+    .btn{padding:10px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;font-weight:600;cursor:pointer}
+    .chat{display:flex;flex-direction:column;gap:10px;margin-top:12px;min-height:240px}
+    .bubble{padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;max-width:80%}
+    .me{align-self:flex-end;background:#eef2ff;border-color:#dbe2ff}
+    .sys{color:#6b7280;font-size:12px;margin-top:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between;margin-bottom:12px">
+      <div class="row" style="gap:12px"><div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7aa2ff,#6a57ff)"></div><strong>CareerWise</strong></div>
+      <a class="btn" href="dashboard.html">← Back</a>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 6px">Career Chatbot</h2>
+      <p class="sys">I answer only career topics: roles, skills, roadmaps, resumes, interviews, job search, and growth. Off-topic → I’ll politely steer you back.</p>
+
+      <div id="chat" class="chat"></div>
+
+      <div class="row" style="margin-top:12px">
+        <input id="msg" class="input" placeholder="Ask a career question… e.g., Short roadmap to cloud engineer?" />
+        <button id="send" class="btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Reuse your function and anon key
+    const FN_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co/functions/v1/chat-career";
+    const ANON   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+
+    const chat = document.getElementById('chat');
+    const msg  = document.getElementById('msg');
+    const send = document.getElementById('send');
+    const history = [];
+
+    function addBubble(text, mine=false){
+      const div = document.createElement('div');
+      div.className = 'bubble' + (mine ? ' me' : '');
+      div.innerHTML = text.replace(/\n/g,'<br>');
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    addBubble("Hi! I’m your CareerWise assistant. Ask me about careers (roles, skills, learning paths, resumes, interviews).");
+
+    async function ask(){
+      const text = (msg.value || '').trim();
+      if(!text) return;
+      addBubble(text, true);
+      history.push({ role: "user", content: text });
+      msg.value = '';
+
+      try{
+        const res = await fetch(FN_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON}` },
+          body: JSON.stringify({ message: text, history })
+        });
+        const data = await res.json();
+        const reply = data?.reply || "I’m having trouble right now.";
+        addBubble(reply, false);
+        history.push({ role: "assistant", content: reply });
+      }catch(e){
+        addBubble("Network error. Ask me a career question like “Which skills for data analyst?”", false);
+      }
+    }
+
+    send.onclick = ask;
+    msg.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey) ask(); });
+  </script>
+</body>
+</html>
