@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerWise — Set new password</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;background:#f6f8fc;color:#0f172a;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .wrap{max-width:520px;margin:40px auto;padding:18px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 10px 30px rgba(2,6,23,.07);padding:18px}
+    .muted{color:#64748b}
+    .in{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;margin:8px 0}
+    .btn{padding:10px 12px;border:1px solid #3165ff;border-radius:10px;background:#3165ff;color:#fff;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2 style="margin:0 0 6px">Set a new password</h2>
+      <p class="muted" id="state">Checking your link…</p>
+
+      <div id="form" style="display:none">
+        <input id="pw1" class="in" type="password" placeholder="New password" />
+        <input id="pw2" class="in" type="password" placeholder="Confirm new password" />
+        <button id="save" class="btn">Save password</button>
+        <div id="ok"  style="margin-top:10px;color:#16a34a;display:none">Password updated. You can close this tab or <a href="dashboard.html">go to dashboard</a>.</div>
+        <div id="err" style="margin-top:10px;color:#b91c1c;display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    // Use same project values as the rest of your app:
+    const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const state = document.getElementById('state');
+    const form  = document.getElementById('form');
+    const save  = document.getElementById('save');
+    const pw1   = document.getElementById('pw1');
+    const pw2   = document.getElementById('pw2');
+    const ok    = document.getElementById('ok');
+    const err   = document.getElementById('err');
+
+    // Show form if session exists (the magic link creates one)
+    async function init(){
+      const { data:{ session } } = await supabase.auth.getSession();
+      if (session) {
+        state.textContent = "Enter a new password.";
+        form.style.display = 'block';
+        return;
+      }
+      // Wait for auth state change triggered by the link
+      supabase.auth.onAuthStateChange((_event, sess)=>{
+        if (sess) { state.textContent = "Enter a new password."; form.style.display='block'; }
+      });
+    }
+
+    save.onclick = async ()=>{
+      err.style.display = 'none'; ok.style.display='none';
+      const a = pw1.value.trim(), b = pw2.value.trim();
+      if (!a || a.length < 8) { err.textContent = "Password must be at least 8 characters."; err.style.display='block'; return; }
+      if (a !== b)            { err.textContent = "Passwords don’t match."; err.style.display='block'; return; }
+
+      const { error } = await supabase.auth.updateUser({ password: a });
+      if (error) { err.textContent = error.message || "Couldn’t update password."; err.style.display='block'; return; }
+
+      ok.style.display = 'block';
+      pw1.value = pw2.value = '';
+    };
+
+    init();
+  </script>
+</body>
+</html>
