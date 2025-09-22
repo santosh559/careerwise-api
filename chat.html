@@ -94,106 +94,136 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
 
   <script type="module">
-    // ====== CONFIG ======
-    const FN_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co/functions/v1/chat-career";
-    const ANON   = "YOUR_ANON_KEY_HERE"; // <- paste your anon key
+  // ====== CONFIG ======
+  const FN_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co/functions/v1/chat-career";
+  const ANON   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE"; // <-- important
 
-    // ====== ELEMENTS ======
-    const chat = document.getElementById('chat');
-    const msg  = document.getElementById('msg');
-    const send = document.getElementById('send');
-    const clearBtn = document.getElementById('clear');
-    const chips = document.getElementById('chips');
+  // ====== ELEMENTS ======
+  const chat = document.getElementById('chat');
+  const msg  = document.getElementById('msg');
+  const send = document.getElementById('send');
+  const clearBtn = document.getElementById('clear');
+  const chips = document.getElementById('chips');
 
-    // ====== STATE ======
-    const history = [];
-    let busy = false;
+  // ====== STATE ======
+  const history = [];
+  let busy = false;
 
-    // ====== RENDER HELPERS ======
-    function bubble({mine=false, html}) {
+  // ====== RENDER HELPERS ======
+  function bubble({mine=false, html}) {
+    const row = document.createElement('div');
+    row.className = 'row' + (mine ? ' me' : '');
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar' + (mine ? ' me' : '');
+    avatar.textContent = mine ? 'You' : 'CW';
+    const b = document.createElement('div');
+    b.className = 'bubble msg';
+    b.innerHTML = html;
+    row.append(avatar, b);
+    chat.append(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function md(text){
+    const html = marked.parse(text ?? "");
+    return DOMPurify.sanitize(html);
+  }
+
+  function typing(show=true){
+    if (show) {
       const row = document.createElement('div');
-      row.className = 'row' + (mine ? ' me' : '');
-      const avatar = document.createElement('div');
-      avatar.className = 'avatar' + (mine ? ' me' : '');
-      avatar.textContent = mine ? 'You' : 'CW';
-      const b = document.createElement('div');
-      b.className = 'bubble msg';
-      b.innerHTML = html;
-      row.append(avatar, b);
+      row.className = 'row';
+      row.id = 'typing-row';
+      row.innerHTML = `
+        <div class="avatar">CW</div>
+        <div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>
+      `;
       chat.append(row);
       chat.scrollTop = chat.scrollHeight;
+    } else {
+      const r = document.getElementById('typing-row');
+      if (r) r.remove();
     }
+  }
 
-    function md(text){
-      const html = marked.parse(text ?? "");
-      return DOMPurify.sanitize(html);
-    }
+  // ====== INIT ======
+  bubble({ html: md("Hi! I’m your **CareerWise** assistant. Ask me about careers—roles, skills, roadmaps, resumes, interviews. Off-topic? I’ll nudge you back.") });
 
-    function typing(show=true){
-      if (show) {
-        const row = document.createElement('div');
-        row.className = 'row';
-        row.id = 'typing-row';
-        row.innerHTML = `
-          <div class="avatar">CW</div>
-          <div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>
-        `;
-        chat.append(row);
-        chat.scrollTop = chat.scrollHeight;
-      } else {
-        const r = document.getElementById('typing-row');
-        if (r) r.remove();
-      }
-    }
-
-    // ====== INIT ======
-    bubble({ html: md("Hi! I’m your **CareerWise** assistant. Ask me about careers—roles, skills, roadmaps, resumes, interviews. Off-topic? I’ll nudge you back.") });
-
-    // ====== EVENTS ======
+  // ====== EVENTS ======
+  if (chips) {
     chips.addEventListener('click', (e)=>{
       const q = e.target?.dataset?.q; if(!q) return;
       msg.value = q; send.click();
     });
+  }
+  clearBtn.onclick = ()=>{
+    chat.innerHTML = '';
+    history.length = 0;
+    bubble({ html: md("Chat cleared. Ask me any **career** question to begin.") });
+  };
+  send.onclick = ask;
+  msg.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey) ask(); });
 
-    clearBtn.onclick = ()=>{
-      chat.innerHTML = '';
-      history.length = 0;
-      bubble({ html: md("Chat cleared. Ask me any **career** question to begin.") });
-    };
+  // ====== CORE ======
+  async function ask(){
+    const text = (msg.value || '').trim();
+    if (!text || busy) return;
+    busy = true; send.disabled = true;
 
-    send.onclick = ask;
-    msg.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey) ask(); });
+    bubble({ mine:true, html: md(text) });
+    history.push({ role: "user", content: text });
+    msg.value = '';
 
-    // ====== CORE ======
-    async function ask(){
-      const text = (msg.value || '').trim();
-      if (!text || busy) return;
-      busy = true; send.disabled = true;
+    typing(true);
+    try{
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON}` },
+        body: JSON.stringify({ message: text, history })
+      });
 
-      bubble({ mine:true, html: md(text) });
-      history.push({ role: "user", content: text });
-      msg.value = '';
+      // Helpful console logs for debugging
+      console.log('[chat] status:', res.status);
+      const raw = await res.text();
+      console.log('[chat] raw:', raw);
 
-      typing(true);
-      try{
-        const res = await fetch(FN_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON}` },
-          body: JSON.stringify({ message: text, history })
-        });
-        const data = await res.json().catch(()=>({}));
-        typing(false);
+      let data = {};
+      try { data = JSON.parse(raw); } catch { /* leave data as {} */ }
 
-        const reply = data?.reply || "I’m having trouble right now. Ask me a career question like **“Short roadmap to data analyst?”**";
-        bubble({ html: md(reply) });
-        history.push({ role: "assistant", content: reply });
-      }catch(e){
-        typing(false);
-        bubble({ html: md("Network hiccup. Try again, or ask something like **“Top skills for cloud engineer in 2025?”**") });
-      }finally{
-        busy = false; send.disabled = false;
+      typing(false);
+
+      // Be generous in what we accept from the function
+      const reply =
+        data?.reply ||
+        data?.content ||
+        data?.message ||
+        data?.text ||
+        data?.choices?.[0]?.message?.content ||
+        data?.choices?.[0]?.text ||
+        null;
+
+      if (!res.ok) {
+        bubble({ html: md(`**Error ${res.status}** — ${reply || data?.error || 'Auth or CORS issue? Make sure the ANON key is valid.'}`) });
+        return;
       }
+
+      if (!reply) {
+        bubble({ html: md("I’m having trouble reading the server response. Please try again.") });
+        return;
+      }
+
+      bubble({ html: md(reply) });
+      history.push({ role: "assistant", content: reply });
+
+    }catch(e){
+      typing(false);
+      bubble({ html: md("Network hiccup. Try again, or ask something like **“Top skills for cloud engineer in 2025?”**") });
+      console.error(e);
+    }finally{
+      busy = false; send.disabled = false;
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
