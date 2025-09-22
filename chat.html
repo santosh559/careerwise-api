@@ -21,6 +21,7 @@
     .btn:hover{border-color:#d1d5db}
     .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:18px}
     .sub{color:var(--muted);font-size:13px}
+
     /* professional chat blocks (no balloons) */
     .chat{display:flex;flex-direction:column;gap:12px;margin-top:12px;min-height:320px;max-height:62vh;overflow:auto;padding-right:6px}
     .row{display:flex;gap:12px;align-items:flex-start}
@@ -29,16 +30,19 @@
     .msg{color:var(--text)}
     .msg :where(p,ul,ol){margin:8px 0}
     .msg h3{margin:6px 0 2px}
+
     /* typing indicator */
     .typing{display:inline-flex;gap:4px;vertical-align:middle}
     .typing span{width:6px;height:6px;border-radius:50%;background:#cbd5e1;animation:blink 1s infinite ease-in-out}
     .typing span:nth-child(2){animation-delay:.2s}
     .typing span:nth-child(3){animation-delay:.4s}
     @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
     /* quick chips */
     .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     .chip{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#fff;color:#1f2937;font-size:13px;cursor:pointer}
     .chip:hover{border-color:#d1d5db}
+
     /* composer */
     .composer{display:flex;gap:8px;margin-top:12px;align-items:center}
     .input{flex:1;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;outline:none}
@@ -46,6 +50,13 @@
     .primary:disabled{opacity:.6;cursor:not-allowed}
     .ghost{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;font-weight:600;cursor:pointer}
     .ghost:hover{border-color:#d1d5db}
+
+    /* header tools */
+    .toolbar{display:flex;gap:8px;align-items:center}
+    .toolbtn{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:#fff;font-weight:600;cursor:pointer}
+    .toolbtn:hover{border-color:#d1d5db}
+    .pill{display:inline-block;padding:4px 8px;border:1px solid var(--border);border-radius:999px;background:#f9fafb;font-size:12px;color:#111827}
+
     @media (max-width:640px){ .wrap{padding:16px} .chat{max-height:64vh} }
   </style>
 </head>
@@ -62,13 +73,18 @@
           <h2 style="margin:0 0 4px">Career Chatbot</h2>
           <div class="sub">I answer only career topics: roles, skills, roadmaps, resumes, interviews, job search, growth. Off-topic → I’ll steer you back.</div>
         </div>
+        <div class="toolbar">
+          <!-- <span class="pill">Career-only mode ON</span>  (uncomment if you want this badge visible) -->
+          <button id="mic" class="toolbtn" type="button">🎙️ Voice</button>
+          <button id="speak" class="toolbtn" type="button">🔊 Read</button>
+        </div>
       </div>
 
-      <!-- Quick suggestions -->
+      <!-- Starter suggestions (static) -->
       <div class="chips" id="chips">
-        <button class="chip" data-q="Short roadmap to Data Analyst from non-CS. Include timeline.">Roadmap: Data analyst</button>
+        <button class="chip" data-q="Short roadmap to Data Analyst from non-CS. Include a 3–6 month timeline.">Roadmap: Data analyst</button>
         <button class="chip" data-q="Top 7 skills for Cloud Engineer in 2025 (beginner → intermediate).">Skills: Cloud engineer</button>
-        <button class="chip" data-q="Rewrite my resume summary for QA role: <paste here>. Keep it 2 lines.">Resume summary (QA)</button>
+        <button class="chip" data-q="Rewrite my resume summary for QA role: <paste here>. Keep it 2 lines, quantify impact.">Resume summary (QA)</button>
       </div>
 
       <!-- Chat timeline -->
@@ -100,10 +116,14 @@
     const clearBtn = document.getElementById('clear');
     const copyBtn  = document.getElementById('copyLast');
     const chips = document.getElementById('chips');
+    const micBtn = document.getElementById('mic');
+    const speakBtn = document.getElementById('speak');
 
     // ====== STATE ======
-    const history = [];
     let busy = false;
+    let speakOn = false;
+    let rec; // speech recognition instance
+    const history = loadHistory(); // [{role, content}]
 
     // ====== HELPERS ======
     const md = (text) => DOMPurify.sanitize(marked.parse(text ?? ""));
@@ -123,7 +143,7 @@
       row.append(block);
       chat.append(row);
       chat.scrollTop = chat.scrollHeight;
-      return body; // return the body for updates if needed
+      return { row, body };
     }
 
     function typing(show=true){
@@ -145,6 +165,21 @@
       }
     }
 
+    function renderSuggest(arr){
+      if (!Array.isArray(arr) || !arr.length) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'chips';
+      arr.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'chip';
+        btn.textContent = t;
+        btn.onclick = ()=>{ msg.value = t; send.click(); };
+        wrap.appendChild(btn);
+      });
+      chat.append(wrap);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
     function copyLastAnswer() {
       const blocks = [...document.querySelectorAll('.msg-block')];
       const lastAssistant = [...blocks].reverse()
@@ -158,8 +193,59 @@
       });
     }
 
+    function speak(text){
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance((text || "").replace(/[#*_`]/g,' '));
+      u.rate = 1.03; u.pitch = 1.0;
+      window.speechSynthesis.speak(u);
+    }
+
+    function startVoice(){
+      try {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) return alert("Speech recognition not supported in this browser.");
+        rec?.abort?.();
+        rec = new SR();
+        rec.lang = "en-US";
+        rec.interimResults = false;
+        rec.onresult = (e)=>{ msg.value = e.results[0][0].transcript; send.click(); };
+        rec.start();
+        micBtn.textContent = "🎙️ Listening…";
+        rec.onend = ()=> micBtn.textContent = "🎙️ Voice";
+      } catch { /* noop */ }
+    }
+
+    function saveHistory(){
+      try {
+        localStorage.setItem('cw_history', JSON.stringify(history.slice(-20)));
+      } catch {}
+    }
+    function loadHistory(){
+      try {
+        const raw = localStorage.getItem('cw_history');
+        const arr = JSON.parse(raw || "[]");
+        if (Array.isArray(arr)) return arr;
+      } catch {}
+      return [];
+    }
+
+    function stripFooterSuggest(s){
+      const i = s.indexOf('<!--SUGGEST:');
+      return i >= 0 ? s.slice(0, i) : s;
+    }
+    function parseFooterSuggest(s){
+      const m = s.match(/<!--SUGGEST:(.+?)-->/);
+      if (!m) return [];
+      try { return JSON.parse(m[1]); } catch { return []; }
+    }
+
     // ====== INIT ======
-    addBlock({ html: md("Hi! I’m your **CareerWise** assistant. Ask me about careers—roles, skills, roadmaps, resumes, interviews. Off-topic? I’ll nudge you back.") });
+    if (!history.length) {
+      addBlock({ html: md("Hi! I’m your **CareerWise** assistant. Ask me about careers—roles, skills, roadmaps, resumes, interviews. Off-topic? I’ll nudge you back.") });
+    } else {
+      for (const turn of history) addBlock({ mine: turn.role === "user", html: md(turn.content) });
+    }
 
     // ====== EVENTS ======
     chips?.addEventListener('click', (e)=>{
@@ -169,13 +255,19 @@
     clearBtn.onclick = ()=>{
       chat.innerHTML = '';
       history.length = 0;
+      saveHistory();
       addBlock({ html: md("Chat cleared. Ask me any **career** question to begin.") });
     };
     copyBtn.onclick = copyLastAnswer;
     send.onclick = ask;
     msg.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey) ask(); });
+    micBtn.onclick = startVoice;
+    speakBtn.onclick = ()=>{
+      speakOn = !speakOn;
+      speakBtn.textContent = speakOn ? "🔊 Read: ON" : "🔊 Read";
+    };
 
-    // ====== CORE ======
+    // ====== CORE (streaming with graceful fallback) ======
     async function ask(){
       const text = (msg.value || '').trim();
       if (!text || busy) return;
@@ -193,16 +285,43 @@
           body: JSON.stringify({ message: text, history })
         });
 
-        // Debug logs
-        console.log('[chat] status:', res.status);
-        const raw = await res.text();
-        console.log('[chat] raw:', raw);
-
         typing(false);
 
-        let data = {};
-        try { data = JSON.parse(raw); } catch { /* non-JSON */ }
+        // STREAMING path (text/plain or no explicit JSON)
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
+        if (res.body && (!ct.includes('application/json'))) {
+          const { body } = addBlock({ html: md(" ") }); // assistant block to update
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let full = "";
 
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            full += chunk;
+
+            // live update (hide footer if it already arrived)
+            const visible = stripFooterSuggest(full);
+            body.innerHTML = md(visible);
+            chat.scrollTop = chat.scrollHeight;
+          }
+
+          const visible = stripFooterSuggest(full);
+          const suggestions = parseFooterSuggest(full);
+          // finalize
+          body.innerHTML = md(visible);
+          history.push({ role: "assistant", content: visible });
+          saveHistory();
+          if (speakOn) speak(body.textContent || "");
+          if (suggestions?.length) renderSuggest(suggestions);
+          return;
+        }
+
+        // JSON fallback path
+        const raw = await res.text();
+        let data = {};
+        try { data = JSON.parse(raw); } catch {}
         const reply =
           data?.reply ||
           data?.content ||
@@ -221,11 +340,16 @@
           return;
         }
 
-        addBlock({ html: md(reply) });
+        const { body } = addBlock({ html: md(reply) });
         history.push({ role: "assistant", content: reply });
+        saveHistory();
+        if (speakOn) speak(body.textContent || "");
+
+        // If server embeds suggestions in JSON (future-proof)
+        const jsonSuggest = Array.isArray(data?.suggest) ? data.suggest : [];
+        if (jsonSuggest.length) renderSuggest(jsonSuggest);
 
       }catch(e){
-        typing(false);
         addBlock({ html: md("Network hiccup. Try again, or ask something like **“Short roadmap to Cloud Engineer?”**") });
         console.error(e);
       }finally{
