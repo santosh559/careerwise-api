@@ -31,6 +31,8 @@
     .score{display:flex;gap:8px;flex-wrap:wrap}
     .chip{border:1px solid var(--border);border-radius:999px;padding:6px 10px;background:#fff;color:#111827;font-size:12px}
     .warn{color:#b91c1c}
+    .ok{color:#15803d}
+    .sep{height:1px;background:#eef2f7;margin:8px 0}
   </style>
 </head>
 <body>
@@ -67,14 +69,21 @@
           <div id="question" class="block" style="min-height:64px"></div>
         </div>
         <div>
-          <div class="title">Timer</div>
+          <div class="title">Timer <span class="muted" style="font-weight:400">(ideal: 60–90s)</span></div>
           <div id="timer" class="block" style="min-width:120px;text-align:center;font-weight:700">00:00</div>
+          <div class="row" style="margin-top:6px">
+            <button id="pauseBtn" class="btn" disabled>Pause</button>
+            <button id="resumeBtn" class="btn" disabled>Resume</button>
+          </div>
         </div>
       </div>
 
       <div class="row" style="margin-top:10px">
         <button id="recBtn" class="primary" disabled>🎙️ Hold to Answer</button>
         <button id="stopBtn" class="btn" disabled>Stop</button>
+        <button id="redoBtn" class="btn" disabled>Redo (1)</button>
+        <button id="sendBtn" class="btn" disabled>Send Answer</button>
+        <button id="skipBtn" class="btn" disabled>Skip</button>
         <span id="recHint" class="muted">Press and speak for ~60–90s. Click Stop when done.</span>
       </div>
 
@@ -102,6 +111,7 @@
           <div id="report"></div>
         </div>
         <div class="row">
+          <button id="copySummary" class="btn">Copy summary</button>
           <button id="dlPdf" class="btn">Download PDF</button>
           <button id="restart" class="btn">Restart</button>
         </div>
@@ -130,6 +140,11 @@
     const timerEl = document.getElementById('timer');
     const recBtn = document.getElementById('recBtn');
     const stopBtn = document.getElementById('stopBtn');
+    const redoBtn = document.getElementById('redoBtn');
+    const sendBtn = document.getElementById('sendBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
     const recHint = document.getElementById('recHint');
 
     const turnOut = document.getElementById('turnOut');
@@ -143,31 +158,46 @@
     const finished = document.getElementById('finished');
     const reportEl = document.getElementById('report');
     const dlPdf = document.getElementById('dlPdf');
+    const copySummary = document.getElementById('copySummary');
     const restart = document.getElementById('restart');
 
     // ====== STATE ======
     let role = "Data Scientist";
     let maxQ = 6;
     let qIndex = 0;
+    let sessionId = null;
     let currentQ = "";
-    let runningSummary = "";
     let speakingOn = true;
+    let runningSummary = "";
+    let canRedo = true;
 
-    // timer
-    let tStart = 0, tId = 0;
+    // guest id (for rate-limit & continuity)
+    let guestId = localStorage.getItem("cw_guest_id");
+    if (!guestId) {
+      guestId = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+      localStorage.setItem("cw_guest_id", guestId);
+    }
+
+    // ====== TIMER ======
+    let tStart = 0, tId = 0, paused = false, elapsed = 0;
+    function paint() {
+      const s = Math.floor(elapsed/1000);
+      const m = String(Math.floor(s/60)).padStart(2,'0');
+      const r = String(s%60).padStart(2,'0');
+      timerEl.textContent = `${m}:${r}`;
+    }
     function startTimer() {
+      paused = false; elapsed = 0; paint();
       tStart = Date.now();
       clearInterval(tId);
-      tId = setInterval(()=>{
-        const s = Math.floor((Date.now() - tStart)/1000);
-        const m = String(Math.floor(s/60)).padStart(2,'0');
-        const r = String(s%60).padStart(2,'0');
-        timerEl.textContent = `${m}:${r}`;
-      }, 250);
+      tId = setInterval(()=>{ if(!paused){ elapsed = Date.now() - tStart; paint(); }}, 250);
+      pauseBtn.disabled = false; resumeBtn.disabled = true;
     }
     function stopTimer(){ clearInterval(tId); }
+    function pauseTimer(){ paused = true; pauseBtn.disabled = true; resumeBtn.disabled = false; }
+    function resumeTimer(){ paused = false; pauseBtn.disabled = false; resumeBtn.disabled = true; tStart = Date.now() - elapsed; }
 
-    // TTS
+    // ====== TTS ======
     function speak(text) {
       if (!speakingOn) return;
       try {
@@ -178,32 +208,35 @@
       } catch {}
     }
 
-    // Recording
-    let media, rec, chunks = [];
+    // ====== RECORDING ======
+    let media, rec, chunks = [], haveRecording = false, lastBlob = null, recStartAt = 0;
     async function startRec() {
       media = await navigator.mediaDevices.getUserMedia({ audio: true });
       rec = new MediaRecorder(media, { mimeType: "audio/webm" });
-      chunks = [];
+      chunks = []; haveRecording = false; lastBlob = null; recStartAt = Date.now();
       rec.ondataavailable = (e)=> e.data && chunks.push(e.data);
       rec.start();
       recBtn.disabled = true;
       stopBtn.disabled = false;
+      sendBtn.disabled = true;
       recHint.textContent = "Recording… speak clearly. Click Stop when done.";
       startTimer();
     }
-    async function stopRecAndSend() {
+    async function stopRec() {
       await new Promise(r => { rec.onstop = r; rec.stop(); });
       media.getTracks().forEach(t => t.stop());
-      recBtn.disabled = false;
-      stopBtn.disabled = true;
-      recHint.textContent = "Processing answer…";
       stopTimer();
-
-      const blob = new Blob(chunks, { type: "audio/webm" });
-      await sendTurn(blob);
+      lastBlob = new Blob(chunks, { type: "audio/webm" });
+      haveRecording = true;
+      const durSec = Math.max(1, Math.round((Date.now() - recStartAt)/1000));
+      recHint.textContent = `Recorded ~${durSec}s. You can “Send Answer”${canRedo ? " or “Redo (1)”" : ""}.`;
+      stopBtn.disabled = true;
+      sendBtn.disabled = false;
+      redoBtn.disabled = !canRedo;
+      // allow another take only once
     }
 
-    // UI helpers
+    // ====== UI helpers ======
     function renderQuestion(q) {
       questionEl.textContent = q;
       turnOut.style.display = 'none';
@@ -216,12 +249,17 @@
       recHint.textContent = "Press and speak for ~60–90s. Click Stop when done.";
       recBtn.disabled = false;
       stopBtn.disabled = true;
+      sendBtn.disabled = true;
+      redoBtn.disabled = true;
+      skipBtn.disabled = false;
+      canRedo = true;
+      haveRecording = false;
+      lastBlob = null;
       startTimer();
     }
     function renderEval(transcript, ev) {
       turnOut.style.display = 'grid';
       transcriptEl.textContent = transcript || "(no speech detected)";
-      // scores
       scoresEl.innerHTML = '';
       const scores = ev?.scores || {};
       Object.keys(scores).forEach(k=>{
@@ -235,8 +273,13 @@
       coachingEl.textContent = ev?.coaching || "";
       sampleEl.textContent = ev?.sample_answer || "";
     }
+    function showError(msg){
+      recHint.textContent = msg;
+      recHint.classList.add('warn');
+      setTimeout(()=>recHint.classList.remove('warn'), 3000);
+    }
 
-    // Calls
+    // ====== CALLS (matches Step-2 API: start / answer / skip / finish) ======
     async function startInterview() {
       setupErr.style.display = 'none';
       role = (roleIn.value || 'Data Scientist').trim();
@@ -246,35 +289,52 @@
       const res = await fetch(FN, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON}` },
-        body: JSON.stringify({ step: "start", role, count: maxQ })
+        body: JSON.stringify({ action: "start", role, count: maxQ, guest_id: guestId })
       });
       const data = await res.json();
-      if (!data.ok) { setupErr.textContent = data.error || 'Start failed'; setupErr.style.display='block'; return; }
+      if (!res.ok || !data?.ok) {
+        setupErr.textContent = data?.error || `Start failed (${res.status})`;
+        setupErr.style.display='block';
+        return;
+      }
 
+      sessionId = data.session_id;
       qIndex = 0;
       currentQ = data.question;
       runningSummary = data.summary || "";
-      qMax.textContent = data.maxQuestions;
+      qMax.textContent = data.maxQuestions || maxQ;
       qNum.textContent = String(qIndex + 1);
 
       if (speakingOn) speak(currentQ);
       renderQuestion(currentQ);
       recBtn.focus();
+      pauseBtn.disabled = false;
     }
 
-    async function sendTurn(blob) {
+    async function sendAnswer() {
+      if (!haveRecording || !lastBlob) { showError("Record your answer first."); return; }
+      // lock controls
+      recBtn.disabled = true; sendBtn.disabled = true; redoBtn.disabled = true; skipBtn.disabled = true;
+      recHint.textContent = "Uploading & evaluating…"; 
+
+      // Use FormData with audio (preferred). The function should accept this.
       const form = new FormData();
-      form.append("step", "turn");
-      form.append("role", role);
+      form.append("action","answer");
+      form.append("session_id", sessionId);
       form.append("q_index", String(qIndex));
-      form.append("max_questions", String(maxQ));
       form.append("question", currentQ);
-      form.append("running_summary", runningSummary);
-      form.append("audio", blob, "answer.webm");
+      form.append("duration_sec", String(Math.max(1, Math.round(elapsed/1000))));
+      form.append("audio", lastBlob, "answer.webm");
 
       const res = await fetch(FN, { method:"POST", headers:{ "Authorization": `Bearer ${ANON}` }, body: form });
-      const data = await res.json();
-      if (!data.ok) { recHint.textContent = data.error || 'Turn failed'; return; }
+      const data = await res.json().catch(()=> ({}));
+
+      if (!res.ok || !data?.ok) {
+        showError(data?.error || `Answer failed (${res.status})`);
+        // allow resend
+        sendBtn.disabled = false; skipBtn.disabled = false;
+        return;
+      }
 
       renderEval(data.transcript, data.eval);
       runningSummary = data.updated_summary || runningSummary;
@@ -288,29 +348,56 @@
         renderQuestion(currentQ);
       } else {
         stopTimer();
-        await fetchReport();
+        await finishInterview();
       }
     }
 
-    async function fetchReport() {
+    async function skipQuestion() {
+      // tell server we skipped (for progress tracking)
+      const res = await fetch(FN, {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization": `Bearer ${ANON}` },
+        body: JSON.stringify({ action:"skip", session_id: sessionId, q_index: qIndex, question: currentQ })
+      });
+      const data = await res.json().catch(()=> ({}));
+      if (!res.ok || !data?.ok) {
+        showError(data?.error || `Skip failed (${res.status})`);
+        return;
+      }
+      const nextQ = data.next?.question;
+      if (nextQ) {
+        qIndex += 1;
+        qNum.textContent = String(qIndex + 1);
+        currentQ = nextQ;
+        if (speakingOn) speak(currentQ);
+        renderQuestion(currentQ);
+      } else {
+        stopTimer();
+        await finishInterview();
+      }
+    }
+
+    async function finishInterview() {
+      // fetch final report
       const res = await fetch(FN, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON}` },
-        body: JSON.stringify({ step: "report", role, running_summary: runningSummary })
+        body: JSON.stringify({ action: "finish", session_id: sessionId })
       });
-      const data = await res.json();
+      const data = await res.json().catch(()=> ({}));
       finished.style.display = 'grid';
-      const r = data.report || {};
+      const r = data?.report || {};
       reportEl.innerHTML = `
         <div class="muted"><strong>Overall:</strong> ${r.overall_signal || '—'}</div>
-        <div style="margin-top:6px">${r.summary || ''}</div>
-        ${Array.isArray(r.strengths) ? `<div style="margin-top:6px"><strong>Strengths:</strong> ${r.strengths.join(" • ")}</div>` : ""}
-        ${Array.isArray(r.improvements) ? `<div style="margin-top:6px"><strong>Improvements:</strong> ${r.improvements.join(" • ")}</div>` : ""}
-        ${Array.isArray(r.next_steps) ? `<div style="margin-top:6px"><strong>Next steps:</strong> ${r.next_steps.join(" • ")}</div>` : ""}
+        <div class="sep"></div>
+        <div>${r.summary || ''}</div>
+        ${Array.isArray(r.strengths) ? `<div class="sep"></div><div><strong>Strengths:</strong> ${r.strengths.join(" • ")}</div>` : ""}
+        ${Array.isArray(r.improvements) ? `<div class="sep"></div><div><strong>Improvements:</strong> ${r.improvements.join(" • ")}</div>` : ""}
+        ${Array.isArray(r.next_steps) ? `<div class="sep"></div><div><strong>Next steps:</strong> ${r.next_steps.join(" • ")}</div>` : ""}
       `;
     }
 
-    // PDF
+    // ====== PDF & COPY ======
     dlPdf.onclick = ()=>{
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -323,19 +410,40 @@
       const fname = `mock-interview_${role.replace(/\s+/g,'-').toLowerCase()}.pdf`;
       doc.save(fname);
     };
-
+    copySummary.onclick = async ()=>{
+      try { await navigator.clipboard.writeText(reportEl.innerText || ""); copySummary.textContent = "Copied ✓"; setTimeout(()=>copySummary.textContent="Copy summary", 1200); } catch {}
+    };
     restart.onclick = ()=> location.reload();
 
-    // Bindings
+    // ====== BINDINGS ======
     startBtn.onclick = startInterview;
-    recBtn.onmousedown = startRec; // desktop
-    recBtn.onmouseup = stopRecAndSend;
-    recBtn.ontouchstart = (e)=>{ e.preventDefault(); startRec(); };
-    recBtn.ontouchend = (e)=>{ e.preventDefault(); stopRecAndSend(); };
-    stopBtn.onclick = stopRecAndSend;
 
-    // Defaults
+    recBtn.onmousedown = startRec; // desktop
+    recBtn.onmouseup = stopRec;
+    recBtn.ontouchstart = (e)=>{ e.preventDefault(); startRec(); };
+    recBtn.ontouchend = (e)=>{ e.preventDefault(); stopRec(); };
+
+    stopBtn.onclick = stopRec;
+
+    redoBtn.onclick = ()=>{
+      if (!canRedo) return;
+      canRedo = false;
+      redoBtn.disabled = true;
+      sendBtn.disabled = true;
+      recBtn.disabled = false;
+      recHint.textContent = "Redo enabled (0 left). Press & hold to re-record, then Stop.";
+    };
+
+    sendBtn.onclick = sendAnswer;
+    skipBtn.onclick = skipQuestion;
+
+    pauseBtn.onclick = pauseTimer;
+    resumeBtn.onclick = resumeTimer;
+
+    // ====== DEFAULTS ======
     roleIn.value = "Data Scientist";
+    // Disable action controls until start
+    [recBtn, stopBtn, redoBtn, sendBtn, skipBtn, pauseBtn, resumeBtn].forEach(b=>b.disabled = true);
   </script>
 </body>
 </html>
