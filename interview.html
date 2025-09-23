@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerWise — Mock Interview (Voice)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f7f8fb; --surface:#ffffff; --text:#0f172a; --muted:#6b7280;
+      --border:#e5e7eb; --primary:#3165ff; --primary-600:#2452ef;
+      --radius:12px; --shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .wrap{max-width:980px;margin:0 auto;padding:28px}
+    .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);box-shadow:var(--shadow)}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;font-weight:600;cursor:pointer}
+    .btn:hover{border-color:#d1d5db}
+    .primary{padding:10px 14px;border-radius:10px;border:1px solid var(--primary);background:var(--primary);color:#fff;font-weight:700;cursor:pointer}
+    .primary:disabled{opacity:.6;cursor:not-allowed}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:18px}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .input,select{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff}
+    .stack{display:grid;gap:10px}
+    .block{border:1px solid var(--border);border-left:3px solid var(--primary);border-radius:10px;background:#fff;padding:12px}
+    .title{font-weight:700;margin:0 0 6px}
+    .score{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{border:1px solid var(--border);border-radius:999px;padding:6px 10px;background:#fff;color:#111827;font-size:12px}
+    .warn{color:#b91c1c}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand"><div class="logo"></div><strong>CareerWise</strong></div>
+      <a class="btn" href="dashboard.html">← Back</a>
+    </div>
+
+    <!-- Setup -->
+    <section class="card">
+      <h2 style="margin:0 0 6px">Mock Interview (Voice)</h2>
+      <p class="muted" style="margin:0 0 10px">We’ll ask one question at a time. You’ll answer by voice. You’ll get instant coaching and a final report.</p>
+      <div class="row" style="margin-top:8px">
+        <input id="role" class="input" placeholder="Role (e.g., Data Scientist)" style="min-width:240px" />
+        <label>Questions
+          <select id="count" class="input">
+            <option>5</option><option selected>6</option><option>7</option><option>8</option>
+          </select>
+        </label>
+        <label>Speak questions
+          <select id="speak" class="input"><option selected>On</option><option>Off</option></select>
+        </label>
+        <button id="start" class="primary">Start Interview</button>
+      </div>
+      <p id="setupErr" class="muted warn" style="margin:6px 0 0;display:none"></p>
+    </section>
+
+    <!-- Live interview -->
+    <section class="card" style="margin-top:14px">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div class="title">Question <span id="qNum">0</span>/<span id="qMax">0</span></div>
+          <div id="question" class="block" style="min-height:64px"></div>
+        </div>
+        <div>
+          <div class="title">Timer</div>
+          <div id="timer" class="block" style="min-width:120px;text-align:center;font-weight:700">00:00</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button id="recBtn" class="primary" disabled>🎙️ Hold to Answer</button>
+        <button id="stopBtn" class="btn" disabled>Stop</button>
+        <span id="recHint" class="muted">Press and speak for ~60–90s. Click Stop when done.</span>
+      </div>
+
+      <div id="turnOut" class="stack" style="margin-top:12px;display:none">
+        <div class="block">
+          <div class="title">Transcript</div>
+          <div id="transcript" class="muted"></div>
+        </div>
+        <div class="block">
+          <div class="title">Evaluation</div>
+          <div id="scores" class="score"></div>
+          <div id="positives" class="muted" style="margin-top:6px"></div>
+          <div id="gaps" class="muted" style="margin-top:6px"></div>
+          <div id="coaching" style="margin-top:6px"></div>
+        </div>
+        <div class="block">
+          <div class="title">Sample answer</div>
+          <div id="sample"></div>
+        </div>
+      </div>
+
+      <div id="finished" class="stack" style="margin-top:12px;display:none">
+        <div class="block">
+          <div class="title">Report</div>
+          <div id="report"></div>
+        </div>
+        <div class="row">
+          <button id="dlPdf" class="btn">Download PDF</button>
+          <button id="restart" class="btn">Restart</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- jsPDF for export -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script type="module">
+    // ====== CONFIG ======
+    const FN = "https://awsuhluvyrxwmogzyfhr.supabase.co/functions/v1/interview-voice";
+    const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+
+    // ====== ELs ======
+    const roleIn = document.getElementById('role');
+    const countSel = document.getElementById('count');
+    const speakSel = document.getElementById('speak');
+    const startBtn = document.getElementById('start');
+    const setupErr = document.getElementById('setupErr');
+
+    const qNum = document.getElementById('qNum');
+    const qMax = document.getElementById('qMax');
+    const questionEl = document.getElementById('question');
+    const timerEl = document.getElementById('timer');
+    const recBtn = document.getElementById('recBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const recHint = document.getElementById('recHint');
+
+    const turnOut = document.getElementById('turnOut');
+    const transcriptEl = document.getElementById('transcript');
+    const scoresEl = document.getElementById('scores');
+    const positivesEl = document.getElementById('positives');
+    const gapsEl = document.getElementById('gaps');
+    const coachingEl = document.getElementById('coaching');
+    const sampleEl = document.getElementById('sample');
+
+    const finished = document.getElementById('finished');
+    const reportEl = document.getElementById('report');
+    const dlPdf = document.getElementById('dlPdf');
+    const restart = document.getElementById('restart');
+
+    // ====== STATE ======
+    let role = "Data Scientist";
+    let maxQ = 6;
+    let qIndex = 0;
+    let currentQ = "";
+    let runningSummary = "";
+    let speakingOn = true;
+
+    // timer
+    let tStart = 0, tId = 0;
+    function startTimer() {
+      tStart = Date.now();
+      clearInterval(tId);
+      tId = setInterval(()=>{
+        const s = Math.floor((Date.now() - tStart)/1000);
+        const m = String(Math.floor(s/60)).padStart(2,'0');
+        const r = String(s%60).padStart(2,'0');
+        timerEl.textContent = `${m}:${r}`;
+      }, 250);
+    }
+    function stopTimer(){ clearInterval(tId); }
+
+    // TTS
+    function speak(text) {
+      if (!speakingOn) return;
+      try {
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 1; u.pitch = 1; u.lang = "en-US";
+        speechSynthesis.speak(u);
+      } catch {}
+    }
+
+    // Recording
+    let media, rec, chunks = [];
+    async function startRec() {
+      media = await navigator.mediaDevices.getUserMedia({ audio: true });
+      rec = new MediaRecorder(media, { mimeType: "audio/webm" });
+      chunks = [];
+      rec.ondataavailable = (e)=> e.data && chunks.push(e.data);
+      rec.start();
+      recBtn.disabled = true;
+      stopBtn.disabled = false;
+      recHint.textContent = "Recording… speak clearly. Click Stop when done.";
+      startTimer();
+    }
+    async function stopRecAndSend() {
+      await new Promise(r => { rec.onstop = r; rec.stop(); });
+      media.getTracks().forEach(t => t.stop());
+      recBtn.disabled = false;
+      stopBtn.disabled = true;
+      recHint.textContent = "Processing answer…";
+      stopTimer();
+
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      await sendTurn(blob);
+    }
+
+    // UI helpers
+    function renderQuestion(q) {
+      questionEl.textContent = q;
+      turnOut.style.display = 'none';
+      transcriptEl.textContent = '';
+      scoresEl.innerHTML = '';
+      positivesEl.textContent = '';
+      gapsEl.textContent = '';
+      coachingEl.textContent = '';
+      sampleEl.textContent = '';
+      recHint.textContent = "Press and speak for ~60–90s. Click Stop when done.";
+      recBtn.disabled = false;
+      stopBtn.disabled = true;
+      startTimer();
+    }
+    function renderEval(transcript, ev) {
+      turnOut.style.display = 'grid';
+      transcriptEl.textContent = transcript || "(no speech detected)";
+      // scores
+      scoresEl.innerHTML = '';
+      const scores = ev?.scores || {};
+      Object.keys(scores).forEach(k=>{
+        const b = document.createElement('span');
+        b.className = 'chip';
+        b.textContent = `${k}: ${scores[k]}/5`;
+        scoresEl.appendChild(b);
+      });
+      positivesEl.textContent = ev?.positives?.length ? `👍 ${ev.positives.join(" • ")}` : "";
+      gapsEl.textContent = ev?.gaps?.length ? `⚠️ ${ev.gaps.join(" • ")}` : "";
+      coachingEl.textContent = ev?.coaching || "";
+      sampleEl.textContent = ev?.sample_answer || "";
+    }
+
+    // Calls
+    async function startInterview() {
+      setupErr.style.display = 'none';
+      role = (roleIn.value || 'Data Scientist').trim();
+      speakingOn = (speakSel.value === 'On');
+      maxQ = Number(countSel.value || 6);
+
+      const res = await fetch(FN, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON}` },
+        body: JSON.stringify({ step: "start", role, count: maxQ })
+      });
+      const data = await res.json();
+      if (!data.ok) { setupErr.textContent = data.error || 'Start failed'; setupErr.style.display='block'; return; }
+
+      qIndex = 0;
+      currentQ = data.question;
+      runningSummary = data.summary || "";
+      qMax.textContent = data.maxQuestions;
+      qNum.textContent = String(qIndex + 1);
+
+      if (speakingOn) speak(currentQ);
+      renderQuestion(currentQ);
+      recBtn.focus();
+    }
+
+    async function sendTurn(blob) {
+      const form = new FormData();
+      form.append("step", "turn");
+      form.append("role", role);
+      form.append("q_index", String(qIndex));
+      form.append("max_questions", String(maxQ));
+      form.append("question", currentQ);
+      form.append("running_summary", runningSummary);
+      form.append("audio", blob, "answer.webm");
+
+      const res = await fetch(FN, { method:"POST", headers:{ "Authorization": `Bearer ${ANON}` }, body: form });
+      const data = await res.json();
+      if (!data.ok) { recHint.textContent = data.error || 'Turn failed'; return; }
+
+      renderEval(data.transcript, data.eval);
+      runningSummary = data.updated_summary || runningSummary;
+
+      const nextQ = data.next?.question;
+      if (nextQ) {
+        qIndex += 1;
+        qNum.textContent = String(qIndex + 1);
+        currentQ = nextQ;
+        if (speakingOn) speak(currentQ);
+        renderQuestion(currentQ);
+      } else {
+        stopTimer();
+        await fetchReport();
+      }
+    }
+
+    async function fetchReport() {
+      const res = await fetch(FN, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON}` },
+        body: JSON.stringify({ step: "report", role, running_summary: runningSummary })
+      });
+      const data = await res.json();
+      finished.style.display = 'grid';
+      const r = data.report || {};
+      reportEl.innerHTML = `
+        <div class="muted"><strong>Overall:</strong> ${r.overall_signal || '—'}</div>
+        <div style="margin-top:6px">${r.summary || ''}</div>
+        ${Array.isArray(r.strengths) ? `<div style="margin-top:6px"><strong>Strengths:</strong> ${r.strengths.join(" • ")}</div>` : ""}
+        ${Array.isArray(r.improvements) ? `<div style="margin-top:6px"><strong>Improvements:</strong> ${r.improvements.join(" • ")}</div>` : ""}
+        ${Array.isArray(r.next_steps) ? `<div style="margin-top:6px"><strong>Next steps:</strong> ${r.next_steps.join(" • ")}</div>` : ""}
+      `;
+    }
+
+    // PDF
+    dlPdf.onclick = ()=>{
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const title = `CareerWise Mock Interview — ${role}`;
+      doc.setFont("helvetica","bold"); doc.setFontSize(14); doc.text(title, 40, 40);
+      doc.setFont("helvetica",""); doc.setFontSize(11);
+      const text = (reportEl.innerText || "").split("\n");
+      let y = 70;
+      text.forEach(line => { doc.text(line, 40, y); y += 16; if (y > 780){ doc.addPage(); y = 40; }});
+      const fname = `mock-interview_${role.replace(/\s+/g,'-').toLowerCase()}.pdf`;
+      doc.save(fname);
+    };
+
+    restart.onclick = ()=> location.reload();
+
+    // Bindings
+    startBtn.onclick = startInterview;
+    recBtn.onmousedown = startRec; // desktop
+    recBtn.onmouseup = stopRecAndSend;
+    recBtn.ontouchstart = (e)=>{ e.preventDefault(); startRec(); };
+    recBtn.ontouchend = (e)=>{ e.preventDefault(); stopRecAndSend(); };
+    stopBtn.onclick = stopRecAndSend;
+
+    // Defaults
+    roleIn.value = "Data Scientist";
+  </script>
+</body>
+</html>
