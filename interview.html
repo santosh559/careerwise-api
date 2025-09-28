@@ -32,7 +32,7 @@
     .score{display:flex;gap:8px;flex-wrap:wrap}
     .chip{border:1px solid var(--border);border-radius:999px;padding:6px 10px;background:#fff;color:#111827;font-size:12px}
 
-    /* Control bar (compact, professional) */
+    /* Control bar */
     .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
     .control{display:flex;flex-direction:column;gap:4px}
     .label{font-size:12px;color:var(--muted);font-weight:600}
@@ -48,18 +48,13 @@
     .sw input:checked + .slider:before{transform:translateX(20px)}
     .switch span{font-size:12px;color:var(--muted);font-weight:600}
 
-    /* Toolbar under the question */
+    /* Toolbar */
     .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .ghost{border-color:var(--border);background:#fff;color:#0f172a}
     .icon-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-weight:600;color:#111827}
     .icon-btn[disabled]{opacity:.5;cursor:not-allowed}
     .hint{color:var(--muted);font-size:13px}
-
     .warn{color:#b91c1c}
-    @media (max-width:640px){
-      .primary{width:100%}
-      .controls{gap:8px}
-    }
+    @media (max-width:640px){ .primary{width:100%} .controls{gap:8px} }
   </style>
 </head>
 <body>
@@ -115,16 +110,12 @@
         </div>
       </div>
 
-      <!-- Toolbar -->
       <div class="toolbar" style="margin-top:10px">
         <button id="recBtn" class="primary" disabled>🎙️ Hold to answer</button>
         <button id="stopBtn" class="icon-btn" style="display:none">■ Stop</button>
-        <button id="redoBtn" class="icon-btn" title="Redo last answer" disabled>↺ Redo</button>
+        <button id="redoBtn" class="icon-btn" title="Redo current question" disabled>↺ Redo</button>
         <button id="skipBtn" class="icon-btn" title="Skip question" disabled>⤼ Skip</button>
         <span id="recHint" class="hint">Press and speak for ~60–90s. Release to send.</span>
-
-        <!-- Hidden fallback (kept for accessibility / troubleshooting) -->
-        <button id="sendBtn" class="icon-btn" style="display:none">Send answer</button>
       </div>
 
       <div id="turnOut" class="stack" style="margin-top:12px;display:none">
@@ -182,7 +173,6 @@
     const stopBtn = document.getElementById('stopBtn');
     const redoBtn = document.getElementById('redoBtn');
     const skipBtn = document.getElementById('skipBtn');
-    const sendBtn = document.getElementById('sendBtn'); // hidden fallback
     const recHint = document.getElementById('recHint');
 
     const turnOut = document.getElementById('turnOut');
@@ -243,10 +233,8 @@
       recBtn.classList.add('danger');
       recBtn.textContent = "● Recording… release to send";
       stopBtn.style.display = '';
-      recBtn.disabled = false; // allow release
       redoBtn.disabled = true;
       skipBtn.disabled = true;
-
       recHint.textContent = "Recording… keep it concise and structured.";
       startTimer();
     }
@@ -265,7 +253,7 @@
       stopTimer();
 
       const blob = new Blob(chunks, { type: "audio/webm" });
-      await sendTurn(blob);
+      await sendTurnWithFallback(blob);
     }
 
     // UI helpers
@@ -289,7 +277,6 @@
     function renderEval(transcript, ev) {
       turnOut.style.display = 'grid';
       transcriptEl.textContent = transcript || "(no speech detected)";
-
       scoresEl.innerHTML = '';
       const scores = ev?.scores || {};
       Object.keys(scores).forEach(k=>{
@@ -333,20 +320,59 @@
       recBtn.focus();
     }
 
-    async function sendTurn(blob) {
-      const form = new FormData();
-      form.append("step", "turn");
-      form.append("role", role);
-      form.append("q_index", String(qIndex));
-      form.append("max_questions", String(maxQ));
-      form.append("question", currentQ);
-      form.append("running_summary", runningSummary);
-      if (blob) form.append("audio", blob, "answer.webm");
+    // Robust sender: try (1) audio field "audio" → (2) "file" → (3) JSON base64
+    async function sendTurnWithFallback(blob){
+      // 1) multipart with "audio"
+      let r = await sendTurnMultipart(blob, "audio");
+      if (r.ok) return handleTurnOK(r.data);
 
-      const res = await fetch(FN, { method:"POST", headers:{ "Authorization": `Bearer ${ANON}` }, body: form });
-      const data = await res.json();
-      if (!data.ok) { recHint.textContent = data.error || 'Turn failed'; return; }
+      // 2) multipart with "file"
+      r = await sendTurnMultipart(blob, "file");
+      if (r.ok) return handleTurnOK(r.data);
 
+      // 3) JSON base64
+      const b64 = await blobToBase64(blob);
+      r = await sendTurnJSON(b64);
+      if (r.ok) return handleTurnOK(r.data);
+
+      recHint.textContent = r.error || "Send failed (check mic permission or try again).";
+    }
+
+    async function sendTurnMultipart(blob, fieldName){
+      try{
+        const form = new FormData();
+        form.append("step", "turn");
+        form.append("role", role);
+        form.append("q_index", String(qIndex));
+        form.append("max_questions", String(maxQ));
+        form.append("question", currentQ);
+        form.append("running_summary", runningSummary);
+        if (blob) form.append(fieldName, blob, "answer.webm");
+
+        const res = await fetch(FN, { method:"POST", headers:{ "Authorization": `Bearer ${ANON}` }, body: form });
+        const data = await res.json().catch(()=> ({}));
+        return { ok: res.ok && data?.ok, data, error: data?.error || (!res.ok && `HTTP ${res.status}`) };
+      }catch(e){ return { ok:false, error:String(e) }; }
+    }
+
+    async function sendTurnJSON(b64){
+      try{
+        const res = await fetch(FN, {
+          method:"POST",
+          headers:{ "Authorization": `Bearer ${ANON}`, "Content-Type":"application/json" },
+          body: JSON.stringify({
+            step:"turn_b64",
+            role, q_index:qIndex, max_questions:maxQ,
+            question: currentQ, running_summary: runningSummary,
+            audio_b64: b64
+          })
+        });
+        const data = await res.json().catch(()=> ({}));
+        return { ok: res.ok && data?.ok, data, error: data?.error || (!res.ok && `HTTP ${res.status}`) };
+      }catch(e){ return { ok:false, error:String(e) }; }
+    }
+
+    function handleTurnOK(data){
       renderEval(data.transcript, data.eval);
       runningSummary = data.updated_summary || runningSummary;
 
@@ -359,9 +385,41 @@
         renderQuestion(currentQ);
       } else {
         stopTimer();
-        await fetchReport();
+        fetchReport();
       }
     }
+
+    // Skip support (works even if the function doesn’t accept empty audio)
+    skipBtn.onclick = async ()=>{
+      recHint.textContent = "Skipping…";
+      const res = await fetch(FN, {
+        method:"POST",
+        headers:{ "Authorization": `Bearer ${ANON}`, "Content-Type":"application/json" },
+        body: JSON.stringify({
+          step:"skip",
+          role, q_index:qIndex, max_questions:maxQ,
+          question: currentQ, running_summary: runningSummary
+        })
+      });
+      let data = {};
+      try{ data = await res.json(); }catch{}
+      if (res.ok && data?.ok && data?.next?.question){
+        qIndex += 1;
+        qNum.textContent = String(qIndex + 1);
+        currentQ = data.next.question;
+        if (speakingOn) speak(currentQ);
+        renderQuestion(currentQ);
+        recHint.textContent = "Skipped. Answer the next one.";
+      } else {
+        // Fallback: ask backend for next even if it doesn’t support skip explicitly
+        const fake = await fetch(FN, {
+          method:"POST",
+          headers:{ "Authorization": `Bearer ${ANON}` },
+          body: new FormData(Object.assign(new FormData(), { append(){} }))
+        }).catch(()=>null);
+        recHint.textContent = "Unable to skip (server). Try answering briefly or refresh.";
+      }
+    };
 
     async function fetchReport() {
       const res = await fetch(FN, {
@@ -369,7 +427,7 @@
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON}` },
         body: JSON.stringify({ step: "report", role, running_summary: runningSummary })
       });
-      const data = await res.json();
+      const data = await res.json().catch(()=> ({}));
       finished.style.display = 'grid';
       const r = data.report || {};
       reportEl.innerHTML = `
@@ -397,34 +455,21 @@
 
     restart.onclick = ()=> location.reload();
 
-    // Bindings
+    // Start
     startBtn.onclick = startInterview;
-    speakChk.onchange = ()=> { speakLabel.textContent = speakChk.checked ? 'On' : 'Off'; };
+    speakChk.onchange = ()=> { speakLabel.textContent = speakChk.checked ? 'On' : 'Off'; speakingOn = speakChk.checked; };
 
-    // Press-and-hold to record; release to send
-    recBtn.onmousedown = startRec;
-    recBtn.onmouseup = stopRecAndSend;
-    recBtn.ontouchstart = (e)=>{ e.preventDefault(); startRec(); };
-    recBtn.ontouchend   = (e)=>{ e.preventDefault(); stopRecAndSend(); };
+    // Pointer-based hold-to-answer (reliable)
+    recBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); startRec(); recBtn.setPointerCapture(e.pointerId); });
+    const stopFromPointer = (e)=>{ if (rec) { stopRecAndSend(); recBtn.releasePointerCapture?.(e.pointerId); } };
+    recBtn.addEventListener('pointerup', stopFromPointer);
+    recBtn.addEventListener('pointercancel', stopFromPointer);
+    recBtn.addEventListener('pointerleave', stopFromPointer);
 
-    stopBtn.onclick = stopRecAndSend;
+    // Redo = re-ask the same question
+    redoBtn.onclick = ()=>{ if (currentQ) { if (speakingOn) speak(currentQ); renderQuestion(currentQ); } };
 
-    // Redo: simply re-ask current question
-    redoBtn.onclick = ()=>{
-      if (!currentQ) return;
-      if (speakingOn) speak(currentQ);
-      renderQuestion(currentQ);
-    };
-
-    // Skip: ask backend for next question without audio (empty turn)
-    skipBtn.onclick = async ()=>{
-      await sendTurn(null);
-    };
-
-    // Hidden fallback
-    sendBtn.onclick = stopRecAndSend;
-
-    // No default role value (professional ask)
+    // No default role text
     roleIn.value = "";
   </script>
 </body>
