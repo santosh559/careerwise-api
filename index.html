@@ -13,7 +13,281 @@
       --bg:#ffffff; --surface:#ffffff; --border:#e5e7eb;
       --text:#0f172a; --muted:#6b7280;
       --primary:#3165ff; --primary-600:#2656f5; --success:#22c55e;
+      --radius:14px; --shadow:0 10px 30px rgba(15,2<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerWise — Sign in</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='14' width='64' height='64' fill='%234f7cff'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='38' font-family='Inter' fill='white'%3ECW%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root{
+      --bg:#ffffff; --surface:#ffffff; --border:#e5e7eb;
+      --text:#0f172a; --muted:#6b7280;
+      --primary:#3165ff; --primary-600:#2656f5; --success:#22c55e;
       --radius:14px; --shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .container{max-width:1080px;margin:0 auto;padding:24px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7aa2ff 0%, #5a6bff 35%, #6a57ff 100%);box-shadow:var(--shadow)}
+    .chip{font-size:12px;color:#475569;border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--surface)}
+    .hero{margin:10px 0 6px}
+    .hero h1{font-size:40px;line-height:1.1;margin:0 0 8px;font-weight:800}
+    .love{background:linear-gradient(90deg,#1d4ed8,#3b82f6);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero p{margin:0;color:#111827;font-weight:600}
+    .subtle{color:#6b7280;font-weight:500}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .row{display:grid;gap:10px}
+    .input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:#fff}
+    .input::placeholder{color:#9aa1ad}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 14px;border-radius:12px;border:1px solid transparent;cursor:pointer;font-weight:700;color:#fff;background:var(--primary)}
+    .btn:hover{background:var(--primary-600)} .btn.success{background:var(--success)}
+    .muted{color:var(--muted)} .hidden{display:none!important}
+    .seg{display:flex;gap:8px;margin-bottom:10px}
+    .toggle{padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;font-weight:600;cursor:pointer}
+    .toggle.is-active{background:#eef2ff;color:#1d4ed8;border-color:#c7d2fe}
+
+    /* Password visibility */
+    .pw-wrap{position:relative}
+    .pw-toggle{
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      border:1px solid var(--border); background:#fff; border-radius:8px;
+      padding:6px 8px; font-size:12px; color:#334155; cursor:pointer;
+    }
+    .pw-toggle:focus{outline:2px solid #3165ff33; outline-offset:2px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand"><div class="logo"></div><strong>CareerWise</strong></div>
+      <div class="chip">API: <strong>https://careerwise-api.onrender.com</strong></div>
+    </div>
+
+    <section class="hero">
+      <h1>Find the work you <span class="love">love</span></h1>
+      <p><strong>Take a 5–minute assessment and get precise, role-ready matches.</strong> <span class="subtle">(Full test ~15–20 mins)</span></p>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div>
+          <h3 style="margin:0 0 6px">Sign in</h3>
+          <p class="muted" style="margin:0 0 10px">Keep your progress and get personalized matches.</p>
+
+          <div class="seg">
+            <button id="btnShowLogin" class="toggle is-active" type="button">Log in</button>
+            <button id="btnShowSignup" class="toggle" type="button">Sign up</button>
+          </div>
+
+          <!-- Login -->
+          <form id="loginForm" class="row" autocomplete="on">
+            <label class="muted" for="loginEmail">Email Address</label>
+            <input id="loginEmail" class="input" type="email" autocomplete="email" placeholder="Enter your email" required>
+
+            <label class="muted" for="loginPassword">Password</label>
+            <div class="pw-wrap">
+              <input id="loginPassword" class="input" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+              <button id="loginPwBtn" type="button" class="pw-toggle" aria-label="Show password">Show</button>
+            </div>
+
+            <!-- Forgot password -->
+            <div style="text-align:right;margin-top:6px">
+              <a id="forgotLink" href="#" style="color:#2563eb;text-decoration:none;font-size:13px">Forgot password?</a>
+            </div>
+
+            <button class="btn" type="submit">Sign In</button>
+          </form>
+
+          <!-- Signup -->
+          <form id="signupForm" class="row hidden" autocomplete="on" style="margin-top:8px">
+            <label class="muted" for="signupEmail">Email Address</label>
+            <input id="signupEmail" class="input" type="email" autocomplete="email" placeholder="Enter your email" required>
+
+            <label class="muted" for="signupPassword">Password</label>
+            <div class="pw-wrap">
+              <input id="signupPassword" class="input" type="password"
+                     autocomplete="new-password" minlength="10"
+                     placeholder="Create a strong password (10+ chars)" required>
+              <button id="signupPwBtn" type="button" class="pw-toggle" aria-label="Show password">Show</button>
+            </div>
+
+            <button class="btn" type="submit">Create account</button>
+          </form>
+
+          <p id="pwdMsg" class="muted hidden" role="status" style="margin-top:8px"></p>
+        </div>
+
+        <div>
+          <h3 style="margin:0 0 6px">Or continue as guest</h3>
+          <p class="muted" style="margin:0 0 10px">Try the app instantly. You can sign in any time to save.</p>
+          <button id="guestBtn" class="btn success" style="width:100%">Continue as guest</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Reset password modal -->
+  <div id="resetModal" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:50">
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:18px;max-width:420px;width:92%">
+      <h3 style="margin:0 0 6px">Reset your password</h3>
+      <p style="margin:0 0 12px;color:#64748b;font-size:14px">Enter the email you used for CareerWise. We’ll send a reset link.</p>
+      <input id="resetEmail" type="email" placeholder="name@example.com"
+        style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:12px" />
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="resetCancel" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer">Cancel</button>
+        <button id="resetSend" style="padding:10px 12px;border:1px solid #3165ff;border-radius:10px;background:#3165ff;color:#fff;font-weight:700;cursor:pointer">Send link</button>
+      </div>
+      <div id="resetNote" style="margin-top:10px;font-size:13px;color:#16a34a;display:none">Email sent. Check your inbox/spam.</div>
+      <div id="resetErr"  style="margin-top:10px;font-size:13px;color:#b91c1c;display:none"></div>
+    </div>
+  </div>
+
+  <!-- Supabase: auth + redirects -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const SUPABASE_URL = "https://awsuhluvyrxwmogzyfhr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3c3VobHV2eXJ4d21vZ3p5ZmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwNTI5NzksImV4cCI6MjA3MjYyODk3OX0.L_Ye8GAeC61xiW67a_bCTP5Wr7UtRja7o4_Y6mDwaLE";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.__sb = supabase;
+
+    // If already signed in (or guest), go straight to dashboard
+    (async () => {
+      const { data:{session} } = await supabase.auth.getSession();
+      if (session || localStorage.getItem("cw_guest_id")) location.href = "dashboard.html";
+    })();
+
+    // UI toggles
+    const btnShowLogin = document.getElementById('btnShowLogin');
+    const btnShowSignup = document.getElementById('btnShowSignup');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const pwdMsg = document.getElementById('pwdMsg');
+
+    btnShowLogin.onclick = () => {
+      btnShowLogin.classList.add('is-active'); btnShowSignup.classList.remove('is-active');
+      loginForm.classList.remove('hidden'); signupForm.classList.add('hidden');
+    };
+    btnShowSignup.onclick = () => {
+      btnShowSignup.classList.add('is-active'); btnShowLogin.classList.remove('is-active');
+      signupForm.classList.remove('hidden'); loginForm.classList.add('hidden');
+    };
+
+    // Password visibility toggles
+    function wirePwToggle(inputId, btnId){
+      const inp = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      if(!inp || !btn) return;
+      btn.addEventListener('click', ()=>{
+        const showing = inp.type === 'text';
+        inp.type = showing ? 'password' : 'text';
+        btn.textContent = showing ? 'Show' : 'Hide';
+        btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+        // keep caret at end
+        const v = inp.value; inp.value = ''; inp.value = v; inp.focus();
+      });
+    }
+    wirePwToggle('loginPassword','loginPwBtn');
+    wirePwToggle('signupPassword','signupPwBtn');
+
+    // Login
+    loginForm.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      pwdMsg.classList.add('hidden');
+      const email = (document.getElementById('loginEmail').value||'').trim();
+      const password = document.getElementById('loginPassword').value;
+      try{
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        location.href = "dashboard.html";
+      }catch(err){
+        pwdMsg.textContent = err.message || "Login failed";
+        pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#b91c1c";
+      }
+    });
+
+    // Signup
+    signupForm.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      pwdMsg.classList.add('hidden');
+      const email = (document.getElementById('signupEmail').value||'').trim();
+      const password = document.getElementById('signupPassword').value;
+      try{
+        const redirectTo = new URL('dashboard.html', location.href).href;
+        const { error } = await supabase.auth.signUp({
+          email, password,
+          options:{ emailRedirectTo: redirectTo }
+        });
+        if (error) throw error;
+        pwdMsg.textContent = "Check your inbox to confirm your email, then you'll be taken to the app.";
+        pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#16a34a";
+      }catch(err){
+        pwdMsg.textContent = err.message || "Signup failed";
+        pwdMsg.classList.remove('hidden'); pwdMsg.style.color="#b91c1c";
+      }
+    });
+
+    // Guest
+    document.getElementById('guestBtn').onclick = () => {
+      let id = localStorage.getItem("cw_guest_id");
+      if (!id) {
+        id = "guest_" + (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+        localStorage.setItem("cw_guest_id", id);
+      }
+      location.href = "dashboard.html";
+    };
+
+    // Password reset logic
+    const forgotLink  = document.getElementById('forgotLink');
+    const resetModal  = document.getElementById('resetModal');
+    const resetEmail  = document.getElementById('resetEmail');
+    const resetSend   = document.getElementById('resetSend');
+    const resetCancel = document.getElementById('resetCancel');
+    const resetNote   = document.getElementById('resetNote');
+    const resetErr    = document.getElementById('resetErr');
+
+    // Where the email’s magic link lands:
+    const RESET_REDIRECT = 'https://santosh559.github.io/careerwise-api/reset.html';
+
+    forgotLink?.addEventListener('click', (e)=>{
+      e.preventDefault();
+      resetEmail.value = '';
+      resetNote.style.display = 'none';
+      resetErr.style.display  = 'none';
+      resetModal.style.display = 'flex';
+    });
+
+    resetCancel?.addEventListener('click', ()=> resetModal.style.display = 'none');
+
+    resetSend?.addEventListener('click', async ()=>{
+      resetNote.style.display = 'none';
+      resetErr.style.display  = 'none';
+      const email = (resetEmail.value||'').trim();
+      if (!email) { resetErr.textContent = 'Please enter your email.'; resetErr.style.display='block'; return; }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: RESET_REDIRECT
+      });
+      if (error) {
+        resetErr.textContent = error.message || 'Could not send reset email.';
+        resetErr.style.display = 'block';
+        return;
+      }
+      resetNote.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
+3,42,.06);
     }
     *{box-sizing:border-box} html,body{height:100%}
     body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
