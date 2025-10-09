@@ -46,6 +46,11 @@
       padding:6px 8px; font-size:12px; color:#334155; cursor:pointer;
     }
     .pw-toggle:focus{outline:2px solid #3165ff33; outline-offset:2px}
+
+    /* Strength meter */
+    #pwdBarWrap{height:6px;width:100%;background:#eef2ff;border-radius:999px;overflow:hidden}
+    #pwdBar{height:100%;width:0%;background:#fecaca;transition:width .25s ease;background-clip:padding-box}
+    #pwdHint{font-size:12px;margin-top:6px}
   </style>
 </head>
 <body>
@@ -96,11 +101,15 @@
 
             <label class="muted" for="signupPassword">Password</label>
             <div class="pw-wrap">
-              <input id="signupPassword" class="input" type="password" autocomplete="new-password" minlength="10" placeholder="Create a strong password (10+ chars)" required>
+              <input id="signupPassword" class="input" type="password" autocomplete="new-password" placeholder="Create a strong password (10+ chars)" required>
               <button id="signupPwBtn" type="button" class="pw-toggle" aria-label="Show password">Show</button>
             </div>
 
-            <button class="btn" type="submit">Create account</button>
+            <!-- strength meter -->
+            <div id="pwdBarWrap"><div id="pwdBar"></div></div>
+            <div id="pwdHint" class="muted"></div>
+
+            <button id="signupBtn" class="btn" type="submit">Create account</button>
           </form>
 
           <p id="pwdMsg" class="muted hidden" role="status" style="margin-top:8px"></p>
@@ -176,6 +185,47 @@
     wirePwToggle('loginPassword','loginPwBtn');
     wirePwToggle('signupPassword','signupPwBtn');
 
+    // Strength meter (signup)
+    const signupPwd = document.getElementById('signupPassword');
+    const signupBtn = document.getElementById('signupBtn');
+    const pwdBar = document.getElementById('pwdBar');
+    const pwdHint = document.getElementById('pwdHint');
+    function strengthScore(pw, email=''){
+      if(!pw) return 0;
+      let s = 0;
+      const len = pw.length;
+      if (len >= 10) s += 2;
+      if (len >= 14) s += 1;
+      if (/[a-z]/.test(pw)) s += 1;
+      if (/[A-Z]/.test(pw)) s += 1;
+      if (/\d/.test(pw)) s += 1;
+      if (/[^A-Za-z0-9]/.test(pw)) s += 1;
+      if (!/(.)\1\1/.test(pw)) s += 1;             // avoid triples
+      if (email && pw.toLowerCase().includes(email.split('@')[0]?.toLowerCase())) s -= 2;
+      if (/password|qwerty|12345|letmein|welcome/i.test(pw)) s -= 3;
+      return Math.max(0, Math.min(8, s));
+    }
+    function renderStrength(){
+      const pw = signupPwd.value;
+      const email = (document.getElementById('signupEmail').value||'').trim();
+      const s = strengthScore(pw, email);
+      const pct = Math.round((s/8)*100);
+      pwdBar.style.width = pct + '%';
+      let color = '#fecaca', text = 'Very weak — use 10+ chars with words + numbers + symbols.';
+      if (s >= 2){ color = '#fde68a'; text = 'Weak — add length and variety.'; }
+      if (s >= 4){ color = '#facc15'; text = 'Okay — can be stronger (try 3+ word passphrase).'; }
+      if (s >= 6){ color = '#86efac'; text = 'Strong — good to go.'; }
+      if (s >= 7){ color = '#22c55e'; text = 'Very strong.'; }
+      pwdBar.style.background = color;
+      pwdHint.textContent = text;
+      // Require at least “Okay”
+      signupBtn.disabled = s < 4;
+      signupBtn.style.opacity = s < 4 ? .6 : 1;
+    }
+    signupPwd.addEventListener('input', renderStrength);
+    document.getElementById('signupEmail').addEventListener('input', renderStrength);
+    renderStrength();
+
     // Login
     loginForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
@@ -197,7 +247,7 @@
       e.preventDefault();
       pwdMsg.classList.add('hidden');
       const email = (document.getElementById('signupEmail').value||'').trim();
-      const password = document.getElementById('signupPassword').value;
+      const password = signupPwd.value;
       try{
         const redirectTo = new URL('dashboard.html', location.href).href;
         const { error } = await supabase.auth.signUp({
