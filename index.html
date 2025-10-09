@@ -39,6 +39,10 @@
     .seg{display:flex;gap:8px;margin-bottom:10px}
     .toggle{padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;font-weight:600;cursor:pointer}
     .toggle.is-active{background:#eef2ff;color:#1d4ed8;border-color:#c7d2fe}
+
+    /* Optional: subtle strength bar */
+    #pwdBarWrap{height:6px;background:#eef2ff;border-radius:999px;overflow:hidden}
+    #pwdBar{height:100%;width:0%;background:#ef4444;transition:width .2s ease, background .2s ease;border-radius:999px}
   </style>
 </head>
 <body>
@@ -72,7 +76,7 @@
             <label class="muted" for="loginPassword">Password</label>
             <input id="loginPassword" class="input" type="password" autocomplete="current-password" placeholder="Enter your password" required>
 
-            <!-- A) Forgot password link -->
+            <!-- Forgot password -->
             <div style="text-align:right;margin-top:6px">
               <a id="forgotLink" href="#" style="color:#2563eb;text-decoration:none;font-size:13px">Forgot password?</a>
             </div>
@@ -84,12 +88,16 @@
           <form id="signupForm" class="row hidden" autocomplete="on" style="margin-top:8px">
             <label class="muted" for="signupEmail">Email Address</label>
             <input id="signupEmail" class="input" type="email" autocomplete="email" placeholder="Enter your email" required>
+
             <label class="muted" for="signupPassword">Password</label>
             <input id="signupPassword" class="input" type="password" autocomplete="new-password" minlength="6" placeholder="Create a password (min 6)" required>
+
+            <!-- strength feedback -->
+            <div id="pwdBarWrap"><div id="pwdBar"></div></div>
+            <p id="pwdMsg" class="muted hidden" role="status" style="margin-top:6px"></p>
+
             <button class="btn" type="submit">Create account</button>
           </form>
-
-          <p id="pwdMsg" class="muted hidden" role="status" style="margin-top:8px"></p>
         </div>
 
         <div>
@@ -101,7 +109,7 @@
     </section>
   </div>
 
-  <!-- B) Reset password modal -->
+  <!-- Reset password modal -->
   <div id="resetModal" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:50">
     <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:18px;max-width:420px;width:92%">
       <h3 style="margin:0 0 6px">Reset your password</h3>
@@ -116,6 +124,9 @@
       <div id="resetErr"  style="margin-top:10px;font-size:13px;color:#b91c1c;display:none"></div>
     </div>
   </div>
+
+  <!-- zxcvbn for strength checks -->
+  <script src="https://unpkg.com/zxcvbn/dist/zxcvbn.js"></script>
 
   <!-- Supabase: auth + redirects -->
   <script type="module">
@@ -138,6 +149,8 @@
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     const pwdMsg = document.getElementById('pwdMsg');
+    const pwdBar = document.getElementById('pwdBar');
+    const signupPwd = document.getElementById('signupPassword');
 
     btnShowLogin.onclick = () => {
       btnShowLogin.classList.add('is-active'); btnShowSignup.classList.remove('is-active');
@@ -164,12 +177,55 @@
       }
     });
 
-    // Signup
+    // ===== Password strength meter (live)
+    const scoreWord = ['very weak','weak','fair','good','strong'];
+    function paintStrength(val){
+      try{
+        const r = zxcvbn(val || "");
+        const score = r.score; // 0..4
+        const pct = [4,25,50,75,100][score] || 4;
+        const color = ['#ef4444','#f97316','#eab308','#22c55e','#16a34a'][score] || '#ef4444';
+        pwdBar.style.width = pct + '%';
+        pwdBar.style.background = color;
+
+        const okLen = (val || '').length >= 10;
+        const okScore = score >= 3;
+        if (!okLen || !okScore) {
+          pwdMsg.textContent = `Password too weak (${scoreWord[score]}). Use 10+ chars with words + numbers + symbols.`;
+          pwdMsg.style.color = '#b91c1c';
+          pwdMsg.classList.remove('hidden');
+        } else {
+          pwdMsg.textContent = 'Password looks strong.';
+          pwdMsg.style.color = '#16a34a';
+          pwdMsg.classList.remove('hidden');
+        }
+      }catch{ /* zxcvbn not loaded? ignore */ }
+    }
+    signupPwd.addEventListener('input', ()=> paintStrength(signupPwd.value));
+
+    // Signup with banned/common checks
     signupForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
       pwdMsg.classList.add('hidden');
       const email = (document.getElementById('signupEmail').value||'').trim();
-      const password = document.getElementById('signupPassword').value;
+      const password = signupPwd.value;
+
+      // Gate before hitting Supabase
+      const emailLocal = email.split('@')[0]?.toLowerCase() || '';
+      const banned = ['password','qwerty','letmein','123456','careerwise', emailLocal];
+      const looksBanned = banned.some(w => w && password.toLowerCase().includes(w));
+      let weak = false;
+      try { weak = password.length < 10 || zxcvbn(password).score < 3; } catch { /* ignore */ }
+
+      if (looksBanned || weak) {
+        pwdMsg.textContent = looksBanned
+          ? 'Choose a password that does not include your name/email or common words.'
+          : 'Password is too weak. Use 10+ characters with a mix of words, numbers, symbols.';
+        pwdMsg.style.color = '#b91c1c';
+        pwdMsg.classList.remove('hidden');
+        return;
+      }
+
       try{
         const redirectTo = new URL('dashboard.html', location.href).href;
         const { error } = await supabase.auth.signUp({
@@ -195,7 +251,7 @@
       location.href = "dashboard.html";
     };
 
-    // C) Password reset logic
+    // Password reset logic
     const forgotLink  = document.getElementById('forgotLink');
     const resetModal  = document.getElementById('resetModal');
     const resetEmail  = document.getElementById('resetEmail');
@@ -204,7 +260,7 @@
     const resetNote   = document.getElementById('resetNote');
     const resetErr    = document.getElementById('resetErr');
 
-    // Where the email’s magic link lands:
+    // Where the email’s magic link lands (your reset.html)
     const RESET_REDIRECT = 'https://santosh559.github.io/careerwise-api/reset.html';
 
     forgotLink?.addEventListener('click', (e)=>{
